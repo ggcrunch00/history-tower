@@ -1,0 +1,1622 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>역사 타워 레이스</title>
+<style>
+  :root {
+    --ink: #1d2433;
+    --panel: rgba(255, 255, 255, 0.94);
+    --shadow: 0 5px 0 rgba(0, 0, 0, 0.18);
+    --go: #2fbf71;
+    --go-dark: #1f8a50;
+    --bad: #e5484d;
+    --sky: #a8dcff;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--sky); color: var(--ink);
+    font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    -webkit-user-select: none; user-select: none;
+    touch-action: none;
+  }
+  #game { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100vw; height: 100vh; display: block; outline: none; }
+
+  /* ---------- HUD ---------- */
+  #hud {
+    position: fixed; top: 12px; left: 12px; right: 12px;
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+    pointer-events: none;
+  }
+  .card { background: var(--panel); border-radius: 14px; box-shadow: var(--shadow); padding: 10px 14px; }
+  #zoneCard { min-width: 190px; max-width: 60vw; }
+  #zoneName { font-weight: 800; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+  #zoneDot { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+  #floorText { font-size: 14px; margin-top: 2px; opacity: 0.8; }
+  #progress { display: flex; gap: 2px; margin-top: 8px; }
+  #progress span { flex: 1; height: 8px; border-radius: 2px; background: rgba(0, 0, 0, 0.12); }
+  #rightHud { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  #timer { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  #score { font-size: 14px; font-weight: 800; padding: 6px 12px; }
+  .hudBtns { display: flex; gap: 6px; }
+  #respawnBtn, #soundBtn {
+    pointer-events: auto; border: 0; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700;
+    background: var(--panel); color: var(--ink); border-radius: 10px; padding: 7px 10px; box-shadow: var(--shadow);
+  }
+  #hint {
+    position: fixed; left: 12px; bottom: 12px; font-size: 13px; padding: 7px 12px;
+    pointer-events: none; opacity: 0.9;
+  }
+  body.touch #hint { display: none; }
+
+  /* ---------- 문제 패널·정답 알림 ---------- */
+  #qPanel, #feedback {
+    position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%);
+    width: min(660px, calc(100vw - 32px)); text-align: center; pointer-events: none;
+  }
+  body.touch #qPanel, body.touch #feedback { bottom: 140px; }
+  #qPanel { display: none; }
+  #qPanel .qtag { font-size: 13px; font-weight: 800; opacity: 0.65; margin-bottom: 4px; }
+  #qPanel .qtext { font-size: clamp(16px, 2.6vw, 21px); font-weight: 800; line-height: 1.45; word-break: keep-all; white-space: pre-wrap; }
+  #qPanel .opts { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
+  #qPanel .opts span { color: #fff; font-weight: 800; font-size: 15px; padding: 5px 12px; border-radius: 9px; }
+  #qPanel .qhelp { font-size: 12px; opacity: 0.6; margin-top: 8px; }
+  #feedback { display: none; color: #fff; }
+  #feedback.ok { background: var(--go); }
+  #feedback.bad { background: var(--bad); }
+  #feedback .ft { font-size: 24px; font-weight: 900; }
+  #feedback .fd { font-size: 16px; margin-top: 4px; line-height: 1.5; word-break: keep-all; }
+
+  /* ---------- 알림 ---------- */
+  #toast {
+    position: fixed; top: 92px; left: 50%; transform: translate(-50%, -10px);
+    background: var(--ink); color: #fff; font-weight: 800; font-size: 18px;
+    padding: 10px 18px; border-radius: 12px; opacity: 0; transition: opacity .25s, transform .25s;
+    pointer-events: none; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis;
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  #countdown {
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0; display: none; align-items: center; justify-content: center;
+    font-size: min(28vw, 180px); font-weight: 900; color: #fff;
+    text-shadow: 0 8px 0 rgba(0, 0, 0, 0.25); pointer-events: none;
+  }
+
+  /* ---------- 시작·도착 화면 ---------- */
+  .overlay {
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(18, 36, 64, 0.45); padding: 16px;
+  }
+  .overlay.hidden { display: none; }
+  .panel {
+    background: #fff; border-radius: 22px; box-shadow: 0 8px 0 rgba(0, 0, 0, 0.2);
+    width: min(520px, 100%); padding: 26px 24px; text-align: center;
+    max-height: calc(100vh - 32px); overflow: auto;
+  }
+  .panel h1 { margin: 0 0 6px; font-size: clamp(28px, 7vw, 40px); letter-spacing: -0.5px; }
+  .panel .sub { margin: 0 0 18px; font-size: 16px; opacity: 0.8; }
+  .zones { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 18px; }
+  .zones span { font-size: 13px; font-weight: 700; color: #fff; padding: 4px 9px; border-radius: 8px; }
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin-bottom: 20px; }
+  .controls div { background: #f2f5fa; border-radius: 12px; padding: 10px 12px; font-size: 14px; line-height: 1.6; }
+  .controls b { display: block; margin-bottom: 2px; }
+  .controls .rule { grid-column: 1 / -1; }
+  @media (max-width: 420px) { .controls { grid-template-columns: 1fr; } }
+  .bigBtn {
+    border: 0; cursor: pointer; font: inherit; font-size: 22px; font-weight: 900; color: #fff;
+    background: var(--go); border-radius: 14px; padding: 14px 40px; box-shadow: 0 6px 0 var(--go-dark);
+  }
+  .bigBtn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--go-dark); }
+  .note { margin-top: 14px; font-size: 12px; opacity: 0.6; }
+  .result { font-size: 18px; line-height: 1.8; margin-bottom: 20px; }
+  .result b { font-size: 30px; }
+  .btnRow { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+  .subBtn {
+    border: 0; cursor: pointer; font: inherit; font-size: 16px; font-weight: 800; color: var(--ink);
+    background: #f2f5fa; border-radius: 12px; padding: 12px 18px; box-shadow: 0 5px 0 #c9d1dd;
+  }
+  .subBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #c9d1dd; }
+  .runCards { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: -6px 0 20px; }
+  .runCards figure { margin: 0; width: 64px; font-size: 11px; font-weight: 700; line-height: 1.3; }
+  .runCards img { width: 64px; height: 64px; border-radius: 10px; background: #eef2f7; display: block; }
+  .runCards .shiny img { box-shadow: 0 0 0 2px #ffd84d, 0 0 10px rgba(255, 200, 40, .8); }
+  .stickyRow { position: sticky; bottom: -26px; background: #fff; padding: 12px 0 4px; }
+
+  /* ---------- 틀린 문제 복습 ---------- */
+  .review { text-align: left; margin: 0 0 8px; }
+  .review h2 { font-size: 19px; margin: 0 0 4px; text-align: center; }
+  .review .rsub { font-size: 13px; opacity: 0.65; text-align: center; margin-bottom: 12px; }
+  .review .perfect { text-align: center; font-size: 17px; font-weight: 800; background: #e8f8ee; color: #1f8a50; border-radius: 12px; padding: 14px; }
+  .rItem { background: #f6f8fb; border-radius: 12px; padding: 10px 12px 11px; margin-bottom: 8px; border-left: 6px solid #c3ccd8; }
+  .rItem .rmeta { font-size: 12px; font-weight: 800; opacity: 0.6; margin-bottom: 3px; }
+  .rItem .rq { font-size: 15px; font-weight: 700; line-height: 1.6; word-break: keep-all; }
+  .rItem mark { background: #c9f2d9; color: #0f6b3a; padding: 0 5px; border-radius: 5px; font-weight: 900; }
+  .rItem .rans { font-size: 13px; margin-top: 6px; line-height: 1.6; word-break: keep-all; }
+  .rItem .mine { color: var(--bad); font-weight: 800; text-decoration: line-through; }
+  .rItem .right { color: #1f8a50; font-weight: 900; }
+  .rItem .oxBadge { display: inline-block; font-weight: 900; color: #fff; border-radius: 6px; padding: 0 7px; margin-right: 6px; }
+
+  /* ---------- 유물 카드 ---------- */
+  .acard {
+    position: relative; width: 100%; border-radius: 16px; padding: 10px 10px 12px; text-align: center;
+    background: #f4f6fa; border: 3px solid #c3ccd8; box-shadow: 0 5px 0 rgba(0, 0, 0, 0.15); color: var(--ink);
+  }
+  .acard img { width: 100%; aspect-ratio: 1; display: block; border-radius: 10px; background: radial-gradient(circle at 50% 40%, #fff, #dfe5ee); }
+  .acard .rar { position: absolute; top: 14px; left: 14px; font-size: 11px; font-weight: 900; color: #fff; padding: 2px 7px; border-radius: 6px; background: #7d8796; }
+  .acard .shinyTag { position: absolute; top: 14px; right: 14px; font-size: 11px; font-weight: 900; color: #7a5600; padding: 2px 7px; border-radius: 6px; background: #ffe27a; }
+  .acard.r2 { background: #eef4ff; border-color: #4c8df6; }
+  .acard.r2 .rar { background: #4c8df6; }
+  .acard.r3 { background: #fff7e0; border-color: #e3a917; }
+  .acard.r3 .rar { background: #e3a917; }
+  .acard.shiny { box-shadow: 0 0 0 3px #ffd84d, 0 0 18px 4px rgba(255, 200, 40, 0.7); }
+  .acard .nm { font-weight: 900; font-size: 16px; margin-top: 8px; word-break: keep-all; }
+  .acard .era { font-size: 12px; opacity: 0.65; }
+  .acard .ds { font-size: 12px; line-height: 1.5; margin-top: 6px; text-align: left; word-break: keep-all; }
+  .acard.locked { background: #eceff3; border-color: #d3d9e1; }
+  .acard.locked img { filter: brightness(0) opacity(0.22); }
+  .acard.locked .nm, .acard.locked .ds { opacity: 0.6; }
+
+  #cardPop {
+    position: fixed; right: 16px; top: 50%; width: 210px; pointer-events: none;
+    transform: translate(calc(100% + 24px), -50%); transition: transform .35s cubic-bezier(.2, 1.3, .4, 1);
+  }
+  #cardPop.show { transform: translate(0, -50%); }
+  #cardPop .popHead {
+    text-align: center; font-weight: 900; font-size: 16px; color: #fff; margin-bottom: 6px;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+  }
+  @media (max-width: 640px) {
+    #cardPop { right: auto; left: 50%; top: 110px; width: 180px; transform: translate(-50%, -30px); opacity: 0; transition: transform .3s, opacity .3s; }
+    #cardPop.show { transform: translate(-50%, 0); opacity: 1; }
+    #cardPop .ds { display: none; }
+  }
+
+  #bookScreen .panel { width: min(960px, 100%); }
+  #bookStats { margin: -8px 0 16px; font-size: 15px; opacity: 0.8; }
+  .bookZone { text-align: left; font-weight: 900; font-size: 15px; margin: 18px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .bookZone span { width: 12px; height: 12px; border-radius: 3px; }
+  .bookGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .linkBtn { border: 0; background: none; font: inherit; font-size: 12px; color: #8a93a3; text-decoration: underline; cursor: pointer; margin-top: 14px; }
+
+  /* ---------- 터치 조작 ---------- */
+  #stickBase, #jumpBtn { display: none; }
+  #stickBase {
+    position: fixed; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25); border: 3px solid rgba(255, 255, 255, 0.7); pointer-events: none;
+  }
+  #stickKnob {
+    position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px;
+    border-radius: 50%; background: rgba(255, 255, 255, 0.85);
+  }
+  body.touch #jumpBtn {
+    display: flex; position: fixed; right: 24px; bottom: 32px; width: 92px; height: 92px; border-radius: 50%;
+    align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: var(--ink);
+    background: rgba(255, 255, 255, 0.85); box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2); border: 0;
+  }
+  body.touch #jumpBtn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2); }
+  #titleScreen:not(.hidden) ~ #jumpBtn, #finishScreen:not(.hidden) ~ #jumpBtn { display: none; }
+</style>
+</head>
+<body>
+<canvas id="game" tabindex="0"></canvas>
+
+<div id="hud">
+  <div id="zoneCard" class="card">
+    <div id="zoneName"><span id="zoneDot"></span><span id="zoneLabel">출발</span></div>
+    <div id="floorText">0층 / 18층</div>
+    <div id="progress"></div>
+  </div>
+  <div id="rightHud">
+    <div id="timer" class="card">00:00</div>
+    <div id="score" class="card">⭕ 0 · ❌ 0 · 🏺 0</div>
+    <div class="hudBtns">
+      <button id="soundBtn" type="button" title="소리 켜기/끄기 (M)">🔊</button>
+      <button id="respawnBtn" type="button">↺ 체크포인트로</button>
+    </div>
+  </div>
+</div>
+<div id="hint" class="card">WASD·방향키 이동 · 스페이스 점프 · 마우스 드래그로 시점 · R 체크포인트 · M 소리</div>
+<div id="qPanel" class="card"></div>
+<div id="feedback" class="card"></div>
+<div id="toast"></div>
+<div id="countdown"></div>
+
+<div id="titleScreen" class="overlay">
+  <div class="panel">
+    <h1>🗼 역사 타워 레이스</h1>
+    <p class="sub">구석기에서 고려까지, 탑 꼭대기에 먼저 오르자!</p>
+    <div class="zones" id="zoneChips"></div>
+    <div class="controls">
+      <div><b>⌨️ 컴퓨터</b>WASD·방향키: 이동<br>스페이스: 점프<br>마우스 끌기: 시점 돌리기<br>R: 체크포인트로 · M: 소리 끄기</div>
+      <div><b>📱 태블릿</b>왼쪽 화면 끌기: 이동<br>점프 버튼: 점프<br>오른쪽 화면 끌기: 시점 돌리기</div>
+      <div class="rule"><b>📜 규칙</b>층마다 문제가 나와요. <b style="display:inline">정답 발판</b>으로 점프하면 다음 층으로!<br>틀린 발판은 무너지고, 그 <b style="display:inline">구역의 시작점</b>으로 돌아가요.<br>맞히면 그 층의 <b style="display:inline">유물 카드</b>를 얻어요. 한 번에 맞히면 ✨반짝 카드!</div>
+    </div>
+    <div class="btnRow">
+      <button class="bigBtn" id="startBtn" type="button">시작하기</button>
+      <button class="subBtn" id="bookBtn" type="button">📖 유물 도감</button>
+    </div>
+    <div class="note" id="note">사회 5-2 1단원 · 유적과 유물로 살펴본 옛 사람들의 생활</div>
+  </div>
+</div>
+
+<div id="finishScreen" class="overlay hidden">
+  <div class="panel">
+    <h1>🏆 정상 도착!</h1>
+    <div class="result" id="resultText"></div>
+    <div class="runCards" id="runCards"></div>
+    <div class="review" id="review"></div>
+    <div class="btnRow stickyRow">
+      <button class="bigBtn" id="againBtn" type="button">다시 하기</button>
+      <button class="subBtn" id="bookBtn2" type="button">📖 유물 도감</button>
+    </div>
+  </div>
+</div>
+
+<div id="bookScreen" class="overlay hidden">
+  <div class="panel">
+    <h1>📖 유물 도감</h1>
+    <div id="bookStats"></div>
+    <div id="bookBody"></div>
+    <div class="btnRow" style="margin-top:20px">
+      <button class="bigBtn" id="bookClose" type="button">닫기</button>
+    </div>
+    <button class="linkBtn" id="bookReset" type="button">이 기기의 도감 기록 지우기</button>
+  </div>
+</div>
+
+<div id="cardPop"></div>
+
+<div id="stickBase"><div id="stickKnob"></div></div>
+<button id="jumpBtn" type="button">점프</button>
+
+<!-- three.js r159 (MIT, lib/three-LICENSE.txt). 폴더 안에 있어서 인터넷 없이도, 파일을 더블클릭해도 실행됨 -->
+<script src="lib/three.min.js"></script>
+<script src="questions.js"></script>
+<script src="artifacts.js"></script>
+<script src="scenery.js"></script>
+<script src="sound.js"></script>
+<script type="module">
+if (typeof THREE === "undefined") {
+  document.getElementById("note").textContent = "⚠ lib/three.min.js를 불러오지 못했어요. 게임 폴더를 통째로 옮겼는지 확인해 주세요.";
+  throw new Error("three.js not loaded");
+}
+// 오래된 브라우저(구형 아이패드 사파리 등)에 없는 둥근 사각형 그리기 보충
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+  };
+}
+// 소리 (sound.js가 없어도 게임은 돌아가게)
+const snd = typeof GameSound !== "undefined" ? GameSound : null;
+const sfx = (name) => { if (snd) snd.play(name); };
+
+// 여러 도형을 하나로 합치기 (모든 도형에 position·normal·uv·color가 있고 index가 있다고 가정)
+function mergeGeometries(geos) {
+  let vCount = 0, iCount = 0;
+  for (const g of geos) {
+    vCount += g.attributes.position.count;
+    iCount += g.index ? g.index.count : g.attributes.position.count;
+  }
+  const pos = new Float32Array(vCount * 3), nor = new Float32Array(vCount * 3);
+  const col = new Float32Array(vCount * 3), uv = new Float32Array(vCount * 2);
+  const idx = new Uint32Array(iCount);
+  let vo = 0, io = 0;
+  for (const g of geos) {
+    const a = g.attributes, n = a.position.count;
+    pos.set(a.position.array, vo * 3);
+    nor.set(a.normal.array, vo * 3);
+    col.set(a.color.array, vo * 3);
+    if (a.uv) uv.set(a.uv.array, vo * 2);
+    if (g.index) {
+      const src = g.index.array;
+      for (let i = 0; i < src.length; i++) idx[io + i] = src[i] + vo;
+      io += src.length;
+    } else {
+      for (let i = 0; i < n; i++) idx[io + i] = vo + i;
+      io += n;
+    }
+    vo += n;
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  out.setAttribute("normal", new THREE.BufferAttribute(nor, 3));
+  out.setAttribute("color", new THREE.BufferAttribute(col, 3));
+  out.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+  out.setIndex(new THREE.BufferAttribute(idx, 1));
+  return out;
+}
+
+// ================= 설정 =================
+// 구역 = 시대. eras는 questions.js의 era 값과 연결됨
+const ZONES = [
+  { name: "구석기",        eras: ["구석기"],           color: "#9a7b5f", light: "#d8c7b4", pad: 3 },
+  { name: "신석기",        eras: ["신석기"],           color: "#c98b4f", light: "#ecd2b5", pad: 3 },
+  { name: "청동기·고조선", eras: ["청동기", "고조선"], color: "#4f9a8a", light: "#c4e2da", pad: 3 },
+  { name: "삼국·가야",     eras: ["삼국", "가야"],     color: "#c0504d", light: "#efc8c6", pad: 2 },
+  { name: "통일신라·발해", eras: ["통일신라", "발해"], color: "#cf9f2a", light: "#f2e2b3", pad: 2 },
+  { name: "고려",          eras: ["후삼국", "고려"],   color: "#4fae9b", light: "#c8eae2", pad: 2 },
+];
+const FLOORS_PER_ZONE = 3;
+const TOTAL_FLOORS = ZONES.length * FLOORS_PER_ZONE;
+const PADS_PER_FLOOR = 5;   // 층마다 점프 발판 수
+const RADIUS = 14;          // 나선 코스 반지름
+const RISE = 0.8;           // 발판 하나당 올라가는 높이
+const PLAZA = 7;            // 층 광장 (체크포인트, 여기서 문제가 나옴)
+const OPT = 3;              // 정답 발판 크기
+const STRIP_W = 13;         // 정답 발판 뒤 착지대 폭
+const LANES_3 = [4.5, 0, -4.5], LANES_2 = [2.5, -2.5];   // 정답 발판 줄 위치 (+는 탑 바깥쪽)
+const LANE_GAP = 1.5;       // 광장 → 정답 발판 → 착지대 사이 간격
+const OPT_COLORS = ["#8e5bd6", "#2e86de", "#f08c2e"];
+const OX_COLORS = { O: "#2e86de", X: "#e5484d" };
+// 틀렸을 때 돌아가는 곳: "zone" = 그 구역의 시작점, "floor" = 그 층 광장
+const WRONG_SENDS_TO = "zone";
+const GRAVITY = 30, JUMP_V = 11, SPEED = 6.5;
+const PLAYER_R = 0.35, PLAYER_H = 1.9, EPS = 1e-4;
+
+// ================= 렌더러 =================
+const canvas = document.getElementById("game");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#a8dcff");
+scene.fog = new THREE.Fog("#a8dcff", 70, 230);
+const camera = new THREE.PerspectiveCamera(65, 1, 0.1, 500);
+function resize() {
+  renderer.setSize(innerWidth, innerHeight, false);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+}
+addEventListener("resize", resize);
+resize();
+
+scene.add(new THREE.HemisphereLight("#ffffff", "#7a9a6a", 1.7));
+const sun = new THREE.DirectionalLight("#fff4dd", 1.8);
+sun.position.set(30, 80, 20);
+scene.add(sun);
+
+// 블록 무늬 텍스처 (마인크래프트 느낌의 테두리)
+function makeBlockTexture() {
+  const c = document.createElement("canvas");
+  c.width = c.height = 16;
+  const g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, 16, 16);
+  for (let i = 0; i < 40; i++) {
+    const v = 222 + Math.floor(Math.random() * 33);
+    g.fillStyle = `rgb(${v},${v},${v})`;
+    g.fillRect(Math.floor(Math.random() * 16), Math.floor(Math.random() * 16), 1, 1);
+  }
+  g.fillStyle = "rgba(0,0,0,0.22)"; g.fillRect(0, 15, 16, 1); g.fillRect(15, 0, 1, 16);
+  g.fillStyle = "rgba(255,255,255,0.6)"; g.fillRect(0, 0, 16, 1); g.fillRect(0, 0, 1, 16);
+  const t = new THREE.CanvasTexture(c);
+  t.magFilter = THREE.NearestFilter;
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
+const blockTex = makeBlockTexture();
+const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+function tiledTexture(rx, ry) {
+  const t = blockTex.clone();
+  t.repeat.set(rx, ry);
+  t.needsUpdate = true;
+  return t;
+}
+
+// ================= 블록 모델 (유물·배경) =================
+// 여러 도형을 색과 함께 하나로 합쳐 그리기 부담을 줄임. 사용법은 artifacts.js 맨 위 설명 참고
+const modelMaterial = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, flatShading: true });
+const _col = new THREE.Color(), _euler = new THREE.Euler(), _mat4 = new THREE.Matrix4();
+class Model {
+  constructor() { this.geos = []; }
+  add(geo, color, x = 0, y = 0, z = 0, ry = 0, rx = 0, rz = 0) {
+    if (rx || ry || rz) geo.applyMatrix4(_mat4.makeRotationFromEuler(_euler.set(rx, ry, rz)));
+    geo.translate(x, y, z);
+    _col.set(color);
+    const n = geo.attributes.position.count, arr = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) { arr[i * 3] = _col.r; arr[i * 3 + 1] = _col.g; arr[i * 3 + 2] = _col.b; }
+    geo.setAttribute("color", new THREE.BufferAttribute(arr, 3));
+    this.geos.push(geo);
+    return this;
+  }
+  box(w, h, d, color, x, y, z, ry, rx, rz) { return this.add(new THREE.BoxGeometry(w, h, d), color, x, y, z, ry, rx, rz); }
+  b(w, h, d, color, x, y, z, ry, rx, rz) { return this.box(w, h, d, color, x, y + h / 2, z, ry, rx, rz); }
+  cyl(rt, rb, h, color, x, y, z, seg = 10, rx = 0, rz = 0) { return this.add(new THREE.CylinderGeometry(rt, rb, h, seg), color, x, y, z, 0, rx, rz); }
+  cone(r, h, color, x, y, z, seg = 8) { return this.add(new THREE.ConeGeometry(r, h, seg), color, x, y, z); }
+  lathe(profile, color, x, y, z, seg = 16) {
+    return this.add(new THREE.LatheGeometry(profile.map(([r, py]) => new THREE.Vector2(r, py)), seg), color, x, y, z);
+  }
+  // 높이 bandH마다 색을 바꿔 가며 회전체를 만듦 (무늬 표현). 윤곽선의 y는 아래에서 위로 증가해야 함
+  latheBands(profile, bandH, colors, x, y, z, seg = 16) {
+    const at = (py) => {
+      for (let i = 0; i < profile.length - 1; i++) {
+        const [r0, y0] = profile[i], [r1, y1] = profile[i + 1];
+        if (py >= y0 && py <= y1) return [y1 === y0 ? r1 : r0 + (r1 - r0) * (py - y0) / (y1 - y0), py];
+      }
+      return profile[profile.length - 1];
+    };
+    const top = profile[profile.length - 1][1];
+    for (let k = 0, y0 = profile[0][1]; y0 < top - 1e-6; k++, y0 += bandH) {
+      const y1 = Math.min(top, y0 + bandH);
+      const pts = [at(y0), ...profile.filter(([, py]) => py > y0 && py < y1), at(y1)];
+      this.lathe(pts, colors[k % colors.length], x, y, z, seg);
+    }
+    return this;
+  }
+  artifact(id, h, x, y, z, ry = 0) {
+    const base = artifactGeoById[id];
+    if (!base) return this;
+    const g = base.clone(), s = h / base.userData.height;
+    g.scale(s, s, s);
+    if (ry) g.rotateY(ry);
+    g.translate(x, y, z);
+    this.geos.push(g);
+    return this;
+  }
+  geometry() { return mergeGeometries(this.geos, false); }
+  mesh() { return new THREE.Mesh(this.geometry(), modelMaterial); }
+}
+
+// 유물 모델: 바닥 가운데가 원점이 되도록 맞춤
+const hasArtifacts = typeof ARTIFACTS !== "undefined";
+const artifactList = hasArtifacts ? ARTIFACTS.slice().sort((a, b) => a.floor - b.floor) : [];
+const artifactGeoById = {};
+for (const art of artifactList) {
+  const m = new Model();
+  art.build(m);
+  const g = m.geometry();
+  g.computeBoundingBox();
+  const bb = g.boundingBox, c = new THREE.Vector3();
+  bb.getCenter(c);
+  g.translate(-c.x, -bb.min.y, -c.z);
+  g.userData.height = bb.max.y - bb.min.y;
+  artifactGeoById[art.id] = g;
+}
+const artifactByFloor = {};
+artifactList.forEach((a) => { artifactByFloor[a.floor] = a; });
+
+// 카드 그림: 유물 모델을 따로 렌더링해서 이미지로 저장
+const cardImages = {};
+function renderCardImages() {
+  const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  r.setPixelRatio(1);
+  r.setSize(256, 256, false);
+  const sc = new THREE.Scene();
+  sc.add(new THREE.HemisphereLight("#ffffff", "#8a7a6a", 2.0));
+  const dl = new THREE.DirectionalLight("#ffffff", 2.2);
+  dl.position.set(3, 6, 6);
+  sc.add(dl);
+  const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
+  const dir = new THREE.Vector3(0.5, 0.35, 1).normalize();
+  for (const art of artifactList) {
+    const geo = artifactGeoById[art.id];
+    const mesh = new THREE.Mesh(geo, modelMaterial);
+    sc.add(mesh);
+    geo.computeBoundingSphere();
+    const bs = geo.boundingSphere;
+    cam.position.copy(bs.center).addScaledVector(dir, (bs.radius / Math.sin(THREE.MathUtils.degToRad(15))) * 1.02);
+    cam.lookAt(bs.center);
+    r.render(sc, cam);
+    cardImages[art.id] = r.domElement.toDataURL("image/png");
+    sc.remove(mesh);
+  }
+  r.dispose();
+  r.forceContextLoss();
+}
+renderCardImages();
+
+// ================= 충돌 상자 =================
+// 모든 발판은 코스 방향으로 돌아간 직사각형. 로컬 x = 탑 바깥쪽, 로컬 z = 코스 진행 방향
+function makeSolid(cx, cz, theta, hx, hz, top, info) {
+  return { cx, cz, c: Math.cos(theta), sn: Math.sin(theta), theta, hx, hz, minY: top - 1, maxY: top, active: true, ...info };
+}
+function toLocal(s, x, z) {
+  const dx = x - s.cx, dz = z - s.cz;
+  return [dx * s.c - dz * s.sn, dx * s.sn + dz * s.c];
+}
+// 캐릭터 발(원)과 발판(직사각형)이 겹치는지
+function footOverlaps(s, x, z) {
+  const [lx, lz] = toLocal(s, x, z);
+  const ex = lx - Math.max(-s.hx, Math.min(lx, s.hx));
+  const ez = lz - Math.max(-s.hz, Math.min(lz, s.hz));
+  return ex * ex + ez * ez < PLAYER_R * PLAYER_R - EPS;
+}
+function pointInside(s, x, z) {
+  const [lx, lz] = toLocal(s, x, z);
+  return Math.abs(lx) <= s.hx && Math.abs(lz) <= s.hz;
+}
+
+// ================= 코스 만들기 =================
+const solids = [], staticBlocks = [], plazas = [], strips = [], floors = [];
+const onPath = (s) => {
+  const a = s / RADIUS;
+  return { x: Math.cos(a) * RADIUS, z: Math.sin(a) * RADIUS, theta: -a };
+};
+function addStatic(p, top, across, along, color, info) {
+  const sol = makeSolid(p.x, p.z, p.theta, across / 2, along / 2, top, info);
+  for (let i = 0; i < across; i++) for (let j = 0; j < along; j++) {
+    staticBlocks.push({
+      sol, lx: -across / 2 + 0.5 + i, lz: -along / 2 + 0.5 + j, color,
+      shade: ((i + j) % 2 ? -0.03 : 0.02) + (Math.random() - 0.5) * 0.04,
+    });
+  }
+  solids.push(sol);
+  return sol;
+}
+
+// 문제 구간(광장 → 정답 발판 → 착지대)은 휘지 않은 일직선으로 놓아서
+// 바깥 줄·안쪽 줄 정답 발판까지 거리가 모두 같게 함
+const OPT_ALONG = PLAZA / 2 + LANE_GAP + OPT / 2;          // 광장 중심 → 정답 발판 중심
+const QSEC = OPT_ALONG + OPT / 2 + LANE_GAP + 1.5;          // 광장 중심 → 착지대 중심
+function straightFrame(aFrom, aTo) {
+  const px = Math.cos(aFrom) * RADIUS, pz = Math.sin(aFrom) * RADIUS;
+  const ux = (Math.cos(aTo) * RADIUS - px) / QSEC, uz = (Math.sin(aTo) * RADIUS - pz) / QSEC;
+  const theta = Math.atan2(ux, uz);
+  // along: 진행 방향 거리, lateral: +면 탑 바깥쪽
+  return (along, lateral = 0) => ({ x: px + ux * along + uz * lateral, z: pz + uz * along - ux * lateral, theta });
+}
+
+let pathS = 0, top = 1, prevHalf = PLAZA / 2;
+// cp: 체크포인트 순서 (광장 f = 2f, 그 뒤 착지대 f = 2f+1). 더 큰 곳에 착지하면 체크포인트 저장
+plazas[0] = addStatic(onPath(0), top, PLAZA, PLAZA, "#e4ddd0", { kind: "plaza", floor: 0, zone: 0, cp: 0 });
+for (let f = 1; f <= TOTAL_FLOORS; f++) {
+  const zi = Math.floor((f - 1) / FLOORS_PER_ZONE), zone = ZONES[zi];
+  const gap = zone.pad === 3 ? 1.6 : 1.8;
+  for (let p = 0; p < PADS_PER_FLOOR; p++) {
+    pathS += prevHalf + gap + zone.pad / 2; top += RISE;
+    addStatic(onPath(pathS), top, zone.pad, zone.pad, zone.color, { kind: "pad", floor: f, zone: zi });
+    prevHalf = zone.pad / 2;
+  }
+  // 문제 광장
+  pathS += prevHalf + gap + PLAZA / 2; top += RISE;
+  const aPlaza = pathS / RADIUS, aStrip = aPlaza + 2 * Math.asin(QSEC / (2 * RADIUS));
+  const frame = straightFrame(aPlaza, aStrip);
+  plazas[f] = addStatic(frame(0), top, PLAZA, PLAZA, zone.light, { kind: "plaza", floor: f, zone: zi, cp: 2 * f });
+  // 정답 발판 자리 (발판은 문제를 낼 때 배치)
+  top += RISE;
+  floors[f] = { zone: zi, frame, top, pads: [] };
+  for (let i = 0; i < 3; i++) {
+    const solid = makeSolid(0, 0, 0, OPT / 2, OPT / 2, top, { kind: "option", floor: f, index: i, zone: zi });
+    solids.push(solid);
+    floors[f].pads.push(makeOptionPad(solid));
+  }
+  // 착지대 (다음 층 코스의 시작, 다음 구역의 시작점이 되기도 함)
+  top += RISE;
+  const nextZone = Math.min(ZONES.length - 1, Math.floor(f / FLOORS_PER_ZONE));
+  strips[f] = addStatic(frame(QSEC), top, STRIP_W, 3, ZONES[nextZone].light, { kind: "strip", floor: f, zone: nextZone, cp: 2 * f + 1 });
+  pathS = aStrip * RADIUS;
+  prevHalf = 1.5;
+}
+pathS += prevHalf + 2 + 4.5; top += RISE;
+const goal = addStatic(onPath(pathS), top, 9, 9, "#f2c94c", { kind: "goal", floor: TOTAL_FLOORS + 1, zone: ZONES.length - 1 });
+const zoneStart = (zi) => (zi === 0 ? plazas[0] : strips[zi * FLOORS_PER_ZONE]);
+
+// 땅
+solids.push(makeSolid(0, 0, 0, 1e4, 1e4, 0, { kind: "ground", floor: -1 }));
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(400, 400),
+  new THREE.MeshLambertMaterial({ color: "#7cc46a", map: tiledTexture(400, 400) })
+);
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
+
+// 고정 발판 블록 (한 번에 그리기)
+{
+  const mesh = new THREE.InstancedMesh(boxGeo, new THREE.MeshLambertMaterial({ map: blockTex }), staticBlocks.length);
+  const d = new THREE.Object3D(), col = new THREE.Color();
+  staticBlocks.forEach((b, i) => {
+    const s = b.sol;
+    d.position.set(s.cx + b.lx * s.c + b.lz * s.sn, s.maxY - 0.5, s.cz - b.lx * s.sn + b.lz * s.c);
+    d.rotation.set(0, s.theta, 0);
+    d.updateMatrix();
+    mesh.setMatrixAt(i, d.matrix);
+    col.set(b.color).offsetHSL(0, 0, b.shade);
+    mesh.setColorAt(i, col);
+  });
+  scene.add(mesh);
+}
+
+// 가운데 탑 기둥 (구역마다 색이 다름)
+ZONES.forEach((zone, zi) => {
+  const y0 = zi === 0 ? 0 : zoneStart(zi).maxY;
+  const y1 = zi === ZONES.length - 1 ? goal.maxY + 6 : zoneStart(zi + 1).maxY;
+  const h = y1 - y0;
+  const pillar = new THREE.Mesh(
+    new THREE.BoxGeometry(9, h, 9),
+    new THREE.MeshLambertMaterial({ color: new THREE.Color(zone.color).offsetHSL(0, -0.1, -0.08), map: tiledTexture(9, Math.round(h)) })
+  );
+  pillar.position.set(0, y0 + h / 2, 0);
+  scene.add(pillar);
+});
+solids.push(makeSolid(0, 0, 0, 4.5, 4.5, goal.maxY + 6, { kind: "pillar", floor: -1, minY: 0 }));
+
+// 정상 깃발 (세레모니를 가리지 않게 정상 발판 바깥쪽 뒤 모서리에 세움)
+{
+  const fx = goal.cx + 3.5 * goal.c + 3.5 * goal.sn, fz = goal.cz - 3.5 * goal.sn + 3.5 * goal.c;
+  const pole = new THREE.Mesh(new THREE.BoxGeometry(0.3, 6, 0.3), new THREE.MeshLambertMaterial({ color: "#6b4a2b" }));
+  pole.position.set(fx, goal.maxY + 3, fz);
+  const flag = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.5, 0.15), new THREE.MeshLambertMaterial({ color: "#e74c3c" }));
+  flag.position.set(fx + 1.3, goal.maxY + 5.1, fz);
+  scene.add(pole, flag);
+}
+
+// 글자 그림 만들기
+const FONT = '"Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+function fitFont(g, text, weight, size, maxW) {
+  do { g.font = `${weight} ${size}px ${FONT}`; size -= 4; } while (g.measureText(text).width > maxW && size > 20);
+}
+function makeSign(title, sub, color) {
+  const c = document.createElement("canvas");
+  c.width = 512; c.height = 256;
+  const g = c.getContext("2d");
+  g.fillStyle = "rgba(255,255,255,0.92)";
+  g.beginPath(); g.roundRect(8, 8, 496, 240, 36); g.fill();
+  g.fillStyle = color; g.fillRect(8, 200, 496, 24);
+  g.fillStyle = "#1d2433"; g.textAlign = "center"; g.textBaseline = "middle";
+  fitFont(g, title, 900, 96, 460);
+  g.fillText(title, 256, 92);
+  fitFont(g, sub, 700, 46, 460);
+  g.fillText(sub, 256, 166);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex }));
+  sp.scale.set(5, 2.5, 1);
+  return sp;
+}
+// lateral: +면 탑 바깥쪽, along: +면 진행 방향 (발판 기준)
+function placeSign(sign, s, height, lateral = 3, along = 0) {
+  sign.position.set(s.cx + lateral * s.c + along * s.sn, s.maxY + height, s.cz - lateral * s.sn + along * s.c);
+  scene.add(sign);
+}
+placeSign(makeSign("출발!", "1구역 구석기 →", ZONES[0].color), plazas[0], 3.2);
+for (let f = 1; f <= TOTAL_FLOORS; f++) {
+  const zi = plazas[f].zone;
+  // 광장 입구 안쪽(탑 쪽)에 세워서, 정답 발판 글자와 바깥쪽 유물 받침대를 가리지 않게 함
+  const sign = makeSign(`${f}층`, ZONES[zi].name, ZONES[zi].color);
+  sign.scale.set(3.8, 1.9, 1);
+  placeSign(sign, plazas[f], 2.4, -4.5, -2.8);
+}
+placeSign(makeSign("정상", "고려 정복 완료!", "#f2c94c"), goal, 4.5);
+
+// ================= 유물 받침대 (층마다 그 층에서 얻을 유물이 돌고 있음) =================
+const shrines = [];
+{
+  const m = new Model();
+  for (let f = 1; f <= TOTAL_FLOORS; f++) {
+    const art = artifactByFloor[f];
+    if (!art) continue;
+    const pl = plazas[f], lat = 7.8, al = 1;
+    const x = pl.cx + lat * pl.c + al * pl.sn, z = pl.cz - lat * pl.sn + al * pl.c, y = pl.maxY + 0.4;
+    m.b(2.2, 1.0, 2.2, "#8a8378", x, y - 1.2, z, pl.theta);
+    m.b(2.6, 0.4, 2.6, "#f0d27a", x, y - 0.2, z, pl.theta);
+    m.b(2.0, 0.3, 2.0, "#e3b94a", x, y + 0.2, z, pl.theta);
+    const geo = artifactGeoById[art.id];
+    const mesh = new THREE.Mesh(geo, modelMaterial);
+    const s = 2.3 / geo.userData.height;
+    mesh.scale.setScalar(s);
+    mesh.position.set(x, y + 0.6, z);
+    scene.add(mesh);
+    shrines[f] = { mesh, baseY: y + 0.6, scale: s, anim: 0, collected: false };
+  }
+  if (m.geos.length) scene.add(m.mesh());
+}
+
+// ================= 시대별 배경 섬 =================
+if (typeof SCENERY !== "undefined") {
+  SCENERY.forEach((sc) => {
+    const f = sc.zone * FLOORS_PER_ZONE + (sc.slot === "A" ? 1 : 2);
+    const pl = plazas[f];
+    const m = new Model();
+    sc.build(m);
+    const mesh = m.mesh();
+    const a = Math.atan2(pl.cz, pl.cx) + 0.55, R = 33;
+    mesh.position.set(Math.cos(a) * R, pl.maxY + 3, Math.sin(a) * R);
+    mesh.rotation.y = Math.atan2(-Math.cos(a), -Math.sin(a));   // 탑 쪽을 바라보게
+    scene.add(mesh);
+    const sign = makeSign(sc.title, sc.sub, ZONES[sc.zone].color);
+    sign.scale.set(7, 3.5, 1);
+    sign.position.set(mesh.position.x, mesh.position.y + 9, mesh.position.z);
+    scene.add(sign);
+  });
+}
+
+// 땅 위 나무, 하늘의 구름
+{
+  const rand = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();  // 매번 같은 배치
+  const trees = new Model();
+  for (let i = 0; i < 45; i++) {
+    const a = rand() * Math.PI * 2, r = 24 + rand() * 70;
+    const x = Math.cos(a) * r, z = Math.sin(a) * r;
+    if (Math.hypot(x - RADIUS, z) < 9) continue;   // 출발 광장 근처는 비움
+    const h = 2.5 + rand() * 2;
+    trees.b(0.8, h, 0.8, "#7a5230", x, 0, z);
+    trees.b(3, 2.4, 3, rand() < 0.5 ? "#4f9e48" : "#5aa851", x, h - 0.4, z);
+    trees.b(1.8, 1.1, 1.8, "#62b85a", x, h + 2.0, z);
+  }
+  scene.add(trees.mesh());
+  const clouds = new Model();
+  for (let i = 0; i < 32; i++) {
+    const a = rand() * Math.PI * 2, r = 45 + rand() * 70, y = 12 + rand() * (goal.maxY + 20);
+    const x = Math.cos(a) * r, z = Math.sin(a) * r, w = 6 + rand() * 8;
+    clouds.b(w, 1.6, w * 0.6, "#ffffff", x, y, z);
+    clouds.b(w * 0.6, 1.2, w * 0.4, "#f4f8ff", x + w * 0.15, y + 1.6, z);
+  }
+  scene.add(clouds.mesh());
+}
+
+// ================= 정답 발판 =================
+function makeOptionPad(solid) {
+  const mat = new THREE.MeshLambertMaterial({ map: blockTex, color: "#ffffff" });
+  const mesh = new THREE.InstancedMesh(boxGeo, mat, OPT * OPT);
+  const d = new THREE.Object3D();
+  let k = 0;
+  for (let i = 0; i < OPT; i++) for (let j = 0; j < OPT; j++) {
+    d.position.set(-OPT / 2 + 0.5 + i, -0.5, -OPT / 2 + 0.5 + j);
+    d.updateMatrix();
+    mesh.setMatrixAt(k++, d.matrix);
+  }
+  const group = new THREE.Group();
+  const label = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true }));
+  label.scale.set(3.6, 1.26, 1);
+  label.position.y = 2.3;
+  group.add(mesh, label);
+  scene.add(group);
+  return { group, mat, label, solid, drop: 0 };
+}
+function setPadLabel(pad, text, color) {
+  const c = document.createElement("canvas");
+  c.width = 512; c.height = 180;
+  const g = c.getContext("2d");
+  g.fillStyle = color;
+  g.beginPath(); g.roundRect(6, 6, 500, 168, 32); g.fill();
+  g.fillStyle = "#fff"; g.textAlign = "center"; g.textBaseline = "middle";
+  fitFont(g, text, 900, text.length <= 2 ? 130 : 84, 460);
+  g.fillText(text, 256, 94);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  if (pad.label.material.map) pad.label.material.map.dispose();
+  pad.label.material.map = tex;
+  pad.label.material.needsUpdate = true;
+}
+function dropPad(pad) {
+  pad.solid.active = false;
+  pad.drop = 0.001;
+}
+
+// ================= 문제 배치 =================
+const shuffle = (arr) => {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+};
+const hasQuestions = typeof QUESTIONS !== "undefined" && typeof displayQuestion === "function";
+const pools = ZONES.map(() => ({ list: [], ptr: 0 }));
+
+function correctText(q) {
+  if (q.type === "ox") return q.answer;
+  if (q.type === "choice") return q.answer;
+  return q.answers.map((a) => a[0]).join(", ");
+}
+function buildOptions(q) {
+  if (q.type === "ox") return ["O", "X"].map((t) => ({ text: t, correct: t === q.answer }));
+  if (q.type === "choice") return shuffle(q.options).map((t) => ({ text: t, correct: t === q.answer }));
+  const right = correctText(q);
+  return shuffle([right, ...q.wrong]).map((t) => ({ text: t, correct: t === right }));
+}
+function nextQuestion(zi) {
+  const pool = pools[zi];
+  const inUse = new Set(floors.filter((fl) => fl && fl.zone === zi && fl.q).map((fl) => fl.q.id));
+  for (let tries = 0; tries < pool.list.length * 2; tries++) {
+    if (pool.ptr >= pool.list.length) { pool.list = shuffle(pool.list); pool.ptr = 0; }
+    const q = pool.list[pool.ptr++];
+    if (!inUse.has(q.id)) return q;
+  }
+  return pool.list[0];
+}
+function assignQuestion(f, q) {
+  const fl = floors[f];
+  fl.q = q; fl.answered = false; fl.locked = false;
+  fl.options = buildOptions(q);
+  const n = fl.options.length;
+  // 화면 왼쪽부터 ①②③ 순서가 되도록 (카메라에서 보면 탑 바깥쪽이 왼쪽)
+  const lanes = n === 2 ? LANES_2 : LANES_3;
+  fl.pads.forEach((pad, i) => {
+    const s = pad.solid;
+    pad.drop = 0;
+    if (i >= n) { s.active = false; pad.group.visible = false; s.correct = false; return; }
+    const p = fl.frame(OPT_ALONG, lanes[i]);
+    Object.assign(s, { cx: p.x, cz: p.z, theta: p.theta, c: Math.cos(p.theta), sn: Math.sin(p.theta), active: true, correct: fl.options[i].correct });
+    pad.group.visible = true;
+    pad.group.position.set(p.x, fl.top, p.z);
+    pad.group.rotation.y = p.theta;
+    const opt = fl.options[i];
+    const color = q.type === "ox" ? OX_COLORS[opt.text] : OPT_COLORS[i];
+    opt.color = color;
+    pad.mat.color.set(color);
+    setPadLabel(pad, q.type === "ox" ? opt.text : `${"①②③"[i]} ${opt.text}`, color);
+  });
+}
+function setupQuestions() {
+  ZONES.forEach((zone, zi) => {
+    pools[zi].list = hasQuestions ? shuffle(QUESTIONS.filter((q) => zone.eras.includes(q.era))) : [];
+    pools[zi].ptr = 0;
+  });
+  for (let f = 1; f <= TOTAL_FLOORS; f++) { floors[f].q = null; floors[f].tries = 0; }
+  for (let f = 1; f <= TOTAL_FLOORS; f++) {
+    const zi = floors[f].zone;
+    if (pools[zi].list.length) assignQuestion(f, nextQuestion(zi));
+  }
+}
+
+// ================= 캐릭터 =================
+function makeCharacter() {
+  const g = new THREE.Group();
+  const box = (w, h, d, c) => new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color: c }));
+  const torso = box(0.8, 0.8, 0.45, "#2f80ed"); torso.position.y = 1.15;
+  const head = box(0.6, 0.6, 0.6, "#f6c945"); head.position.y = 1.86;
+  const eyeL = box(0.08, 0.13, 0.02, "#222"); eyeL.position.set(-0.13, 1.92, 0.305);
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.13;
+  const smile = box(0.24, 0.05, 0.02, "#222"); smile.position.set(0, 1.74, 0.305);
+  g.add(torso, head, eyeL, eyeR, smile);
+  const limb = (w, h, d, c, x, y) => {
+    const pivot = new THREE.Group();
+    pivot.position.set(x, y, 0);
+    const m = box(w, h, d, c); m.position.y = -h / 2;
+    pivot.add(m); g.add(pivot);
+    return pivot;
+  };
+  // 세레모니용 이마의 'L' 손 모양 (평소에는 숨김)
+  const lSign = new THREE.Group();
+  const lv = box(0.08, 0.34, 0.06, "#4cd964"); lv.position.set(-0.04, 2.02, 0.34);
+  const lh = box(0.22, 0.08, 0.06, "#4cd964"); lh.position.set(0.03, 1.89, 0.34);
+  lSign.add(lv, lh);
+  lSign.visible = false;
+  g.add(lSign);
+  return {
+    group: g,
+    lSign,
+    armL: limb(0.28, 0.8, 0.3, "#f6c945", -0.55, 1.55),
+    armR: limb(0.28, 0.8, 0.3, "#f6c945", 0.55, 1.55),
+    legL: limb(0.38, 0.75, 0.42, "#3a9d5d", -0.2, 0.75),
+    legR: limb(0.38, 0.75, 0.42, "#3a9d5d", 0.2, 0.75),
+  };
+}
+const hero = makeCharacter();
+scene.add(hero.group);
+
+// ================= 정상 세레모니: L을 가져가~ =================
+const CEREMONY_SEC = 4;
+let ceremonyStart = 0;
+const bigL = (() => {
+  const c = document.createElement("canvas");
+  c.width = c.height = 256;
+  const g = c.getContext("2d");
+  g.font = `900 220px ${'"Malgun Gothic", "Apple SD Gothic Neo", sans-serif'}`;
+  g.textAlign = "center"; g.textBaseline = "middle";
+  g.lineWidth = 18; g.strokeStyle = "#ffffff"; g.strokeText("L", 128, 140);
+  g.fillStyle = "#2fbf71"; g.fillText("L", 128, 140);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+  sp.scale.set(1.6, 1.6, 1);
+  sp.visible = false;
+  scene.add(sp);
+  return sp;
+})();
+// 꽃가루
+const CONFETTI_N = 140;
+const confetti = new THREE.InstancedMesh(new THREE.BoxGeometry(0.18, 0.04, 0.12), new THREE.MeshBasicMaterial(), CONFETTI_N);
+const confettiData = [];
+{
+  const colors = ["#ff5a5f", "#ffd84d", "#4cd964", "#2e86de", "#8e5bd6", "#f08c2e"];
+  const col = new THREE.Color();
+  for (let i = 0; i < CONFETTI_N; i++) {
+    confetti.setColorAt(i, col.set(colors[i % colors.length]));
+    confettiData.push({ x: 0, y: 0, z: 0, vy: 0, spin: 0, phase: Math.random() * 6 });
+  }
+  confetti.visible = false;
+  confetti.frustumCulled = false;
+  scene.add(confetti);
+}
+function launchConfetti() {
+  confettiData.forEach((c) => {
+    c.x = goal.cx + (Math.random() - 0.5) * 9;
+    c.z = goal.cz + (Math.random() - 0.5) * 9;
+    c.y = goal.maxY + 4 + Math.random() * 9;
+    c.vy = 1.5 + Math.random() * 2;
+    c.spin = 2 + Math.random() * 6;
+  });
+  confetti.visible = true;
+}
+const _cm = new THREE.Object3D();
+function animateConfetti(dt) {
+  if (!confetti.visible) return;
+  confettiData.forEach((c, i) => {
+    c.y -= c.vy * dt;
+    if (c.y < goal.maxY) c.y += 12;
+    _cm.position.set(c.x + Math.sin(now * 2 + c.phase) * 0.4, c.y, c.z + Math.cos(now * 1.7 + c.phase) * 0.4);
+    _cm.rotation.set(now * c.spin, now * c.spin * 0.7, 0);
+    _cm.updateMatrix();
+    confetti.setMatrixAt(i, _cm.matrix);
+  });
+  confetti.instanceMatrix.needsUpdate = true;
+}
+// 이마에 손으로 L을 만들고, 양발을 번갈아 옆으로 차며 콩콩 뛰는 춤
+function animateCeremony(dt) {
+  const t = now - ceremonyStart, k = Math.min(1, dt * 14);
+  const beat = Math.floor(t * 4) % 2;
+  const hop = Math.abs(Math.sin(t * Math.PI * 4));
+  const g = hero.group;
+  g.position.set(pos.x, pos.y + hop * 0.22, pos.z);
+  g.rotation.y = facing + Math.sin(t * Math.PI * 2) * 0.2;
+  const to = (o, ax, v) => { o.rotation[ax] += (v - o.rotation[ax]) * k; };
+  to(hero.armR, "x", -2.42); to(hero.armR, "z", -0.66);   // 오른손을 이마로
+  to(hero.armL, "x", -0.4 + Math.sin(t * Math.PI * 4) * 0.5); to(hero.armL, "z", -0.5);
+  to(hero.legL, "z", beat === 0 ? -0.75 : 0); to(hero.legR, "z", beat === 1 ? 0.75 : 0);
+  to(hero.legL, "x", 0); to(hero.legR, "x", 0);
+  hero.lSign.visible = true;
+  bigL.visible = true;
+  bigL.position.set(pos.x, pos.y + 3.2 + Math.sin(t * Math.PI * 4) * 0.15, pos.z);
+  const s = 1.6 + Math.abs(Math.sin(t * Math.PI * 2)) * 0.3;
+  bigL.scale.set(s, s, 1);
+}
+function stopCeremony() {
+  hero.lSign.visible = false;
+  bigL.visible = false;
+  confetti.visible = false;
+  hero.group.rotation.y = facing;
+  ["armL", "armR", "legL", "legR"].forEach((n) => { hero[n].rotation.z = 0; });
+  camDist = 9; pitch = 0.35;
+}
+
+// 발밑 그림자 (점프할 때 착지 위치를 알기 쉽게)
+const blob = new THREE.Mesh(
+  new THREE.CircleGeometry(0.5, 20),
+  new THREE.MeshBasicMaterial({ color: "#000", transparent: true, opacity: 0.35, depthWrite: false })
+);
+blob.rotation.x = -Math.PI / 2;
+scene.add(blob);
+
+// ================= 상태 =================
+const pos = new THREE.Vector3(), vel = new THREE.Vector3();
+let grounded = false, groundSolid = null, lastGrounded = -1, jumpQueued = -1;
+let checkpoint = plazas[0], facing = 0, walkPhase = 0;
+let yaw = Math.PI, pitch = 0.35, camDist = 9, lastManualCam = -10;
+let state = "title", startTime = 0, finishTime = 0;
+let falls = 0, correctCount = 0, wrongCount = 0, wrongIds = [], wrongLog = [], pendingWrong = null;
+let now = performance.now() / 1000;
+
+// ================= HUD =================
+const $ = (id) => document.getElementById(id);
+const progressEl = $("progress");
+for (let f = 1; f <= TOTAL_FLOORS; f++) progressEl.appendChild(document.createElement("span"));
+ZONES.forEach((z, i) => {
+  const chip = document.createElement("span");
+  chip.style.background = z.color;
+  chip.textContent = `${i + 1}. ${z.name}`;
+  $("zoneChips").appendChild(chip);
+});
+if (!hasQuestions) {
+  $("note").textContent = "⚠ questions.js를 불러오지 못했어요. index.html과 같은 폴더에 있는지 확인해 주세요.";
+  $("note").style.opacity = 1;
+}
+
+function updateHud() {
+  if (snd) snd.setZone(checkpoint.zone);   // 위로 올라갈수록 음악이 조금씩 빨라지고 풍성해짐
+  const f = checkpoint.floor;
+  const zone = ZONES[checkpoint.zone];
+  $("zoneLabel").textContent = f === 0 ? "출발" : `${checkpoint.zone + 1}구역 · ${zone.name}`;
+  $("zoneDot").style.background = zone.color;
+  $("floorText").textContent = `${f}층 / ${TOTAL_FLOORS}층`;
+  [...progressEl.children].forEach((el, i) => {
+    el.style.background = i < f ? ZONES[Math.floor(i / FLOORS_PER_ZONE)].color : "";
+  });
+  $("score").textContent = `⭕ ${correctCount} · ❌ ${wrongCount} · 🏺 ${runCards.length}`;
+}
+const fmtTime = (sec) => {
+  const s = Math.max(0, Math.floor(sec));
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+};
+let toastTimer = 0;
+function toast(msg) {
+  const el = $("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 1800);
+}
+const esc = (t) => String(t).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+// 문제 패널: 문제 광장에 서 있고 아직 풀지 않은 층이면 보여 줌
+let panelKey = "";
+function updateQuestionPanel() {
+  const fl = checkpoint.kind === "plaza" ? floors[checkpoint.floor] : null;
+  const show = state === "play" && fl && fl.q && !fl.answered && !fl.locked && $("feedback").style.display !== "block";
+  const key = show ? `${checkpoint.floor}:${fl.q.id}` : "";
+  if (key === panelKey) return;
+  panelKey = key;
+  const el = $("qPanel");
+  if (!show) { el.style.display = "none"; return; }
+  const q = fl.q;
+  const chips = fl.options.map((o, i) => {
+    const label = q.type === "ox" ? (o.text === "O" ? "O 맞다" : "X 틀리다") : `${"①②③"[i]} ${o.text}`;
+    return `<span style="background:${o.color}">${esc(label)}</span>`;
+  }).join("");
+  el.innerHTML =
+    `<div class="qtag">${checkpoint.floor}층 문제 · ${esc(ZONES[fl.zone].name)}</div>` +
+    `<div class="qtext">${esc(displayQuestion(q))}</div>` +
+    `<div class="opts">${chips}</div>` +
+    `<div class="qhelp">정답이라고 생각하는 발판으로 점프하세요!</div>`;
+  el.style.display = "block";
+}
+let feedbackTimer = 0;
+function showFeedback(ok, title, detail, ms) {
+  const el = $("feedback");
+  el.className = "card " + (ok ? "ok" : "bad");
+  el.innerHTML = `<div class="ft">${esc(title)}</div>` + (detail ? `<div class="fd">${detail}</div>` : "");
+  el.style.display = "block";
+  clearTimeout(feedbackTimer);
+  feedbackTimer = setTimeout(() => { el.style.display = "none"; }, ms);
+}
+function hideFeedback() { clearTimeout(feedbackTimer); $("feedback").style.display = "none"; }
+
+// ================= 유물 카드 수집 =================
+// 도감 기록은 이 기기의 브라우저에만 저장됨 (다른 기기·다른 학생과 공유되지 않음)
+const STORE_KEY = "historyTower.cards.v1";
+const RARITY = { 1: "일반", 2: "희귀", 3: "전설" };
+function loadCollection() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; }
+}
+function saveCollection() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(collection)); } catch { /* 저장이 막힌 환경에서도 게임은 계속 */ }
+}
+let collection = loadCollection();
+let runCards = [];
+const collectedCount = () => artifactList.filter((a) => collection[a.id]).length;
+function cardHTML(art, opts = {}) {
+  const locked = !!opts.locked;
+  return `<div class="acard r${art.rarity}${opts.shiny ? " shiny" : ""}${locked ? " locked" : ""}">` +
+    `<img src="${cardImages[art.id]}" alt="${locked ? "" : esc(art.name)}">` +
+    `<span class="rar">${RARITY[art.rarity]}</span>` + (opts.shiny ? `<span class="shinyTag">✨반짝</span>` : "") +
+    `<div class="nm">${locked ? "???" : esc(art.name)}</div>` +
+    `<div class="era">${esc(art.era)} · ${art.floor}층</div>` +
+    `<div class="ds">${locked ? `${art.floor}층 문제를 맞히면 얻을 수 있어요.` : esc(art.desc)}</div></div>`;
+}
+function updateBookButtons() {
+  const label = `📖 유물 도감 (${collectedCount()}/${artifactList.length})`;
+  $("bookBtn").textContent = label;
+  $("bookBtn2").textContent = label;
+}
+let popTimer = 0;
+function awardCard(floor, shiny) {
+  const art = artifactByFloor[floor];
+  if (!art) return;
+  const prev = collection[art.id];
+  collection[art.id] = { n: (prev ? prev.n : 0) + 1, shiny: !!(shiny || (prev && prev.shiny)) };
+  saveCollection();
+  runCards.push({ art, shiny });
+  const el = $("cardPop");
+  el.innerHTML = `<div class="popHead">${prev ? "🏺 유물 획득!" : "🎉 새 유물 발견!"}</div>` + cardHTML(art, { shiny });
+  el.classList.add("show");
+  clearTimeout(popTimer);
+  popTimer = setTimeout(() => el.classList.remove("show"), 3200);
+  setTimeout(() => sfx("card"), 300);
+  if (shrines[floor]) shrines[floor].anim = 0.001;
+  updateHud();
+}
+function openBook() {
+  const shinyN = artifactList.filter((a) => collection[a.id] && collection[a.id].shiny).length;
+  $("bookStats").textContent = `모은 유물 ${collectedCount()} / ${artifactList.length} · ✨반짝 ${shinyN}`;
+  $("bookBody").innerHTML = ZONES.map((z, zi) => {
+    const arts = artifactList.filter((a) => Math.floor((a.floor - 1) / FLOORS_PER_ZONE) === zi);
+    return `<div class="bookZone"><span style="background:${z.color}"></span>${zi + 1}구역 · ${esc(z.name)}</div>` +
+      `<div class="bookGrid">${arts.map((a) => cardHTML(a, { locked: !collection[a.id], shiny: collection[a.id] && collection[a.id].shiny })).join("")}</div>`;
+  }).join("");
+  $("bookScreen").classList.remove("hidden");
+}
+$("bookBtn").addEventListener("click", openBook);
+$("bookBtn2").addEventListener("click", openBook);
+$("bookClose").addEventListener("click", () => $("bookScreen").classList.add("hidden"));
+$("bookReset").addEventListener("click", () => {
+  if (!confirm("이 기기에 저장된 유물 도감 기록을 모두 지울까요?")) return;
+  collection = {};
+  saveCollection();
+  updateBookButtons();
+  openBook();
+});
+
+function resetShrines() {
+  shrines.forEach((sh) => {
+    if (!sh) return;
+    sh.anim = 0; sh.collected = false;
+    sh.mesh.visible = true;
+    sh.mesh.scale.setScalar(sh.scale);
+  });
+}
+function animateShrines(dt) {
+  shrines.forEach((sh, f) => {
+    if (!sh || sh.collected) return;
+    const m = sh.mesh;
+    if (sh.anim > 0) {   // 획득: 커졌다가 빙글 돌며 위로 사라짐
+      sh.anim += dt;
+      const p = Math.min(1, sh.anim / 0.9);
+      m.scale.setScalar(sh.scale * (p < 0.35 ? 1 + p * 1.5 : 1.5 * (1 - (p - 0.35) / 0.65)));
+      m.position.y = sh.baseY + p * 3;
+      m.rotation.y += dt * 14;
+      if (p >= 1) { m.visible = false; sh.collected = true; sh.anim = 0; }
+    } else {
+      m.rotation.y += dt * 0.9;
+      m.position.y = sh.baseY + Math.sin(now * 2 + f) * 0.15;
+    }
+  });
+}
+
+// ================= 정답·오답 처리 =================
+function onOptionLanded(s) {
+  const fl = floors[s.floor];
+  if (!fl || fl.answered || fl.locked || state !== "play") return;
+  const q = fl.q, opt = fl.options[s.index];
+  const answerText = q.type === "ox" ? (q.answer === "O" ? "O (맞는 문장)" : "X (틀린 문장)") : correctText(q);
+  if (opt.correct) {
+    fl.answered = true;
+    correctCount++;
+    const pad = fl.pads[s.index];
+    pad.mat.color.set("#2fbf71");
+    setPadLabel(pad, `✔ ${opt.text}`, "#2fbf71");
+    fl.pads.forEach((p, i) => { if (i !== s.index && p.solid.active) dropPad(p); });
+    showFeedback(true, "⭕ 정답!", q.explain ? esc(q.explain) : "", q.explain ? 3000 : 1500);
+    sfx("correct");
+    awardCard(s.floor, fl.tries === 0);
+  } else {
+    fl.locked = true;
+    fl.tries++;
+    wrongCount++;
+    wrongIds.push(q.id);
+    wrongLog.push({ q, chosen: opt.text, floor: s.floor, zone: fl.zone });
+    dropPad(fl.pads[s.index]);
+    sfx("wrong");
+    pendingWrong = s.floor;
+    // 발판이 사라진 뒤 점프 여유 시간이나 미리 누른 점프로 건너가지 못하게 함
+    lastGrounded = -1;
+    jumpQueued = -1;
+    const back = WRONG_SENDS_TO === "zone" ? `${fl.zone + 1}구역 시작점으로 돌아가요.` : "이 층 광장으로 돌아가요.";
+    showFeedback(false, "❌ 아쉬워요!",
+      `정답은 <b>${esc(answerText)}</b>` + (q.explain ? `<br>${esc(q.explain)}` : "") + `<br><small>${back} 이 층에는 새 문제가 나와요.</small>`,
+      4500);
+    // 발판이 다 떨어진 뒤 이 층에 새 문제를 냄
+    setTimeout(() => { if (fl.q === q) assignQuestion(s.floor, nextQuestion(fl.zone)); }, 1500);
+  }
+  updateHud();
+}
+
+// ================= 이동·충돌 =================
+function respawn(msg) {
+  pos.set(checkpoint.cx, checkpoint.maxY + 0.01, checkpoint.cz);
+  vel.set(0, 0, 0);
+  const a = Math.atan2(checkpoint.cz, checkpoint.cx);   // 코스 진행 방향을 바라보게
+  yaw = Math.PI - a;
+  facing = Math.atan2(-Math.sin(a), Math.cos(a));
+  if (msg) toast(msg);
+}
+
+function pushOutHorizontal(s) {
+  const [lx, lz] = toLocal(s, pos.x, pos.z);
+  const ex = lx - Math.max(-s.hx, Math.min(lx, s.hx));
+  const ez = lz - Math.max(-s.hz, Math.min(lz, s.hz));
+  const d2 = ex * ex + ez * ez;
+  if (d2 >= PLAYER_R * PLAYER_R - EPS) return;
+  let px, pz;
+  if (d2 > 1e-10) {
+    const d = Math.sqrt(d2), k = (PLAYER_R - d) / d;
+    px = ex * k; pz = ez * k;
+  } else {   // 발 중심이 발판 안에 들어간 경우: 가까운 면 쪽으로 밀어냄
+    const penX = s.hx - Math.abs(lx) + PLAYER_R, penZ = s.hz - Math.abs(lz) + PLAYER_R;
+    if (penX < penZ) { px = Math.sign(lx || 1) * penX; pz = 0; } else { px = 0; pz = Math.sign(lz || 1) * penZ; }
+  }
+  const wx = px * s.c + pz * s.sn, wz = -px * s.sn + pz * s.c;
+  pos.x += wx; pos.z += wz;
+  const len = Math.hypot(wx, wz);
+  if (len > 0) {
+    const nx = wx / len, nz = wz / len, vn = vel.x * nx + vel.z * nz;
+    if (vn < 0) { vel.x -= vn * nx; vel.z -= vn * nz; }
+  }
+}
+const overlapsY = (s) => pos.y + PLAYER_H > s.minY + EPS && pos.y < s.maxY - EPS;
+function moveHorizontal(dx, dz) {
+  pos.x += dx; pos.z += dz;
+  for (let pass = 0; pass < 2; pass++) {
+    for (const s of solids) if (s.active && overlapsY(s)) pushOutHorizontal(s);
+  }
+}
+function moveVertical(d) {
+  pos.y += d;
+  for (const s of solids) {
+    if (!s.active || !overlapsY(s) || !footOverlaps(s, pos.x, pos.z)) continue;
+    if (d < 0) { pos.y = s.maxY; grounded = true; groundSolid = s; }
+    else pos.y = s.minY - PLAYER_H;
+    vel.y = 0;
+  }
+}
+
+// ================= 입력 =================
+const keys = new Set();
+const isKey = (...codes) => codes.some((c) => keys.has(c));
+addEventListener("keydown", (e) => {
+  if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
+  keys.add(e.code);
+  if (e.code === "Space" && !e.repeat) jumpQueued = now;
+  if (e.code === "KeyR" && state === "play") backToCheckpoint();
+  if (e.code === "KeyM" && !e.repeat) toggleSound();
+});
+addEventListener("keyup", (e) => keys.delete(e.code));
+addEventListener("blur", () => keys.clear());
+
+let stick = null, camDrag = null;
+const stickBase = $("stickBase"), stickKnob = $("stickKnob");
+function useTouchUi() { document.body.classList.add("touch"); }
+if (matchMedia("(pointer: coarse)").matches) useTouchUi();
+
+canvas.addEventListener("pointerdown", (e) => {
+  canvas.focus();
+  if (e.pointerType === "touch") useTouchUi();
+  if (e.pointerType === "touch" && e.clientX < innerWidth * 0.45 && !stick) {
+    stick = { id: e.pointerId, cx: e.clientX, cy: e.clientY, dx: 0, dy: 0 };
+    stickBase.style.display = "block";
+    stickBase.style.left = e.clientX + "px";
+    stickBase.style.top = e.clientY + "px";
+    stickKnob.style.transform = "";
+  } else if (!camDrag) {
+    camDrag = { id: e.pointerId, x: e.clientX, y: e.clientY };
+  } else return;
+  try { canvas.setPointerCapture(e.pointerId); } catch { /* 일부 기기에서 캡처가 안 돼도 조작은 계속 */ }
+});
+canvas.addEventListener("pointermove", (e) => {
+  if (stick && e.pointerId === stick.id) {
+    let dx = e.clientX - stick.cx, dy = e.clientY - stick.cy;
+    const len = Math.hypot(dx, dy);
+    if (len > 50) { dx *= 50 / len; dy *= 50 / len; }
+    stick.dx = dx; stick.dy = dy;
+    stickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+  } else if (camDrag && e.pointerId === camDrag.id) {
+    const k = e.pointerType === "touch" ? 0.008 : 0.005;
+    yaw -= (e.clientX - camDrag.x) * k;
+    pitch = Math.min(1.2, Math.max(-0.2, pitch + (e.clientY - camDrag.y) * k));
+    camDrag.x = e.clientX; camDrag.y = e.clientY;
+    lastManualCam = now;
+  }
+});
+function endPointer(e) {
+  if (stick && e.pointerId === stick.id) { stick = null; stickBase.style.display = "none"; }
+  if (camDrag && e.pointerId === camDrag.id) camDrag = null;
+}
+canvas.addEventListener("pointerup", endPointer);
+canvas.addEventListener("pointercancel", endPointer);
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  camDist = Math.min(16, Math.max(4, camDist + Math.sign(e.deltaY) * 0.8));
+}, { passive: false });
+canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+$("jumpBtn").addEventListener("pointerdown", (e) => { e.preventDefault(); jumpQueued = now; });
+// 틀린 직후에 누르면 체크포인트가 아니라 틀렸을 때처럼 구역 시작점으로 보냄
+function backToCheckpoint() {
+  if (pendingWrong !== null) fellOff();
+  else respawn("체크포인트로 돌아왔어요");
+}
+$("respawnBtn").addEventListener("click", () => { if (state === "play") backToCheckpoint(); canvas.focus(); });
+function updateSoundBtn() {
+  if (!snd) { $("soundBtn").style.display = "none"; return; }
+  $("soundBtn").textContent = snd.muted ? "🔇" : "🔊";
+}
+function toggleSound() {
+  if (!snd) return;
+  snd.setMuted(!snd.muted);
+  updateSoundBtn();
+}
+$("soundBtn").addEventListener("click", () => { toggleSound(); canvas.focus(); });
+updateSoundBtn();
+
+// ================= 게임 흐름 =================
+function startRace() {
+  if (snd) snd.start();   // 브라우저는 버튼을 누른 뒤에만 소리를 낼 수 있게 함
+  $("titleScreen").classList.add("hidden");
+  $("finishScreen").classList.add("hidden");
+  hideFeedback();
+  stopCeremony();
+  $("bookScreen").classList.add("hidden");
+  $("cardPop").classList.remove("show");
+  setupQuestions();
+  resetShrines();
+  checkpoint = plazas[0];
+  falls = 0; correctCount = 0; wrongCount = 0; wrongIds = []; wrongLog = []; pendingWrong = null; runCards = [];
+  respawn();
+  updateHud();
+  $("timer").textContent = "00:00";
+  state = "countdown";
+  const cd = $("countdown");
+  cd.style.display = "flex";
+  const steps = ["3", "2", "1", "출발!"];
+  steps.forEach((txt, i) => setTimeout(() => {
+    cd.textContent = txt;
+    if (i === steps.length - 1) {
+      state = "play";
+      startTime = now;
+      setTimeout(() => { cd.style.display = "none"; }, 700);
+    }
+  }, i * 800));
+  canvas.focus();
+}
+function finishRace() {
+  state = "ceremony";
+  finishTime = now - startTime;
+  ceremonyStart = now;
+  hideFeedback();
+  $("cardPop").classList.remove("show");
+  toast("🏆 정상 도착! L을 가져가~ 🕺");
+  launchConfetti();
+  sfx("fanfare");
+  setTimeout(() => { if (state === "ceremony") showResults(); }, CEREMONY_SEC * 1000);
+}
+function showResults() {
+  state = "finish";
+  $("resultText").innerHTML =
+    `기록 <b>${fmtTime(finishTime)}</b><br>` +
+    `맞힌 문제 ⭕ ${correctCount}개 · 틀린 문제 ❌ ${wrongCount}개<br>` +
+    `떨어진 횟수 ${falls}번<br>` +
+    `이번 판에 모은 유물 🏺 ${runCards.length}개 (✨반짝 ${runCards.filter((c) => c.shiny).length}개)`;
+  $("runCards").innerHTML = runCards.map(({ art, shiny }) =>
+    `<figure class="${shiny ? "shiny" : ""}"><img src="${cardImages[art.id]}" alt=""><figcaption>${esc(art.name)}</figcaption></figure>`).join("");
+  $("review").innerHTML = reviewHTML();
+  updateBookButtons();
+  $("finishScreen").classList.remove("hidden");
+  $("finishScreen").querySelector(".panel").scrollTop = 0;
+}
+
+// 틀린 문제 복습: 빈칸에 정답을 채운 문장, 내가 고른 답, 해설
+function filledSentence(q) {
+  const text = esc(displayQuestion(q));
+  if (q.type === "ox") return text;
+  const fills = q.type === "choice" ? [q.answer] : q.answers.map((a) => a[0]);
+  let k = 0;
+  return text.replace(/\(\s+\)/g, () => `<mark>${esc(fills[k++] ?? "")}</mark>`);
+}
+function reviewHTML() {
+  if (!wrongLog.length) return `<h2>📝 틀린 문제 복습</h2><div class="perfect">🎉 틀린 문제가 하나도 없어요! 완벽해요!</div>`;
+  // 같은 문제를 여러 번 틀렸으면 한 번만 보여 주고 횟수를 표시
+  const byId = new Map();
+  for (const w of wrongLog) {
+    const e = byId.get(w.q.id) || { ...w, chosenList: [], count: 0 };
+    e.count++;
+    e.chosenList.push(w.chosen);
+    byId.set(w.q.id, e);
+  }
+  const items = [...byId.values()].map((e) => {
+    const q = e.q, zone = ZONES[e.zone];
+    const times = e.count > 1 ? ` · ${e.count}번 틀림` : "";
+    let ans;
+    if (q.type === "ox") {
+      const color = q.answer === "O" ? OX_COLORS.O : OX_COLORS.X;
+      ans = `<span class="oxBadge" style="background:${color}">정답 ${q.answer}</span>` +
+        (q.answer === "O" ? "맞는 문장이에요." : "틀린 문장이에요.") +
+        (q.explain ? ` <b>${esc(q.explain)}</b>` : "");
+    } else {
+      ans = `내가 고른 답: <span class="mine">${[...new Set(e.chosenList)].map(esc).join(", ")}</span>` +
+        ` → 정답: <span class="right">${esc(correctText(q))}</span>`;
+    }
+    return `<div class="rItem" style="border-left-color:${zone.color}">` +
+      `<div class="rmeta">${e.floor}층 · ${esc(zone.name)}${times}</div>` +
+      `<div class="rq">${filledSentence(q)}</div>` +
+      `<div class="rans">${ans}</div></div>`;
+  }).join("");
+  return `<h2>📝 틀린 문제 복습</h2><div class="rsub">초록색이 정답이에요. 한 번 더 읽어 보세요!</div>${items}`;
+}
+$("startBtn").addEventListener("click", startRace);
+$("againBtn").addEventListener("click", startRace);
+
+function onLanded() {
+  const s = groundSolid;
+  if (state !== "play" || !s) return;
+  // 광장뿐 아니라 정답 발판 뒤 착지대(다음 구역의 시작점이기도 함)에서도 체크포인트 저장
+  if ((s.kind === "plaza" || s.kind === "strip") && s.cp > checkpoint.cp) {
+    const newZone = s.zone !== checkpoint.zone || checkpoint.cp === 0;
+    checkpoint = s;
+    updateHud();
+    if (newZone) { toast(`${s.zone + 1}구역 「${ZONES[s.zone].name}」 시대에 들어왔어요! 체크포인트 저장`); sfx("zone"); }
+    else if (s.kind === "plaza") toast(`${s.floor}층 도착! 체크포인트 저장`);
+  } else if (s.kind === "option") {
+    onOptionLanded(s);
+  } else if (s.kind === "goal") {
+    finishRace();
+  } else if (s.kind === "ground" && checkpoint.floor > 0) {
+    fellOff();
+  }
+}
+function fellOff() {
+  if (pendingWrong !== null) {
+    // 틀린 발판에서 떨어짐 → 구역 시작점(또는 그 층 광장)으로
+    const fl = floors[pendingWrong];
+    checkpoint = WRONG_SENDS_TO === "zone" ? zoneStart(fl.zone) : plazas[pendingWrong];
+    pendingWrong = null;
+    respawn();
+    updateHud();
+  } else {
+    falls++;
+    sfx("fall");
+    respawn("앗! 떨어졌어요. 체크포인트에서 다시!");
+  }
+}
+
+// ================= 매 프레임 =================
+const angleLerp = (a, b, t) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * t;
+
+function physicsStep(dt) {
+  let f = 0, r = 0;
+  if (state === "play") {
+    if (isKey("KeyW", "ArrowUp")) f += 1;
+    if (isKey("KeyS", "ArrowDown")) f -= 1;
+    if (isKey("KeyD", "ArrowRight")) r += 1;
+    if (isKey("KeyA", "ArrowLeft")) r -= 1;
+    if (stick) { f -= stick.dy / 50; r += stick.dx / 50; }
+    if (isKey("KeyQ")) { yaw += 2 * dt; lastManualCam = now; }
+    if (isKey("KeyE")) { yaw -= 2 * dt; lastManualCam = now; }
+  }
+  // 카메라 기준 방향으로 이동
+  const fx = -Math.sin(yaw), fz = -Math.cos(yaw), rx = Math.cos(yaw), rz = -Math.sin(yaw);
+  let mx = fx * f + rx * r, mz = fz * f + rz * r;
+  const len = Math.hypot(mx, mz);
+  if (len > 1) { mx /= len; mz /= len; }
+  const amount = Math.min(1, len);
+  const accel = Math.min(1, dt * (grounded ? 14 : 7));
+  vel.x += (mx * SPEED - vel.x) * accel;
+  vel.z += (mz * SPEED - vel.z) * accel;
+  if (amount > 0.1) facing = angleLerp(facing, Math.atan2(mx, mz), Math.min(1, dt * 14));
+  // 앞으로 가는 중이고 직접 시점을 돌리지 않았으면 카메라가 천천히 따라감
+  if (f > 0.3 && now - lastManualCam > 1.5) yaw = angleLerp(yaw, Math.atan2(-mx, -mz), Math.min(1, dt * 1.6 * amount));
+
+  // 점프 (발판 끝에서 살짝 늦게 눌러도 되도록 여유 시간을 줌)
+  // 틀린 발판에서 떨어지는 중(pendingWrong)에는 점프할 수 없음
+  if (state === "play" && pendingWrong === null && jumpQueued > 0 && now - jumpQueued < 0.15 && now - lastGrounded < 0.12) {
+    vel.y = JUMP_V; jumpQueued = -1; lastGrounded = -1;
+  }
+  vel.y = Math.max(vel.y - GRAVITY * dt, -40);
+
+  moveHorizontal(vel.x * dt, vel.z * dt);
+  const wasGrounded = grounded;
+  grounded = false;
+  moveVertical(vel.y * dt);
+  if (grounded) {
+    lastGrounded = now;
+    if (!wasGrounded || groundSolid.kind !== "pad") onLanded();
+  }
+  // 코스 아래로 떨어지면 체크포인트로
+  if (state === "play" && pos.y < checkpoint.maxY - 7) fellOff();
+}
+
+function animateHero(dt) {
+  const g = hero.group;
+  const hs = Math.min(1, Math.hypot(vel.x, vel.z) / SPEED);
+  const k = Math.min(1, dt * 12);
+  if (state === "ceremony" || state === "finish") animateCeremony(dt);
+  else {
+    g.position.copy(pos);
+    g.rotation.y = facing;
+    ["armL", "armR", "legL", "legR"].forEach((n) => { hero[n].rotation.z += (0 - hero[n].rotation.z) * k; });
+  }
+  if (state === "ceremony" || state === "finish") { updateBlob(); return; }
+  if (grounded) {
+    walkPhase += dt * hs * 11;
+    const sw = Math.sin(walkPhase) * 0.8 * hs;
+    hero.legL.rotation.x += (sw - hero.legL.rotation.x) * k;
+    hero.legR.rotation.x += (-sw - hero.legR.rotation.x) * k;
+    hero.armL.rotation.x += (-sw - hero.armL.rotation.x) * k;
+    hero.armR.rotation.x += (sw - hero.armR.rotation.x) * k;
+  } else {
+    hero.legL.rotation.x += (0.4 - hero.legL.rotation.x) * k;
+    hero.legR.rotation.x += (-0.3 - hero.legR.rotation.x) * k;
+    hero.armL.rotation.x += (-2.7 - hero.armL.rotation.x) * k;
+    hero.armR.rotation.x += (-2.7 - hero.armR.rotation.x) * k;
+  }
+  updateBlob();
+}
+// 발밑 그림자: 바로 아래 가장 높은 발판 위에 표시
+function updateBlob() {
+  let floorY = 0;
+  for (const s of solids) {
+    if (s.active && s.maxY <= pos.y + 0.05 && s.maxY > floorY && pointInside(s, pos.x, pos.z)) floorY = s.maxY;
+  }
+  const drop = pos.y - floorY;
+  blob.position.set(pos.x, floorY + 0.02, pos.z);
+  blob.scale.setScalar(Math.max(0.4, 1 - drop / 12));
+  blob.material.opacity = Math.max(0.12, 0.35 - drop / 40);
+}
+
+function animatePads(dt) {
+  for (let f = 1; f <= TOTAL_FLOORS; f++) {
+    for (const pad of floors[f].pads) {
+      if (pad.drop <= 0) continue;
+      pad.drop += dt;
+      pad.group.position.y = floors[f].top - 9 * pad.drop * pad.drop;
+      pad.group.rotation.z = Math.sin(pad.drop * 30) * 0.05;
+      if (pad.drop > 1.4) { pad.group.visible = false; pad.drop = 0; pad.group.rotation.z = 0; }
+    }
+  }
+}
+
+function updateCamera(dt) {
+  if (state === "ceremony" || state === "finish") {   // 세레모니는 캐릭터 정면에서 보여 줌
+    const k = Math.min(1, dt * 3);
+    yaw = angleLerp(yaw, facing, k);
+    camDist += (6 - camDist) * k;
+    pitch += (0.12 - pitch) * k;
+  }
+  const tx = pos.x, ty = pos.y + 1.7, tz = pos.z;
+  camera.position.set(
+    tx + Math.sin(yaw) * Math.cos(pitch) * camDist,
+    ty + Math.sin(pitch) * camDist,
+    tz + Math.cos(yaw) * Math.cos(pitch) * camDist
+  );
+  camera.lookAt(tx, ty, tz);
+}
+
+let last = performance.now() / 1000;
+function frame() {
+  now = performance.now() / 1000;
+  const dt = Math.min(0.05, now - last);
+  last = now;
+  if (state !== "finish") {
+    const n = Math.ceil(dt / (1 / 120));
+    for (let i = 0; i < n; i++) physicsStep(dt / n);
+  }
+  if (state === "play") $("timer").textContent = fmtTime(now - startTime);
+  animateHero(dt);
+  animatePads(dt);
+  animateShrines(dt);
+  animateConfetti(dt);
+  updateQuestionPanel();
+  updateCamera(dt);
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+setupQuestions();
+respawn();
+updateHud();
+updateBookButtons();
+requestAnimationFrame(frame);
+
+// 확인·디버그용 (개발 중 자동 점검에 사용)
+window.__tower = {
+  solids, plazas, strips, floors, goal, pos, vel, zoneStart, OPT_ALONG,
+  get state() { return state; },
+  get checkpoint() { return checkpoint.floor; },
+  get checkpointKind() { return checkpoint.kind; },
+  get falls() { return falls; },
+  get stats() { return { correct: correctCount, wrong: wrongCount, wrongIds: wrongIds.slice() }; },
+  // 점검용: 오답 기록을 직접 넣어 복습 화면 확인
+  addWrong(id, chosen, floor) {
+    const q = QUESTIONS.find((x) => x.id === id);
+    wrongLog.push({ q, chosen, floor, zone: Math.floor((floor - 1) / FLOORS_PER_ZONE) });
+    wrongCount++;
+  },
+  finish() { finishRace(); },
+  get cards() { return runCards.map((c) => c.art.id + (c.shiny ? "✨" : "")); },
+  shrines,
+  get grounded() { return grounded; },
+  get yaw() { return yaw; },
+  set yaw(v) { yaw = v; lastManualCam = now; },
+  teleport(floor) { checkpoint = plazas[floor]; respawn(); updateHud(); },
+  // 화면 갱신과 상관없이 물리를 직접 진행
+  play() { state = "play"; startTime = now; },
+  key(code, down) {
+    if (down) { keys.add(code); if (code === "Space") jumpQueued = now; if (code === "KeyR" && state === "play") backToCheckpoint(); }
+    else keys.delete(code);
+  },
+  step(dt) { now += dt; physicsStep(dt); animatePads(dt); },
+};
+</script>
+</body>
+</html>
