@@ -137,6 +137,28 @@ const GameSound = (() => {
       o.connect(g); g.connect(sfxBus);
       o.start(t); o.stop(t + 0.5);
     },
+    bounce(t) {   // 점프대: 뿅 하고 올라가는 소리
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(260, t);
+      o.frequency.exponentialRampToValueAtTime(1040, t + 0.3);
+      g.gain.setValueAtTime(0.3, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+      o.connect(g); g.connect(sfxBus);
+      o.start(t); o.stop(t + 0.45);
+    },
+    bonk(t) {   // 회전 막대에 맞음: 쿵 + 띠용
+      drum(t, 0.6);
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "square";
+      o.frequency.setValueAtTime(700, t);
+      o.frequency.exponentialRampToValueAtTime(180, t + 0.25);
+      g.gain.setValueAtTime(0.12, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      o.connect(g); g.connect(sfxBus);
+      o.start(t); o.stop(t + 0.35);
+    },
+    bonus(t) { [79, 84, 79, 88].forEach((m, i) => soft(m, t + i * 0.08, 0.3, 0.2, sfxBus, "triangle")); },
     fanfare(t) {
       [67, 72, 74, 76, 79].forEach((m, i) => pluck(m, t + i * 0.12, 0.6, 0.45, sfxBus, 4000));
       [67, 72, 76, 79].forEach((m) => pluck(m, t + 0.75, 1.6, 0.3, sfxBus, 4000));

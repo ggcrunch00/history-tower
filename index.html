@@ -41,7 +41,8 @@
   #timer { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
   #score { font-size: 14px; font-weight: 800; padding: 6px 12px; }
   .hudBtns { display: flex; gap: 6px; }
-  #respawnBtn, #soundBtn {
+  @media (max-width: 520px) { #respawnBtn .lbl { display: none; } }
+  #respawnBtn, #soundBtn, #lockBtn {
     pointer-events: auto; border: 0; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700;
     background: var(--panel); color: var(--ink); border-radius: 10px; padding: 7px 10px; box-shadow: var(--shadow);
   }
@@ -61,8 +62,57 @@
   #qPanel .qtag { font-size: 13px; font-weight: 800; opacity: 0.65; margin-bottom: 4px; }
   #qPanel .qtext { font-size: clamp(16px, 2.6vw, 21px); font-weight: 800; line-height: 1.45; word-break: keep-all; white-space: pre-wrap; }
   #qPanel .opts { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
-  #qPanel .opts span { color: #fff; font-weight: 800; font-size: 15px; padding: 5px 12px; border-radius: 9px; }
-  #qPanel .qhelp { font-size: 12px; opacity: 0.6; margin-top: 8px; }
+  .opts button {
+    pointer-events: auto; border: 0; cursor: pointer; font: inherit; color: #fff; font-weight: 800; font-size: 16px;
+    padding: 8px 14px; border-radius: 10px; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22);
+  }
+  .opts button:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.22); }
+  #qPanel .qhelp, #bonusPanel .qhelp { font-size: 12px; opacity: 0.6; margin-top: 8px; }
+
+  /* ---------- 보너스 문제 (유물 받침대) ---------- */
+  #bonusPanel {
+    position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); display: none;
+    width: min(520px, calc(100vw - 32px)); text-align: center; pointer-events: auto; border: 3px solid #f2c94c;
+  }
+  body.touch #bonusPanel { bottom: 140px; }
+  #bonusPanel .btag { font-size: 13px; font-weight: 900; color: #b07d00; }
+  #bonusPanel img { width: 120px; height: 120px; display: block; margin: 6px auto; border-radius: 12px; background: radial-gradient(circle at 50% 40%, #fff, #e7ecf3); }
+  #bonusPanel .btitle { font-size: 18px; font-weight: 900; }
+  #bonusPanel .opts { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
+  #bonusPanel .opts button { background: #8e5bd6; }
+  #bonusPanel .closeX { position: absolute; top: 6px; right: 8px; border: 0; background: none; font-size: 18px; cursor: pointer; color: #8a93a3; }
+
+  /* ---------- 시선 고정 ---------- */
+  #crosshair {
+    position: fixed; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%;
+    background: #fff; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45); display: none; pointer-events: none;
+  }
+  body.shiftlock #crosshair { display: block; }
+  body.shiftlock #lockBtn { background: #2fbf71; color: #fff; }
+
+  /* ---------- 캐릭터 고르기 ---------- */
+  .pickTitle { font-weight: 900; font-size: 15px; text-align: left; margin: 0 0 6px; }
+  .skins { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 16px; }
+  @media (max-width: 520px) { .skins { grid-template-columns: repeat(3, 1fr); } }
+  .skin {
+    border: 3px solid transparent; background: #f2f5fa; border-radius: 12px; padding: 4px 2px 6px; cursor: pointer;
+    font: inherit; font-size: 11px; font-weight: 800; color: var(--ink); line-height: 1.25; word-break: keep-all;
+  }
+  .skin img { width: 100%; aspect-ratio: 1; display: block; }
+  .skin.sel { border-color: var(--go); background: #e8f8ee; }
+
+  /* ---------- 모드 고르기 ---------- */
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .modeBtn {
+    border: 3px solid transparent; background: #f2f5fa; border-radius: 12px; padding: 8px 10px; cursor: pointer;
+    font: inherit; color: var(--ink); text-align: left; line-height: 1.4; word-break: keep-all;
+  }
+  .modeBtn b { display: block; font-size: 15px; }
+  .modeBtn span { font-size: 12px; opacity: 0.75; }
+  .modeBtn.sel { border-color: var(--go); background: #e8f8ee; }
+  .modeBtn.sel[data-mode="challenge"] { border-color: var(--bad); background: #fdecec; }
+  .modeBadge { display: none; margin-top: 6px; font-size: 12px; font-weight: 900; color: #fff; background: var(--bad); padding: 2px 8px; border-radius: 6px; }
+  .modeTag { display: inline-block; font-size: 16px; font-weight: 900; color: #fff; background: var(--bad); padding: 2px 10px; border-radius: 8px; }
   #feedback { display: none; color: #fff; }
   #feedback.ok { background: var(--go); }
   #feedback.bad { background: var(--bad); }
@@ -162,6 +212,9 @@
     transform: translate(calc(100% + 24px), -50%); transition: transform .35s cubic-bezier(.2, 1.3, .4, 1);
   }
   #cardPop.show { transform: translate(0, -50%); }
+  #cardPop .pill { display: inline-block; padding: 4px 10px; border-radius: 10px; text-shadow: none; font-size: 14px; line-height: 1.4; word-break: keep-all; }
+  #cardPop .pill.good { background: var(--go); }
+  #cardPop .pill.bad { background: var(--bad); }
   #cardPop .popHead {
     text-align: center; font-weight: 900; font-size: 16px; color: #fff; margin-bottom: 6px;
     text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
@@ -181,6 +234,9 @@
 
   /* ---------- 터치 조작 ---------- */
   #stickBase, #jumpBtn { display: none; }
+  /* 태블릿에서는 조이스틱이 왼쪽 아래에 항상 보임 */
+  body.touch #stickBase { display: block; left: 104px; top: calc(100% - 124px); }
+  #titleScreen:not(.hidden) ~ #stickBase, #finishScreen:not(.hidden) ~ #stickBase { display: none; }
   #stickBase {
     position: fixed; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%;
     background: rgba(255, 255, 255, 0.25); border: 3px solid rgba(255, 255, 255, 0.7); pointer-events: none;
@@ -206,18 +262,22 @@
     <div id="zoneName"><span id="zoneDot"></span><span id="zoneLabel">출발</span></div>
     <div id="floorText">0층 / 18층</div>
     <div id="progress"></div>
+    <span id="modeBadge" class="modeBadge">🔥 도전자 모드 · 체크포인트 없음</span>
   </div>
   <div id="rightHud">
     <div id="timer" class="card">00:00</div>
     <div id="score" class="card">⭕ 0 · ❌ 0 · 🏺 0</div>
     <div class="hudBtns">
+      <button id="lockBtn" type="button" title="시선 고정 켜기/끄기 (Shift)">🔒</button>
       <button id="soundBtn" type="button" title="소리 켜기/끄기 (M)">🔊</button>
-      <button id="respawnBtn" type="button">↺ 체크포인트로</button>
+      <button id="respawnBtn" type="button" title="체크포인트로 (R)">↺<span class="lbl"> 체크포인트로</span></button>
     </div>
   </div>
 </div>
-<div id="hint" class="card">WASD·방향키 이동 · 스페이스 점프 · 마우스 드래그로 시점 · R 체크포인트 · M 소리</div>
+<div id="hint" class="card">WASD 이동 · ←→ 방향 돌리기 · 스페이스 점프 · Shift 시선 고정 · 1·2·3 정답 고르기 · R 체크포인트 · M 소리</div>
+<div id="crosshair"></div>
 <div id="qPanel" class="card"></div>
+<div id="bonusPanel" class="card"></div>
 <div id="feedback" class="card"></div>
 <div id="toast"></div>
 <div id="countdown"></div>
@@ -227,10 +287,17 @@
     <h1>🗼 역사 타워 레이스</h1>
     <p class="sub">구석기에서 고려까지, 탑 꼭대기에 먼저 오르자!</p>
     <div class="zones" id="zoneChips"></div>
+    <div class="pickTitle">🧑 캐릭터 고르기</div>
+    <div class="skins" id="skins"></div>
+    <div class="pickTitle">🎮 모드 고르기</div>
+    <div class="modes" id="modes">
+      <button type="button" class="modeBtn" data-mode="normal"><b>🙂 기본 모드</b><span>떨어지면 마지막 체크포인트에서 다시 시작</span></button>
+      <button type="button" class="modeBtn" data-mode="challenge"><b>🔥 도전자 모드</b><span>체크포인트 없음! 떨어지면 떨어진 곳에서 다시 올라가요. 땅까지 떨어지면 출발 광장으로 걸어가기</span></button>
+    </div>
     <div class="controls">
-      <div><b>⌨️ 컴퓨터</b>WASD·방향키: 이동<br>스페이스: 점프<br>마우스 끌기: 시점 돌리기<br>R: 체크포인트로 · M: 소리 끄기</div>
-      <div><b>📱 태블릿</b>왼쪽 화면 끌기: 이동<br>점프 버튼: 점프<br>오른쪽 화면 끌기: 시점 돌리기</div>
-      <div class="rule"><b>📜 규칙</b>층마다 문제가 나와요. <b style="display:inline">정답 발판</b>으로 점프하면 다음 층으로!<br>틀린 발판은 무너지고, 그 <b style="display:inline">구역의 시작점</b>으로 돌아가요.<br>맞히면 그 층의 <b style="display:inline">유물 카드</b>를 얻어요. 한 번에 맞히면 ✨반짝 카드!</div>
+      <div><b>⌨️ 컴퓨터</b>WASD·↑↓: 이동 · ←→: 방향 돌리기<br>스페이스: 점프 · 마우스 끌기: 시점<br>Shift: 시선 고정 (마우스로 바로 시점)<br>1·2·3: 정답 고르기 · R: 체크포인트 · M: 소리</div>
+      <div><b>📱 태블릿</b>왼쪽 아래 조이스틱: 이동<br>점프 버튼 또는 오른쪽 화면 톡: 점프<br>오른쪽 화면 끌기: 시점 · 🔒: 시선 고정<br>문제 창의 버튼을 눌러도 정답을 골라요</div>
+      <div class="rule"><b>📜 규칙</b>층마다 문제가 나와요. <b style="display:inline">정답 발판</b>으로 점프하거나 문제 창에서 답을 고르면 다음 층으로!<br>틀린 발판은 무너지고, 그 <b style="display:inline">구역의 시작점</b>으로 돌아가요.<br>맞히면 그 층의 <b style="display:inline">유물 카드</b>를 얻어요. 한 번에 맞히면 ✨반짝 카드!<br>광장 옆 <b style="display:inline">황금 다리</b>를 건너 유물 받침대에 올라가면 ⭐보너스 문제 (맞히면 기록 15초 단축)<br>🧱 벽은 점프로 넘고, 🔴 회전 막대에 맞으면 튕겨 나가니 점프로 피하고, 🩷 점프대에 올라타면 다음 구역으로 슝!</div>
     </div>
     <div class="btnRow">
       <button class="bigBtn" id="startBtn" type="button">시작하기</button>
@@ -476,6 +543,7 @@ for (const art of artifactList) {
   bb.getCenter(c);
   g.translate(-c.x, -bb.min.y, -c.z);
   g.userData.height = bb.max.y - bb.min.y;
+  g.userData.width = Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z);
   artifactGeoById[art.id] = g;
 }
 const artifactByFloor = {};
@@ -533,11 +601,26 @@ function pointInside(s, x, z) {
 }
 
 // ================= 코스 만들기 =================
-const solids = [], staticBlocks = [], plazas = [], strips = [], floors = [];
-const onPath = (s) => {
-  const a = s / RADIUS;
-  return { x: Math.cos(a) * RADIUS, z: Math.sin(a) * RADIUS, theta: -a };
-};
+// 구역마다 도는 방향과 원 크기가 바뀜 (1·3·5구역: 안쪽 원을 시계 반대 방향, 2·4·6구역: 바깥 원을 시계 방향)
+// 구역이 바뀌는 곳에서는 점프대로 높이 튀어 올라 공중 착지대에 내린 뒤 반대로 돎
+const RINGS = [{ r: 14, dir: 1 }, { r: 19, dir: -1 }];
+const ringOf = (zi) => RINGS[zi % 2];
+const BOUNCE_H = 6;                                          // 점프대 → 착지대 높이 차
+const BOUNCE_V = Math.sqrt(2 * GRAVITY * (BOUNCE_H + 1.2));  // 착지대보다 1.2 더 높이 튀어 오름
+// 층 안 몇 번째 점프 발판을 장애물로 바꿀지 (구역별). hurdle: 벽 넘기, spinner: 회전 막대
+const OBSTACLES = [{}, { 2: "hurdle" }, { 1: "hurdle", 3: "spinner" }, { 2: "spinner" }, { 1: "spinner", 3: "hurdle" }, { 1: "hurdle", 3: "spinner" }];
+// 회전 막대: 반지름(길이의 절반)과 구역별 회전 속도(초당 라디안). 위 구역일수록 빨라짐
+const SPINNER_LEN = 4.4;
+const SPINNER_SPEED = (zi) => 1.7 + (zi - 2) * 0.25;
+// 십자 막대(5·6구역)는 막대가 두 배로 자주 지나가므로 속도를 낮춤 (1이면 그대로, 작을수록 느림)
+const CROSS_SLOW = 0.7;
+// 막대에 맞으면 튕겨 나가는 세기와 잠깐 조작이 안 되는 시간
+const KNOCK = { side: 8, up: 6.5, stun: 0.75 };
+// 유물 받침대 보너스 문제를 맞히면 줄어드는 기록(초)
+const BONUS_SEC = 15;
+const solids = [], staticBlocks = [], plazas = [], strips = [], floors = [], landings = [];
+const walls = [], spinners = [], bouncePads = [];
+const ringPoint = (a, r, dir) => ({ x: Math.cos(a) * r, z: Math.sin(a) * r, theta: dir > 0 ? -a : Math.PI - a });
 function addStatic(p, top, across, along, color, info) {
   const sol = makeSolid(p.x, p.z, p.theta, across / 2, along / 2, top, info);
   for (let i = 0; i < across; i++) for (let j = 0; j < along; j++) {
@@ -554,48 +637,93 @@ function addStatic(p, top, across, along, color, info) {
 // 바깥 줄·안쪽 줄 정답 발판까지 거리가 모두 같게 함
 const OPT_ALONG = PLAZA / 2 + LANE_GAP + OPT / 2;          // 광장 중심 → 정답 발판 중심
 const QSEC = OPT_ALONG + OPT / 2 + LANE_GAP + 1.5;          // 광장 중심 → 착지대 중심
-function straightFrame(aFrom, aTo) {
-  const px = Math.cos(aFrom) * RADIUS, pz = Math.sin(aFrom) * RADIUS;
-  const ux = (Math.cos(aTo) * RADIUS - px) / QSEC, uz = (Math.sin(aTo) * RADIUS - pz) / QSEC;
+function straightFrame(aFrom, aTo, r) {
+  const px = Math.cos(aFrom) * r, pz = Math.sin(aFrom) * r;
+  const ux = (Math.cos(aTo) * r - px) / QSEC, uz = (Math.sin(aTo) * r - pz) / QSEC;
   const theta = Math.atan2(ux, uz);
-  // along: 진행 방향 거리, lateral: +면 탑 바깥쪽
+  // along: 진행 방향 거리, lateral: +면 진행 방향의 왼쪽 (화면 왼쪽)
   return (along, lateral = 0) => ({ x: px + ux * along + uz * lateral, z: pz + uz * along - ux * lateral, theta });
 }
 
-let pathS = 0, top = 1, prevHalf = PLAZA / 2;
-// cp: 체크포인트 순서 (광장 f = 2f, 그 뒤 착지대 f = 2f+1). 더 큰 곳에 착지하면 체크포인트 저장
-plazas[0] = addStatic(onPath(0), top, PLAZA, PLAZA, "#e4ddd0", { kind: "plaza", floor: 0, zone: 0, cp: 0 });
+let ang = 0, top = 1, prevHalf = PLAZA / 2;
+let { r: rad, dir } = ringOf(0);
+const stepAlong = (dist) => { ang += (dir * dist) / rad; };
+// cp: 체크포인트 순서 (광장 f = 2f, 그 뒤 착지대 f = 2f+1, 구역 경계 공중 착지대 = 2f+1.5)
+plazas[0] = addStatic(ringPoint(0, rad, dir), top, PLAZA, PLAZA, "#e4ddd0", { kind: "plaza", floor: 0, zone: 0, cp: 0, dir });
 for (let f = 1; f <= TOTAL_FLOORS; f++) {
   const zi = Math.floor((f - 1) / FLOORS_PER_ZONE), zone = ZONES[zi];
   const gap = zone.pad === 3 ? 1.6 : 1.8;
   for (let p = 0; p < PADS_PER_FLOOR; p++) {
-    pathS += prevHalf + gap + zone.pad / 2; top += RISE;
-    addStatic(onPath(pathS), top, zone.pad, zone.pad, zone.color, { kind: "pad", floor: f, zone: zi });
-    prevHalf = zone.pad / 2;
+    const kind = OBSTACLES[zi][p] || "pad";
+    if (kind === "hurdle") {          // 가운데에 낮은 벽이 있는 긴 발판
+      const len = 5;
+      stepAlong(prevHalf + gap + len / 2); top += RISE;
+      const pt = ringPoint(ang, rad, dir);
+      addStatic(pt, top, 3, len, zone.color, { kind: "pad", floor: f, zone: zi });
+      const wall = makeSolid(pt.x, pt.z, pt.theta, 1.5, 0.25, top + 1.0, { kind: "wall", floor: f });
+      solids.push(wall); walls.push(wall);
+      prevHalf = len / 2;
+    } else if (kind === "spinner") {  // 넓은 발판 위에서 긴 막대가 빠르게 빙글빙글 (맞으면 튕겨 나감)
+      const size = 8;
+      stepAlong(prevHalf + gap + size / 2); top += RISE;
+      const pt = ringPoint(ang, rad, dir);
+      addStatic(pt, top, size, size, zone.light, { kind: "pad", floor: f, zone: zi });
+      // 5·6구역은 막대 두 개가 십자 모양으로 돎
+      const arms = zi >= 4 ? [0, Math.PI / 2] : [0];
+      const speed = SPINNER_SPEED(zi) * (arms.length > 1 ? CROSS_SLOW : 1) * (f % 2 ? 1 : -1);
+      for (const off of arms) {
+        const bar = makeSolid(pt.x, pt.z, pt.theta + off, SPINNER_LEN, 0.3, top + 0.7,
+          { kind: "spinner", floor: f, base: pt.theta + off, speed });
+        solids.push(bar); spinners.push(bar);
+      }
+      prevHalf = size / 2;
+    } else {
+      stepAlong(prevHalf + gap + zone.pad / 2); top += RISE;
+      addStatic(ringPoint(ang, rad, dir), top, zone.pad, zone.pad, zone.color, { kind: "pad", floor: f, zone: zi });
+      prevHalf = zone.pad / 2;
+    }
   }
   // 문제 광장
-  pathS += prevHalf + gap + PLAZA / 2; top += RISE;
-  const aPlaza = pathS / RADIUS, aStrip = aPlaza + 2 * Math.asin(QSEC / (2 * RADIUS));
-  const frame = straightFrame(aPlaza, aStrip);
-  plazas[f] = addStatic(frame(0), top, PLAZA, PLAZA, zone.light, { kind: "plaza", floor: f, zone: zi, cp: 2 * f });
+  stepAlong(prevHalf + gap + PLAZA / 2); top += RISE;
+  const aPlaza = ang, aStrip = aPlaza + dir * 2 * Math.asin(QSEC / (2 * rad));
+  const frame = straightFrame(aPlaza, aStrip, rad);
+  plazas[f] = addStatic(frame(0), top, PLAZA, PLAZA, zone.light, { kind: "plaza", floor: f, zone: zi, cp: 2 * f, dir });
   // 정답 발판 자리 (발판은 문제를 낼 때 배치)
   top += RISE;
-  floors[f] = { zone: zi, frame, top, pads: [] };
+  floors[f] = { zone: zi, frame, top, pads: [], dir };
   for (let i = 0; i < 3; i++) {
     const solid = makeSolid(0, 0, 0, OPT / 2, OPT / 2, top, { kind: "option", floor: f, index: i, zone: zi });
     solids.push(solid);
     floors[f].pads.push(makeOptionPad(solid));
   }
-  // 착지대 (다음 층 코스의 시작, 다음 구역의 시작점이 되기도 함)
+  // 착지대 (다음 층 코스의 시작)
   top += RISE;
   const nextZone = Math.min(ZONES.length - 1, Math.floor(f / FLOORS_PER_ZONE));
-  strips[f] = addStatic(frame(QSEC), top, STRIP_W, 3, ZONES[nextZone].light, { kind: "strip", floor: f, zone: nextZone, cp: 2 * f + 1 });
-  pathS = aStrip * RADIUS;
+  strips[f] = addStatic(frame(QSEC), top, STRIP_W, 3, ZONES[nextZone].light, { kind: "strip", floor: f, zone: nextZone, cp: 2 * f + 1, dir });
+  ang = aStrip;
   prevHalf = 1.5;
+  // 구역 경계: 점프대 → 공중 착지대(새 구역의 시작점) → 다른 원으로 바꿔 반대 방향으로
+  if (f % FLOORS_PER_ZONE === 0 && f < TOTAL_FLOORS) {
+    const nz = f / FLOORS_PER_ZONE, next = ringOf(nz);
+    stepAlong(prevHalf + 1.6 + 1.5); top += RISE;
+    bouncePads.push(addStatic(ringPoint(ang, rad, dir), top, 3, 3, "#ff5fa2", { kind: "bounce", floor: f, zone: nz }));
+    stepAlong(6.5); top += BOUNCE_H;
+    landings[nz] = addStatic(ringPoint(ang, (rad + next.r) / 2, next.dir), top, PLAZA, PLAZA, ZONES[nz].light,
+      { kind: "strip", floor: f, zone: nz, cp: 2 * f + 1.5, oneWay: true, dir: next.dir });
+    rad = next.r; dir = next.dir;
+    prevHalf = PLAZA / 2;
+  }
 }
-pathS += prevHalf + 2 + 4.5; top += RISE;
-const goal = addStatic(onPath(pathS), top, 9, 9, "#f2c94c", { kind: "goal", floor: TOTAL_FLOORS + 1, zone: ZONES.length - 1 });
-const zoneStart = (zi) => (zi === 0 ? plazas[0] : strips[zi * FLOORS_PER_ZONE]);
+stepAlong(prevHalf + 2 + 4.5); top += RISE;
+const goal = addStatic(ringPoint(ang, rad, dir), top, 9, 9, "#f2c94c", { kind: "goal", floor: TOTAL_FLOORS + 1, zone: ZONES.length - 1, dir });
+const zoneStart = (zi) => (zi === 0 ? plazas[0] : landings[zi]);
+// 회전 막대 각도 갱신 (물리 계산 전에 호출)
+function updateSpinners(t) {
+  for (const s of spinners) {
+    s.theta = s.base + s.speed * t;
+    s.c = Math.cos(s.theta); s.sn = Math.sin(s.theta);
+  }
+}
 
 // 땅
 solids.push(makeSolid(0, 0, 0, 1e4, 1e4, 0, { kind: "ground", floor: -1 }));
@@ -680,9 +808,41 @@ for (let f = 1; f <= TOTAL_FLOORS; f++) {
   // 광장 입구 안쪽(탑 쪽)에 세워서, 정답 발판 글자와 바깥쪽 유물 받침대를 가리지 않게 함
   const sign = makeSign(`${f}층`, ZONES[zi].name, ZONES[zi].color);
   sign.scale.set(3.8, 1.9, 1);
-  placeSign(sign, plazas[f], 2.4, -4.5, -2.8);
+  placeSign(sign, plazas[f], 2.4, -4.5 * plazas[f].dir, -2.8);
 }
 placeSign(makeSign("정상", "고려 정복 완료!", "#f2c94c"), goal, 4.5);
+
+// ================= 장애물 모양 =================
+{
+  const m = new Model();
+  walls.forEach((w) => {   // 빨강·하양 줄무늬 벽
+    for (let k = 0; k < 3; k++) {
+      const lx = -1 + k;
+      m.b(1, 1.0, 0.5, k % 2 ? "#ffffff" : "#e5484d", w.cx + lx * w.c, w.maxY - 1.0, w.cz - lx * w.sn, w.theta);
+    }
+  });
+  bouncePads.forEach((b) => {   // 점프대 위 화살표 무늬
+    m.b(0.5, 0.12, 1.4, "#ffffff", b.cx, b.maxY, b.cz, b.theta);
+    m.b(1.4, 0.12, 0.5, "#ffffff", b.cx + 0.45 * b.sn, b.maxY, b.cz + 0.45 * b.c, b.theta);
+  });
+  if (m.geos.length) scene.add(m.mesh());
+  bouncePads.forEach((b) => {
+    const sign = makeSign("점프대!", "올라타면 높이 튀어 올라요", "#ff5fa2");
+    sign.scale.set(3.6, 1.8, 1);
+    sign.position.set(b.cx, b.maxY + 3, b.cz);
+    scene.add(sign);
+  });
+  spinners.forEach((s) => {
+    const g = new THREE.Group();
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(s.hx * 2, 0.7, s.hz * 2), new THREE.MeshLambertMaterial({ color: "#e5484d", map: tiledTexture(Math.round(s.hx * 2), 1) }));
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.2, 10), new THREE.MeshLambertMaterial({ color: "#ffd84d" }));
+    hub.position.y = 0.25;
+    g.add(bar, hub);
+    g.position.set(s.cx, s.maxY - 0.35, s.cz);
+    scene.add(g);
+    s.mesh = g;
+  });
+}
 
 // ================= 유물 받침대 (층마다 그 층에서 얻을 유물이 돌고 있음) =================
 const shrines = [];
@@ -691,18 +851,40 @@ const shrines = [];
   for (let f = 1; f <= TOTAL_FLOORS; f++) {
     const art = artifactByFloor[f];
     if (!art) continue;
-    const pl = plazas[f], lat = 7.8, al = 1;
-    const x = pl.cx + lat * pl.c + al * pl.sn, z = pl.cz - lat * pl.sn + al * pl.c, y = pl.maxY + 0.4;
-    m.b(2.2, 1.0, 2.2, "#8a8378", x, y - 1.2, z, pl.theta);
-    m.b(2.6, 0.4, 2.6, "#f0d27a", x, y - 0.2, z, pl.theta);
-    m.b(2.0, 0.3, 2.0, "#e3b94a", x, y + 0.2, z, pl.theta);
+    // 광장 바깥쪽(탑 반대쪽) 옆에 두고, 광장에서 황금 다리로 걸어서 갈 수 있게 함 (점프 필요 없음)
+    // 받침대에 올라서면 보너스 문제가 나옴
+    const pl = plazas[f], side = pl.dir, top = pl.maxY;
+    // 광장 가운데보다 조금 앞쪽(정답 발판 쪽)에 두어 광장에 서면 화면 안에 잘 보이게 함
+    const at = (lat, al = 2.5) => [pl.cx + lat * side * pl.c + al * pl.sn, pl.cz - lat * side * pl.sn + al * pl.c];
+    const [x, z] = at(6.6);
+    m.b(2.8, 1.2, 2.8, "#8a8378", x, top - 1.6, z, pl.theta);
+    m.b(2.8, 0.4, 2.8, "#f0d27a", x, top - 0.4, z, pl.theta);
+    for (const [lx, lz] of [[-1.2, -1.2], [1.2, -1.2], [-1.2, 1.2], [1.2, 1.2]]) {   // 네 귀퉁이 황금 기둥
+      const [cx, cz] = [x + lx * pl.c + lz * pl.sn, z - lx * pl.sn + lz * pl.c];
+      m.b(0.3, 0.9, 0.3, "#e3b94a", cx, top, cz, pl.theta);
+    }
+    solids.push(makeSolid(x, z, pl.theta, 1.4, 1.4, top, { kind: "shrine", floor: f }));
+    // 황금 다리
+    const [bx, bz] = at(4.35);
+    m.b(1.9, 0.4, 1.6, "#f2c94c", bx, top - 0.4, bz, pl.theta);
+    solids.push(makeSolid(bx, bz, pl.theta, 0.95, 0.8, top, { kind: "bridge", floor: f }));
+    // 광장 바닥의 황금 점선 화살표 (가운데 → 다리)
+    for (const lat of [1.2, 2.0, 2.8]) {
+      const [px, pz] = at(lat, 2.5 * lat / 3.5);
+      m.b(0.45, 0.06, 0.45, "#f2c94c", px, top, pz, pl.theta);
+    }
     const geo = artifactGeoById[art.id];
     const mesh = new THREE.Mesh(geo, modelMaterial);
-    const s = 2.3 / geo.userData.height;
+    // 높이 2.3 또는 가로 2.6 중 먼저 닿는 쪽에 맞춤 (납작하고 넓은 유물이 너무 커지지 않게)
+    const s = Math.min(2.3 / geo.userData.height, 2.6 / geo.userData.width);
     mesh.scale.setScalar(s);
-    mesh.position.set(x, y + 0.6, z);
+    mesh.position.set(x, top + 2.3, z);
     scene.add(mesh);
-    shrines[f] = { mesh, baseY: y + 0.6, scale: s, anim: 0, collected: false };
+    const sign = makeSign("⭐ 보너스 문제", `맞히면 기록 ${BONUS_SEC}초 단축!`, "#f2c94c");
+    sign.scale.set(3.6, 1.8, 1);
+    sign.position.set(x, top + 6.2, z);   // 떠 있는 유물(높이 2.3~4.6)을 가리지 않게 그 위에
+    scene.add(sign);
+    shrines[f] = { mesh, sign, baseY: top + 2.3, scale: s, anim: 0, collected: false };
   }
   if (m.geos.length) scene.add(m.mesh());
 }
@@ -715,7 +897,7 @@ if (typeof SCENERY !== "undefined") {
     const m = new Model();
     sc.build(m);
     const mesh = m.mesh();
-    const a = Math.atan2(pl.cz, pl.cx) + 0.55, R = 33;
+    const a = Math.atan2(pl.cz, pl.cx) + 0.55 * pl.dir, R = 38;
     mesh.position.set(Math.cos(a) * R, pl.maxY + 3, Math.sin(a) * R);
     mesh.rotation.y = Math.atan2(-Math.cos(a), -Math.sin(a));   // 탑 쪽을 바라보게
     scene.add(mesh);
@@ -748,6 +930,43 @@ if (typeof SCENERY !== "undefined") {
     clouds.b(w * 0.6, 1.2, w * 0.4, "#f4f8ff", x + w * 0.15, y + 1.6, z);
   }
   scene.add(clouds.mesh());
+}
+
+// ================= 높이에 따라 바뀌는 하늘 =================
+// 아침 → 맑은 낮 → 노을 → 저녁 → 밤하늘 (정상 근처에서 별이 보임)
+const skyKeys = [[0, "#a8dcff"], [0.22, "#98cdfa"], [0.42, "#8ec0ee"], [0.6, "#f4c58f"], [0.76, "#ea9273"], [0.9, "#7a5fa6"], [1, "#2c2d5e"]]
+  .map(([k, c]) => [k, new THREE.Color(c)]);
+const hemiLight = scene.children.find((o) => o.isHemisphereLight);
+const stars = (() => {
+  const n = 600, arr = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, el = 0.08 + Math.random() * 1.4, r = 170;
+    arr[i * 3] = Math.cos(a) * Math.cos(el) * r;
+    arr[i * 3 + 1] = Math.sin(el) * r;
+    arr[i * 3 + 2] = Math.sin(a) * Math.cos(el) * r;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(arr, 3));
+  const p = new THREE.Points(geo, new THREE.PointsMaterial({ color: "#ffffff", size: 2, sizeAttenuation: false, transparent: true, opacity: 0, fog: false, depthWrite: false }));
+  p.visible = false;
+  scene.add(p);
+  return p;
+})();
+const _sky = new THREE.Color();
+function updateSky() {
+  const h = Math.max(0, Math.min(1, pos.y / goal.maxY));
+  let i = 0;
+  while (i < skyKeys.length - 2 && h > skyKeys[i + 1][0]) i++;
+  const [k0, c0] = skyKeys[i], [k1, c1] = skyKeys[i + 1];
+  _sky.copy(c0).lerp(c1, Math.min(1, (h - k0) / (k1 - k0)));
+  scene.background.copy(_sky);
+  scene.fog.color.copy(_sky);
+  const dusk = Math.max(0, (h - 0.6) / 0.4);
+  sun.intensity = 1.8 - 0.7 * dusk;
+  if (hemiLight) hemiLight.intensity = 1.7 - 0.6 * dusk;
+  stars.material.opacity = Math.max(0, (h - 0.72) / 0.28);
+  stars.visible = stars.material.opacity > 0.01;
+  stars.position.set(pos.x, pos.y, pos.z);
 }
 
 // ================= 정답 발판 =================
@@ -855,15 +1074,47 @@ function setupQuestions() {
 }
 
 // ================= 캐릭터 =================
-function makeCharacter() {
+// 고를 수 있는 캐릭터 (시대별 옷차림). acc: 머리 장식
+const SKINS = [
+  { id: "basic",   name: "기본",          skin: "#f6c945", body: "#2f80ed", legs: "#3a9d5d", acc: null },
+  { id: "hunter",  name: "구석기 사냥꾼", skin: "#e8b88a", body: "#8a5a32", legs: "#5e3b1f", acc: "hair" },
+  { id: "farmer",  name: "신석기 농부",   skin: "#e8b88a", body: "#d8c39a", legs: "#9c8058", acc: "band" },
+  { id: "warrior", name: "고구려 무사",   skin: "#e8b88a", body: "#b03a2e", legs: "#3a3a3a", acc: "helmet" },
+  { id: "hwarang", name: "신라 화랑",     skin: "#f1c79c", body: "#2f5fa8", legs: "#e9e2d0", acc: "feather" },
+  { id: "seonbi",  name: "고려 선비",     skin: "#f1c79c", body: "#efe9dc", legs: "#d9d1bf", acc: "gat" },
+];
+const SKIN_KEY = "historyTower.skin";
+function loadSkinId() {
+  try { const id = localStorage.getItem(SKIN_KEY); if (SKINS.some((s) => s.id === id)) return id; } catch { /* 저장이 막힌 환경 */ }
+  return "basic";
+}
+function makeCharacter(skin = SKINS[0]) {
   const g = new THREE.Group();
   const box = (w, h, d, c) => new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color: c }));
-  const torso = box(0.8, 0.8, 0.45, "#2f80ed"); torso.position.y = 1.15;
-  const head = box(0.6, 0.6, 0.6, "#f6c945"); head.position.y = 1.86;
+  const torso = box(0.8, 0.8, 0.45, skin.body); torso.position.y = 1.15;
+  const head = box(0.6, 0.6, 0.6, skin.skin); head.position.y = 1.86;
   const eyeL = box(0.08, 0.13, 0.02, "#222"); eyeL.position.set(-0.13, 1.92, 0.305);
   const eyeR = eyeL.clone(); eyeR.position.x = 0.13;
   const smile = box(0.24, 0.05, 0.02, "#222"); smile.position.set(0, 1.74, 0.305);
   g.add(torso, head, eyeL, eyeR, smile);
+  const add = (mesh, x, y, z, rz = 0) => { mesh.position.set(x, y, z); mesh.rotation.z = rz; g.add(mesh); };
+  if (skin.acc === "hair") {          // 덥수룩한 머리
+    add(box(0.66, 0.18, 0.66, "#2b1d14"), 0, 2.2, 0);
+    add(box(0.66, 0.4, 0.14, "#2b1d14"), 0, 1.98, -0.27);
+  } else if (skin.acc === "band") {   // 머리띠
+    add(box(0.66, 0.16, 0.66, "#3a2a1e"), 0, 2.2, 0);
+    add(box(0.64, 0.1, 0.64, "#c0392b"), 0, 2.07, 0);
+  } else if (skin.acc === "helmet") { // 투구와 깃털 장식
+    add(box(0.7, 0.32, 0.7, "#6b7078"), 0, 2.2, 0);
+    add(box(0.12, 0.42, 0.12, "#e5484d"), 0, 2.55, 0);
+    add(box(0.7, 0.08, 0.1, "#4f545c"), 0, 2.06, 0.32);
+  } else if (skin.acc === "feather") { // 화랑 모자와 깃
+    add(box(0.5, 0.2, 0.5, "#2b2b2b"), 0, 2.26, 0);
+    add(box(0.07, 0.5, 0.06, "#ffffff"), 0.2, 2.5, -0.1, -0.35);
+  } else if (skin.acc === "gat") {    // 갓
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.04, 18), new THREE.MeshLambertMaterial({ color: "#1a1a1a" })), 0, 2.19, 0);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.27, 0.34, 14), new THREE.MeshLambertMaterial({ color: "#1a1a1a" })), 0, 2.37, 0);
+  }
   const limb = (w, h, d, c, x, y) => {
     const pivot = new THREE.Group();
     pivot.position.set(x, y, 0);
@@ -881,14 +1132,60 @@ function makeCharacter() {
   return {
     group: g,
     lSign,
-    armL: limb(0.28, 0.8, 0.3, "#f6c945", -0.55, 1.55),
-    armR: limb(0.28, 0.8, 0.3, "#f6c945", 0.55, 1.55),
-    legL: limb(0.38, 0.75, 0.42, "#3a9d5d", -0.2, 0.75),
-    legR: limb(0.38, 0.75, 0.42, "#3a9d5d", 0.2, 0.75),
+    armL: limb(0.28, 0.8, 0.3, skin.body === skin.legs ? skin.body : skin.skin, -0.55, 1.55),
+    armR: limb(0.28, 0.8, 0.3, skin.body === skin.legs ? skin.body : skin.skin, 0.55, 1.55),
+    legL: limb(0.38, 0.75, 0.42, skin.legs, -0.2, 0.75),
+    legR: limb(0.38, 0.75, 0.42, skin.legs, 0.2, 0.75),
   };
 }
-const hero = makeCharacter();
+let skinId = loadSkinId();
+let hero = makeCharacter(SKINS.find((s) => s.id === skinId));
 scene.add(hero.group);
+function setSkin(id) {
+  const skin = SKINS.find((s) => s.id === id);
+  if (!skin) return;
+  skinId = id;
+  try { localStorage.setItem(SKIN_KEY, id); } catch { /* 저장이 막힌 환경 */ }
+  scene.remove(hero.group);
+  hero = makeCharacter(skin);
+  scene.add(hero.group);
+  document.querySelectorAll(".skin").forEach((b) => b.classList.toggle("sel", b.dataset.skin === id));
+}
+// 캐릭터 고르기 버튼용 그림
+function renderSkinImages() {
+  const out = {};
+  const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  r.setPixelRatio(1);
+  r.setSize(160, 160, false);
+  const sc = new THREE.Scene();
+  sc.add(new THREE.HemisphereLight("#ffffff", "#8a7a6a", 2.0));
+  const dl = new THREE.DirectionalLight("#ffffff", 2.0);
+  dl.position.set(3, 5, 6);
+  sc.add(dl);
+  const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+  cam.position.set(1.6, 2.2, 4.6);
+  cam.lookAt(0, 1.3, 0);
+  for (const skin of SKINS) {
+    const c = makeCharacter(skin);
+    c.group.rotation.y = 0.35;
+    sc.add(c.group);
+    r.render(sc, cam);
+    out[skin.id] = r.domElement.toDataURL("image/png");
+    sc.remove(c.group);
+  }
+  r.dispose();
+  r.forceContextLoss();
+  return out;
+}
+{
+  const imgs = renderSkinImages();
+  document.getElementById("skins").innerHTML = SKINS.map((s) =>
+    `<button type="button" class="skin${s.id === skinId ? " sel" : ""}" data-skin="${s.id}"><img src="${imgs[s.id]}" alt="">${s.name}</button>`).join("");
+  document.getElementById("skins").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-skin]");
+    if (b) setSkin(b.dataset.skin);
+  });
+}
 
 // ================= 정상 세레모니: L을 가져가~ =================
 const CEREMONY_SEC = 4;
@@ -987,9 +1284,16 @@ scene.add(blob);
 const pos = new THREE.Vector3(), vel = new THREE.Vector3();
 let grounded = false, groundSolid = null, lastGrounded = -1, jumpQueued = -1;
 let checkpoint = plazas[0], facing = 0, walkPhase = 0;
+// 게임 모드: normal = 기본(체크포인트 있음), challenge = 도전자(체크포인트 없음, 떨어지면 아래층으로 그대로 떨어짐)
+const MODE_KEY = "historyTower.mode";
+let mode = (() => { try { return localStorage.getItem(MODE_KEY) === "challenge" ? "challenge" : "normal"; } catch { return "normal"; } })();
+// progress: 지금 서 있는(마지막으로 밟은) 광장·착지대. 기본 모드에서는 체크포인트와 같음
+let progress = plazas[0], maxCp = 0, maxZone = 0;
 let yaw = Math.PI, pitch = 0.35, camDist = 9, lastManualCam = -10;
 let state = "title", startTime = 0, finishTime = 0;
 let falls = 0, correctCount = 0, wrongCount = 0, wrongIds = [], wrongLog = [], pendingWrong = null;
+let shiftLock = false;                                   // 시선 고정 모드
+let bonusFloor = null, bonusDone = {}, bonusStars = 0;   // 유물 받침대 보너스 문제
 let now = performance.now() / 1000;
 
 // ================= HUD =================
@@ -1008,16 +1312,18 @@ if (!hasQuestions) {
 }
 
 function updateHud() {
-  if (snd) snd.setZone(checkpoint.zone);   // 위로 올라갈수록 음악이 조금씩 빨라지고 풍성해짐
-  const f = checkpoint.floor;
-  const zone = ZONES[checkpoint.zone];
-  $("zoneLabel").textContent = f === 0 ? "출발" : `${checkpoint.zone + 1}구역 · ${zone.name}`;
+  if (snd) snd.setZone(progress.zone);   // 위로 올라갈수록 음악이 조금씩 빨라지고 풍성해짐
+  const f = progress.floor;
+  const zone = ZONES[progress.zone];
+  $("zoneLabel").textContent = progress.kind === "ground" ? "땅 (출발 광장으로!)" : f === 0 ? "출발" : `${progress.zone + 1}구역 · ${zone.name}`;
+  $("modeBadge").style.display = mode === "challenge" ? "inline-block" : "none";
+  $("respawnBtn").style.display = mode === "challenge" ? "none" : "";
   $("zoneDot").style.background = zone.color;
   $("floorText").textContent = `${f}층 / ${TOTAL_FLOORS}층`;
   [...progressEl.children].forEach((el, i) => {
     el.style.background = i < f ? ZONES[Math.floor(i / FLOORS_PER_ZONE)].color : "";
   });
-  $("score").textContent = `⭕ ${correctCount} · ❌ ${wrongCount} · 🏺 ${runCards.length}`;
+  $("score").textContent = `⭕ ${correctCount} · ❌ ${wrongCount} · 🏺 ${runCards.length}` + (bonusStars ? ` · ⭐ ${bonusStars}` : "");
 }
 const fmtTime = (sec) => {
   const s = Math.max(0, Math.floor(sec));
@@ -1036,9 +1342,9 @@ const esc = (t) => String(t).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&
 // 문제 패널: 문제 광장에 서 있고 아직 풀지 않은 층이면 보여 줌
 let panelKey = "";
 function updateQuestionPanel() {
-  const fl = checkpoint.kind === "plaza" ? floors[checkpoint.floor] : null;
-  const show = state === "play" && fl && fl.q && !fl.answered && !fl.locked && $("feedback").style.display !== "block";
-  const key = show ? `${checkpoint.floor}:${fl.q.id}` : "";
+  const fl = progress.kind === "plaza" ? floors[progress.floor] : null;
+  const show = state === "play" && fl && fl.q && !fl.answered && !fl.locked && bonusFloor === null && $("feedback").style.display !== "block";
+  const key = show ? `${progress.floor}:${fl.q.id}:${bonusDone[progress.floor] ? 1 : 0}` : "";
   if (key === panelKey) return;
   panelKey = key;
   const el = $("qPanel");
@@ -1046,15 +1352,72 @@ function updateQuestionPanel() {
   const q = fl.q;
   const chips = fl.options.map((o, i) => {
     const label = q.type === "ox" ? (o.text === "O" ? "O 맞다" : "X 틀리다") : `${"①②③"[i]} ${o.text}`;
-    return `<span style="background:${o.color}">${esc(label)}</span>`;
+    return `<button type="button" data-i="${i}" style="background:${o.color}">${esc(label)}</button>`;
   }).join("");
   el.innerHTML =
-    `<div class="qtag">${checkpoint.floor}층 문제 · ${esc(ZONES[fl.zone].name)}</div>` +
+    `<div class="qtag">${progress.floor}층 문제 · ${esc(ZONES[fl.zone].name)}</div>` +
     `<div class="qtext">${esc(displayQuestion(q))}</div>` +
     `<div class="opts">${chips}</div>` +
-    `<div class="qhelp">정답이라고 생각하는 발판으로 점프하세요!</div>`;
+    `<div class="qhelp">정답 발판으로 점프하거나, 위 버튼을 눌러 고르세요 (키보드 1·2·3)</div>` +
+    (shrines[progress.floor] && !bonusDone[progress.floor]
+      ? `<div class="qhelp" style="opacity:1;color:#b07d00;font-weight:800">⭐ 옆의 황금 다리를 건너 유물 받침대에 올라가면 보너스 문제! (맞히면 ${BONUS_SEC}초 단축)</div>` : "");
   el.style.display = "block";
 }
+// 문제 창에서 답 고르기 → 그 발판으로 자동으로 폴짝
+function chooseOption(i) {
+  const fl = progress.kind === "plaza" ? floors[progress.floor] : null;
+  if (state !== "play" || hop || !fl || !fl.q || fl.answered || fl.locked || bonusFloor !== null) return;
+  const pad = fl.pads[i];
+  if (!pad || !pad.solid.active) return;
+  startHop(pad.solid);
+}
+$("qPanel").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-i]");
+  if (b) { chooseOption(+b.dataset.i); canvas.focus(); }
+});
+
+// ================= 보너스 문제: 유물 받침대에 올라가면 "이 유물의 이름은?" =================
+let bonusChoices = [];
+function openBonus(f) {
+  const art = artifactByFloor[f];
+  if (!art || bonusDone[f] || bonusFloor !== null || state !== "play") return;
+  bonusFloor = f;
+  const others = shuffle(artifactList.filter((a) => a.id !== art.id)).slice(0, 2);
+  bonusChoices = shuffle([art, ...others]);
+  const el = $("bonusPanel");
+  el.innerHTML =
+    `<button class="closeX" type="button" data-close="1" title="닫기">✕</button>` +
+    `<div class="btag">⭐ 보너스 문제 · 맞히면 기록 ${BONUS_SEC}초 단축!</div>` +
+    `<img src="${cardImages[art.id]}" alt="">` +
+    `<div class="btitle">이 유물의 이름은 무엇일까요?</div>` +
+    `<div class="opts">${bonusChoices.map((a, i) => `<button type="button" data-b="${i}">${"①②③"[i]} ${esc(a.name)}</button>`).join("")}</div>` +
+    `<div class="qhelp">버튼을 누르거나 키보드 1·2·3</div>`;
+  el.style.display = "block";
+  sfx("bonus");
+}
+function answerBonus(i) {
+  if (bonusFloor === null || !bonusChoices[i]) return;
+  const f = bonusFloor, art = artifactByFloor[f], ok = bonusChoices[i].id === art.id;
+  bonusDone[f] = true;
+  if (shrines[f]) shrines[f].anim = 0.001;   // 보너스를 풀면 받침대 위 유물이 빙글 돌며 사라짐
+  if (ok) { bonusStars++; startTime -= BONUS_SEC; sfx("correct"); } else sfx("wrong");
+  // 보너스 창은 바로 닫고 바로 움직일 수 있음. 결과는 아래 문제 창과 겹치지 않게 오른쪽 카드 팝업으로 보여 줌
+  closeBonus();
+  showCardPop(ok
+    ? `<span class="pill good">⭐ 보너스 정답! 기록 ${BONUS_SEC}초 단축</span>`
+    : `<span class="pill bad">아쉬워요! 정답은 「${esc(art.name)}」</span>`, art, {}, ok ? 2800 : 4000);
+  updateHud();
+}
+function closeBonus() {
+  if (bonusFloor !== null) bonusDone[bonusFloor] = true;
+  bonusFloor = null;
+  $("bonusPanel").style.display = "none";
+}
+$("bonusPanel").addEventListener("click", (e) => {
+  if (e.target.closest("[data-close]")) { closeBonus(); canvas.focus(); return; }
+  const b = e.target.closest("button[data-b]");
+  if (b) { answerBonus(+b.dataset.b); canvas.focus(); }
+});
 let feedbackTimer = 0;
 function showFeedback(ok, title, detail, ms) {
   const el = $("feedback");
@@ -1101,14 +1464,17 @@ function awardCard(floor, shiny) {
   collection[art.id] = { n: (prev ? prev.n : 0) + 1, shiny: !!(shiny || (prev && prev.shiny)) };
   saveCollection();
   runCards.push({ art, shiny });
+  showCardPop(prev ? "🏺 유물 획득!" : "🎉 새 유물 발견!", art, { shiny }, 3200);
+  setTimeout(() => sfx("card"), 300);
+  updateHud();
+}
+// 오른쪽(태블릿은 위쪽 가운데)에 유물 카드를 잠깐 띄움: 카드 획득, 보너스 문제 결과에 사용
+function showCardPop(headHtml, art, opts, ms) {
   const el = $("cardPop");
-  el.innerHTML = `<div class="popHead">${prev ? "🏺 유물 획득!" : "🎉 새 유물 발견!"}</div>` + cardHTML(art, { shiny });
+  el.innerHTML = `<div class="popHead">${headHtml}</div>` + cardHTML(art, opts);
   el.classList.add("show");
   clearTimeout(popTimer);
-  popTimer = setTimeout(() => el.classList.remove("show"), 3200);
-  setTimeout(() => sfx("card"), 300);
-  if (shrines[floor]) shrines[floor].anim = 0.001;
-  updateHud();
+  popTimer = setTimeout(() => el.classList.remove("show"), ms);
 }
 function openBook() {
   const shinyN = artifactList.filter((a) => collection[a.id] && collection[a.id].shiny).length;
@@ -1136,6 +1502,7 @@ function resetShrines() {
     if (!sh) return;
     sh.anim = 0; sh.collected = false;
     sh.mesh.visible = true;
+    if (sh.sign) sh.sign.visible = true;
     sh.mesh.scale.setScalar(sh.scale);
   });
 }
@@ -1149,7 +1516,7 @@ function animateShrines(dt) {
       m.scale.setScalar(sh.scale * (p < 0.35 ? 1 + p * 1.5 : 1.5 * (1 - (p - 0.35) / 0.65)));
       m.position.y = sh.baseY + p * 3;
       m.rotation.y += dt * 14;
-      if (p >= 1) { m.visible = false; sh.collected = true; sh.anim = 0; }
+      if (p >= 1) { m.visible = false; if (sh.sign) sh.sign.visible = false; sh.collected = true; sh.anim = 0; }
     } else {
       m.rotation.y += dt * 0.9;
       m.position.y = sh.baseY + Math.sin(now * 2 + f) * 0.15;
@@ -1199,9 +1566,11 @@ function onOptionLanded(s) {
 function respawn(msg) {
   pos.set(checkpoint.cx, checkpoint.maxY + 0.01, checkpoint.cz);
   vel.set(0, 0, 0);
-  const a = Math.atan2(checkpoint.cz, checkpoint.cx);   // 코스 진행 방향을 바라보게
-  yaw = Math.PI - a;
-  facing = Math.atan2(-Math.sin(a), Math.cos(a));
+  hop = null;
+  stunUntil = -1;
+  progress = checkpoint;
+  facing = checkpoint.theta;   // 발판의 앞쪽 = 코스 진행 방향을 바라보게
+  yaw = facing + Math.PI;
   if (msg) toast(msg);
 }
 
@@ -1226,18 +1595,36 @@ function pushOutHorizontal(s) {
     const nx = wx / len, nz = wz / len, vn = vel.x * nx + vel.z * nz;
     if (vn < 0) { vel.x -= vn * nx; vel.z -= vn * nz; }
   }
+  if (s.kind === "spinner") knockBack(s);
+}
+// 회전 막대에 맞음: 막대가 도는 방향 + 바깥쪽으로 튕겨 나가고 잠깐 넘어짐
+let stunUntil = -1, knockReady = 0;
+function knockBack(s) {
+  if (now < knockReady || state !== "play") return;
+  const dx = pos.x - s.cx, dz = pos.z - s.cz, r = Math.hypot(dx, dz) || 1;
+  const sg = Math.sign(s.speed);
+  // 막대 위 한 점이 움직이는 방향 = (dz, -dx) × 회전 방향
+  vel.x = (dz / r) * sg * KNOCK.side + (dx / r) * 3;
+  vel.z = (-dx / r) * sg * KNOCK.side + (dz / r) * 3;
+  vel.y = KNOCK.up;
+  lastGrounded = -1; jumpQueued = -1;
+  stunUntil = now + KNOCK.stun;
+  knockReady = now + 0.5;
+  sfx("bonk");
 }
 const overlapsY = (s) => pos.y + PLAYER_H > s.minY + EPS && pos.y < s.maxY - EPS;
 function moveHorizontal(dx, dz) {
   pos.x += dx; pos.z += dz;
   for (let pass = 0; pass < 2; pass++) {
-    for (const s of solids) if (s.active && overlapsY(s)) pushOutHorizontal(s);
+    for (const s of solids) if (s.active && !s.oneWay && overlapsY(s)) pushOutHorizontal(s);
   }
 }
 function moveVertical(d) {
   pos.y += d;
   for (const s of solids) {
     if (!s.active || !overlapsY(s) || !footOverlaps(s, pos.x, pos.z)) continue;
+    // 한쪽 통과 발판(공중 착지대): 아래에서 올라올 때는 통과, 위에서 떨어질 때만 밟힘
+    if (s.oneWay && (d > 0 || pos.y - d < s.maxY - 0.02)) continue;
     if (d < 0) { pos.y = s.maxY; grounded = true; groundSolid = s; }
     else pos.y = s.minY - PLAYER_H;
     vel.y = 0;
@@ -1253,6 +1640,14 @@ addEventListener("keydown", (e) => {
   if (e.code === "Space" && !e.repeat) jumpQueued = now;
   if (e.code === "KeyR" && state === "play") backToCheckpoint();
   if (e.code === "KeyM" && !e.repeat) toggleSound();
+  if ((e.code === "ShiftLeft" || e.code === "ShiftRight") && !e.repeat && state === "play") toggleShiftLock();
+  // 1·2·3 (또는 O·X)로 정답·보너스 고르기
+  const num = { Digit1: 0, Digit2: 1, Digit3: 2, Numpad1: 0, Numpad2: 1, Numpad3: 2 }[e.code];
+  if (!e.repeat && num !== undefined) { if (bonusFloor !== null) answerBonus(num); else chooseOption(num); }
+  if (!e.repeat && (e.code === "KeyO" || e.code === "KeyX") && bonusFloor === null) {
+    const fl = progress.kind === "plaza" ? floors[progress.floor] : null;
+    if (fl && fl.q && fl.q.type === "ox") chooseOption(fl.options.findIndex((o) => o.text === (e.code === "KeyO" ? "O" : "X")));
+  }
 });
 addEventListener("keyup", (e) => keys.delete(e.code));
 addEventListener("blur", () => keys.clear());
@@ -1266,13 +1661,16 @@ canvas.addEventListener("pointerdown", (e) => {
   canvas.focus();
   if (e.pointerType === "touch") useTouchUi();
   if (e.pointerType === "touch" && e.clientX < innerWidth * 0.45 && !stick) {
-    stick = { id: e.pointerId, cx: e.clientX, cy: e.clientY, dx: 0, dy: 0 };
-    stickBase.style.display = "block";
-    stickBase.style.left = e.clientX + "px";
-    stickBase.style.top = e.clientY + "px";
+    // 왼쪽 아래 조이스틱 근처를 누르면 그 자리 조이스틱을, 다른 곳을 누르면 조이스틱이 손가락 밑으로 옴
+    const r = stickBase.getBoundingClientRect();
+    const bx = r.left + r.width / 2, by = r.top + r.height / 2;
+    const near = Math.hypot(e.clientX - bx, e.clientY - by) < 90;
+    stick = { id: e.pointerId, cx: near ? bx : e.clientX, cy: near ? by : e.clientY, dx: 0, dy: 0 };
+    if (!near) { stickBase.style.left = e.clientX + "px"; stickBase.style.top = e.clientY + "px"; }
     stickKnob.style.transform = "";
   } else if (!camDrag) {
-    camDrag = { id: e.pointerId, x: e.clientX, y: e.clientY };
+    // 오른쪽 화면: 끌면 시점 돌리기, 짧게 톡 치면 점프
+    camDrag = { id: e.pointerId, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t: performance.now(), touch: e.pointerType === "touch" };
   } else return;
   try { canvas.setPointerCapture(e.pointerId); } catch { /* 일부 기기에서 캡처가 안 돼도 조작은 계속 */ }
 });
@@ -1292,9 +1690,46 @@ canvas.addEventListener("pointermove", (e) => {
   }
 });
 function endPointer(e) {
-  if (stick && e.pointerId === stick.id) { stick = null; stickBase.style.display = "none"; }
-  if (camDrag && e.pointerId === camDrag.id) camDrag = null;
+  if (stick && e.pointerId === stick.id) {
+    stick = null;
+    stickBase.style.left = ""; stickBase.style.top = "";   // 원래 자리(왼쪽 아래)로
+    stickKnob.style.transform = "";
+  }
+  if (camDrag && e.pointerId === camDrag.id) {
+    const tap = camDrag.touch && performance.now() - camDrag.t < 250 && Math.hypot(e.clientX - camDrag.sx, e.clientY - camDrag.sy) < 12;
+    if (tap && e.type === "pointerup") jumpQueued = now;
+    camDrag = null;
+  }
 }
+
+// ================= 시선 고정 (Shift Lock) =================
+// 켜면 캐릭터가 항상 카메라가 보는 쪽을 바라봄. 컴퓨터에서는 마우스를 끌지 않고 움직이기만 해도 시점이 돌아감
+function setShiftLock(on) {
+  shiftLock = on;
+  document.body.classList.toggle("shiftlock", on);
+  const touch = document.body.classList.contains("touch");
+  if (on && !touch && canvas.requestPointerLock) {
+    // 마우스 잠금이 안 되는 환경이면 끌기로 시점을 돌리는 방식 그대로 씀
+    try { const p = canvas.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch { /* 지원하지 않는 브라우저 */ }
+  }
+  if (!on && document.pointerLockElement === canvas) document.exitPointerLock();
+  toast(on ? "🔒 시선 고정 켜짐 (Shift로 끄기)" : "🔓 시선 고정 꺼짐");
+}
+function toggleShiftLock() { setShiftLock(!shiftLock); }
+document.addEventListener("pointerlockchange", () => {
+  // Esc로 마우스 잠금이 풀리면 시선 고정도 끔
+  if (shiftLock && document.pointerLockElement !== canvas && !document.body.classList.contains("touch")) {
+    shiftLock = false;
+    document.body.classList.remove("shiftlock");
+  }
+});
+document.addEventListener("mousemove", (e) => {
+  if (document.pointerLockElement !== canvas) return;
+  yaw -= e.movementX * 0.0028;
+  pitch = Math.min(1.2, Math.max(-0.2, pitch + e.movementY * 0.0028));
+  lastManualCam = now;
+});
+$("lockBtn").addEventListener("click", () => { if (state === "play") toggleShiftLock(); canvas.focus(); });
 canvas.addEventListener("pointerup", endPointer);
 canvas.addEventListener("pointercancel", endPointer);
 canvas.addEventListener("wheel", (e) => {
@@ -1305,6 +1740,7 @@ canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 $("jumpBtn").addEventListener("pointerdown", (e) => { e.preventDefault(); jumpQueued = now; });
 // 틀린 직후에 누르면 체크포인트가 아니라 틀렸을 때처럼 구역 시작점으로 보냄
 function backToCheckpoint() {
+  if (mode === "challenge") { toast("🔥 도전자 모드에는 체크포인트가 없어요!"); return; }
   if (pendingWrong !== null) fellOff();
   else respawn("체크포인트로 돌아왔어요");
 }
@@ -1332,8 +1768,10 @@ function startRace() {
   $("cardPop").classList.remove("show");
   setupQuestions();
   resetShrines();
-  checkpoint = plazas[0];
+  closeBonus();
+  checkpoint = plazas[0]; progress = plazas[0]; maxCp = 0; maxZone = 0;
   falls = 0; correctCount = 0; wrongCount = 0; wrongIds = []; wrongLog = []; pendingWrong = null; runCards = [];
+  bonusDone = {}; bonusStars = 0;
   respawn();
   updateHud();
   $("timer").textContent = "00:00";
@@ -1356,6 +1794,8 @@ function finishRace() {
   finishTime = now - startTime;
   ceremonyStart = now;
   hideFeedback();
+  closeBonus();
+  if (shiftLock) setShiftLock(false);
   $("cardPop").classList.remove("show");
   toast("🏆 정상 도착! L을 가져가~ 🕺");
   launchConfetti();
@@ -1365,10 +1805,12 @@ function finishRace() {
 function showResults() {
   state = "finish";
   $("resultText").innerHTML =
+    (mode === "challenge" ? `<span class="modeTag">🔥 도전자 모드 완주!</span><br>` : "") +
     `기록 <b>${fmtTime(finishTime)}</b><br>` +
     `맞힌 문제 ⭕ ${correctCount}개 · 틀린 문제 ❌ ${wrongCount}개<br>` +
     `떨어진 횟수 ${falls}번<br>` +
-    `이번 판에 모은 유물 🏺 ${runCards.length}개 (✨반짝 ${runCards.filter((c) => c.shiny).length}개)`;
+    `이번 판에 모은 유물 🏺 ${runCards.length}개 (✨반짝 ${runCards.filter((c) => c.shiny).length}개)` +
+    (bonusStars ? `<br>보너스 문제 ⭐ ${bonusStars}개 (기록 ${bonusStars * BONUS_SEC}초 단축)` : "");
   $("runCards").innerHTML = runCards.map(({ art, shiny }) =>
     `<figure class="${shiny ? "shiny" : ""}"><img src="${cardImages[art.id]}" alt=""><figcaption>${esc(art.name)}</figcaption></figure>`).join("");
   $("review").innerHTML = reviewHTML();
@@ -1416,24 +1858,64 @@ function reviewHTML() {
   return `<h2>📝 틀린 문제 복습</h2><div class="rsub">초록색이 정답이에요. 한 번 더 읽어 보세요!</div>${items}`;
 }
 $("startBtn").addEventListener("click", startRace);
+// 모드 고르기 (이 기기에 기억됨)
+function setMode(m) {
+  mode = m === "challenge" ? "challenge" : "normal";
+  try { localStorage.setItem(MODE_KEY, mode); } catch { /* 저장이 막힌 환경 */ }
+  document.querySelectorAll(".modeBtn").forEach((b) => b.classList.toggle("sel", b.dataset.mode === mode));
+  updateHud();
+}
+$("modes").addEventListener("click", (e) => { const b = e.target.closest("[data-mode]"); if (b) setMode(b.dataset.mode); });
+setMode(mode);
 $("againBtn").addEventListener("click", startRace);
 
 function onLanded() {
   const s = groundSolid;
   if (state !== "play" || !s) return;
-  // 광장뿐 아니라 정답 발판 뒤 착지대(다음 구역의 시작점이기도 함)에서도 체크포인트 저장
-  if ((s.kind === "plaza" || s.kind === "strip") && s.cp > checkpoint.cp) {
-    const newZone = s.zone !== checkpoint.zone || checkpoint.cp === 0;
-    checkpoint = s;
-    updateHud();
-    if (newZone) { toast(`${s.zone + 1}구역 「${ZONES[s.zone].name}」 시대에 들어왔어요! 체크포인트 저장`); sfx("zone"); }
-    else if (s.kind === "plaza") toast(`${s.floor}층 도착! 체크포인트 저장`);
+  // 도전자 모드: 틀린 발판에서 떨어져 어딘가에 내려앉으면 다시 점프할 수 있음
+  if (mode === "challenge" && pendingWrong !== null && s.kind !== "option") pendingWrong = null;
+  // 도전자 모드: 떨어져서 아래층 점프 발판에 내려앉아도 화면의 층 표시를 그 층으로
+  if (mode === "challenge" && s.kind === "pad" && s !== progress) { progress = s; updateHud(); }
+  if (s.kind === "plaza" || s.kind === "strip") {
+    if (mode === "normal") {
+      // 광장뿐 아니라 정답 발판 뒤 착지대(다음 구역의 시작점이기도 함)에서도 체크포인트 저장
+      if (s.cp > checkpoint.cp) {
+        const newZone = s.zone !== checkpoint.zone || checkpoint.cp === 0;
+        checkpoint = s; progress = s;
+        maxCp = Math.max(maxCp, s.cp);
+        updateHud();
+        if (newZone) { toast(`${s.zone + 1}구역 「${ZONES[s.zone].name}」 시대에 들어왔어요! 체크포인트 저장`); sfx("zone"); }
+        else if (s.kind === "plaza") toast(`${s.floor}층 도착! 체크포인트 저장`);
+      }
+    } else if (s !== progress) {
+      // 도전자 모드: 체크포인트는 저장하지 않고, 지금 위치만 기록 (떨어져서 아래층에 내려앉으면 그 층으로 표시)
+      const record = s.cp > maxCp, newZone = record && (maxCp === 0 || s.zone > maxZone);
+      progress = s;
+      if (record) { maxCp = s.cp; maxZone = s.zone; }
+      updateHud();
+      if (newZone) { toast(`🔥 ${s.zone + 1}구역 「${ZONES[s.zone].name}」 시대에 들어왔어요!`); sfx("zone"); }
+      else if (record && s.kind === "plaza") toast(`${s.floor}층 도착!`);
+    }
   } else if (s.kind === "option") {
     onOptionLanded(s);
+  } else if (s.kind === "bounce") {
+    vel.y = BOUNCE_V;
+    lastGrounded = -1;
+    sfx("bounce");
+  } else if (s.kind === "shrine") {
+    openBonus(s.floor);
   } else if (s.kind === "goal") {
     finishRace();
-  } else if (s.kind === "ground" && checkpoint.floor > 0) {
-    fellOff();
+  } else if (s.kind === "ground") {
+    if (mode === "normal" && checkpoint.floor > 0) fellOff();
+    // 도전자 모드: 순간이동 없이 땅에 그대로 떨어짐. 출발 광장까지 걸어가서 다시 올라가야 함
+    else if (mode === "challenge" && progress.kind !== "ground" && maxCp > 0) {
+      falls++;
+      sfx("fall");
+      progress = { kind: "ground", floor: 0, zone: 0, cp: -1 };
+      updateHud();
+      toast("😱 땅까지 떨어졌어요! 「출발!」 광장으로 걸어가서 다시 올라가세요");
+    }
   }
 }
 function fellOff() {
@@ -1454,33 +1936,57 @@ function fellOff() {
 // ================= 매 프레임 =================
 const angleLerp = (a, b, t) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * t;
 
+// 문제 패널에서 답을 고르면 그 발판으로 자동으로 폴짝 뛰어감
+let hop = null;
+function startHop(target) {
+  hop = { sx: pos.x, sy: pos.y, sz: pos.z, tx: target.cx, ty: target.maxY, tz: target.cz, t: 0, dur: 0.6 };
+  vel.set(0, 0, 0);
+  facing = Math.atan2(target.cx - pos.x, target.cz - pos.z);
+}
+function stepHop(dt) {
+  hop.t += dt;
+  const k = Math.min(1, hop.t / hop.dur);
+  pos.x = hop.sx + (hop.tx - hop.sx) * k;
+  pos.z = hop.sz + (hop.tz - hop.sz) * k;
+  pos.y = hop.sy + (hop.ty - hop.sy) * k + Math.sin(k * Math.PI) * 2.2;
+  grounded = false;
+  if (k >= 1) { pos.y = hop.ty + 0.02; vel.set(0, -1, 0); hop = null; }
+}
+
 function physicsStep(dt) {
-  let f = 0, r = 0;
-  if (state === "play") {
+  updateSpinners(now);
+  if (hop) { stepHop(dt); return; }
+  let f = 0, r = 0, turn = 0;
+  const stunned = now < stunUntil;   // 회전 막대에 맞아 넘어진 동안은 조작 불가
+  if (state === "play" && bonusFloor === null && !stunned) {
     if (isKey("KeyW", "ArrowUp")) f += 1;
     if (isKey("KeyS", "ArrowDown")) f -= 1;
-    if (isKey("KeyD", "ArrowRight")) r += 1;
-    if (isKey("KeyA", "ArrowLeft")) r -= 1;
+    if (isKey("KeyD")) r += 1;
+    if (isKey("KeyA")) r -= 1;
     if (stick) { f -= stick.dy / 50; r += stick.dx / 50; }
-    if (isKey("KeyQ")) { yaw += 2 * dt; lastManualCam = now; }
-    if (isKey("KeyE")) { yaw -= 2 * dt; lastManualCam = now; }
+    // ←·→ 방향키와 Q·E: 바라보는 방향 돌리기
+    if (isKey("ArrowLeft", "KeyQ")) turn += 1;
+    if (isKey("ArrowRight", "KeyE")) turn -= 1;
   }
+  if (turn) { yaw += turn * 2.4 * dt; lastManualCam = now; }
   // 카메라 기준 방향으로 이동
   const fx = -Math.sin(yaw), fz = -Math.cos(yaw), rx = Math.cos(yaw), rz = -Math.sin(yaw);
   let mx = fx * f + rx * r, mz = fz * f + rz * r;
   const len = Math.hypot(mx, mz);
   if (len > 1) { mx /= len; mz /= len; }
   const amount = Math.min(1, len);
-  const accel = Math.min(1, dt * (grounded ? 14 : 7));
+  // 넘어진 동안은 튕겨 나간 힘이 거의 그대로 남아 미끄러짐
+  const accel = Math.min(1, dt * (stunned ? (grounded ? 2.5 : 0.6) : grounded ? 14 : 7));
   vel.x += (mx * SPEED - vel.x) * accel;
   vel.z += (mz * SPEED - vel.z) * accel;
-  if (amount > 0.1) facing = angleLerp(facing, Math.atan2(mx, mz), Math.min(1, dt * 14));
+  if (shiftLock && state === "play") facing = yaw + Math.PI;   // 시선 고정: 항상 카메라가 보는 쪽을 바라봄
+  else if (amount > 0.1) facing = angleLerp(facing, Math.atan2(mx, mz), Math.min(1, dt * 14));
   // 앞으로 가는 중이고 직접 시점을 돌리지 않았으면 카메라가 천천히 따라감
-  if (f > 0.3 && now - lastManualCam > 1.5) yaw = angleLerp(yaw, Math.atan2(-mx, -mz), Math.min(1, dt * 1.6 * amount));
+  if (!shiftLock && f > 0.3 && now - lastManualCam > 1.5) yaw = angleLerp(yaw, Math.atan2(-mx, -mz), Math.min(1, dt * 1.6 * amount));
 
   // 점프 (발판 끝에서 살짝 늦게 눌러도 되도록 여유 시간을 줌)
   // 틀린 발판에서 떨어지는 중(pendingWrong)에는 점프할 수 없음
-  if (state === "play" && pendingWrong === null && jumpQueued > 0 && now - jumpQueued < 0.15 && now - lastGrounded < 0.12) {
+  if (state === "play" && pendingWrong === null && !stunned && jumpQueued > 0 && now - jumpQueued < 0.15 && now - lastGrounded < 0.12) {
     vel.y = JUMP_V; jumpQueued = -1; lastGrounded = -1;
   }
   vel.y = Math.max(vel.y - GRAVITY * dt, -40);
@@ -1494,7 +2000,7 @@ function physicsStep(dt) {
     if (!wasGrounded || groundSolid.kind !== "pad") onLanded();
   }
   // 코스 아래로 떨어지면 체크포인트로
-  if (state === "play" && pos.y < checkpoint.maxY - 7) fellOff();
+  if (state === "play" && mode === "normal" && pos.y < checkpoint.maxY - 7) fellOff();
 }
 
 function animateHero(dt) {
@@ -1506,6 +2012,10 @@ function animateHero(dt) {
     g.position.copy(pos);
     g.rotation.y = facing;
     ["armL", "armR", "legL", "legR"].forEach((n) => { hero[n].rotation.z += (0 - hero[n].rotation.z) * k; });
+    // 회전 막대에 맞으면 뒤로 벌러덩 넘어졌다가 일어남
+    const left = stunUntil - now;
+    g.rotation.order = "YXZ";
+    g.rotation.x = left > 0 ? -Math.sin((1 - left / KNOCK.stun) * Math.PI) * 1.4 : 0;
   }
   if (state === "ceremony" || state === "finish") { updateBlob(); return; }
   if (grounded) {
@@ -1554,7 +2064,10 @@ function updateCamera(dt) {
     camDist += (6 - camDist) * k;
     pitch += (0.12 - pitch) * k;
   }
-  const tx = pos.x, ty = pos.y + 1.7, tz = pos.z;
+  let tx = pos.x, ty = pos.y + 1.7, tz = pos.z;
+  if (shiftLock && state === "play") {   // 시선 고정: 카메라를 오른쪽 어깨 너머로 살짝 옮김
+    tx += Math.cos(yaw) * 1.1; tz -= Math.sin(yaw) * 1.1;
+  }
   camera.position.set(
     tx + Math.sin(yaw) * Math.cos(pitch) * camDist,
     ty + Math.sin(pitch) * camDist,
@@ -1577,6 +2090,8 @@ function frame() {
   animatePads(dt);
   animateShrines(dt);
   animateConfetti(dt);
+  for (const s of spinners) s.mesh.rotation.y = s.theta;
+  updateSky();
   updateQuestionPanel();
   updateCamera(dt);
   renderer.render(scene, camera);
@@ -1590,7 +2105,13 @@ requestAnimationFrame(frame);
 
 // 확인·디버그용 (개발 중 자동 점검에 사용)
 window.__tower = {
-  solids, plazas, strips, floors, goal, pos, vel, zoneStart, OPT_ALONG,
+  solids, plazas, strips, floors, goal, pos, vel, zoneStart, OPT_ALONG, landings, spinners, walls, bouncePads,
+  get bonus() { return { floor: bonusFloor, stars: bonusStars, done: { ...bonusDone } }; },
+  get shiftLock() { return shiftLock; },
+  answerBonus, chooseOption, setSkin, setMode,
+  get mode() { return mode; },
+  get progress() { return progress.kind + progress.floor; },
+  get hopping() { return !!hop; },
   get state() { return state; },
   get checkpoint() { return checkpoint.floor; },
   get checkpointKind() { return checkpoint.kind; },
