@@ -7,13 +7,25 @@
 <style>
   :root {
     --ink: #1d2433;
+    --muted: #5b6475;        /* 보조 글자: 흰 바탕 대비 6:1 */
     --panel: rgba(255, 255, 255, 0.94);
+    --surface: #f2f5fa;      /* 패널 안의 옅은 판 */
+    --line: #c9d1dd;
     --shadow: 0 5px 0 rgba(0, 0, 0, 0.18);
     --go: #2fbf71;
     --go-dark: #1f8a50;
+    --go-soft: #e8f8ee;
     --bad: #e5484d;
+    --bad-soft: #fdecec;
+    --gold: #f2c94c;
+    --gold-ink: #7a5600;     /* 금색 위·흰 바탕 위 글자 */
     --sky: #a8dcff;
+    /* 모서리는 세 단계만 씀 */
+    --r-s: 4px;
+    --r-m: 10px;
+    --r-l: 18px;
   }
+  .ic { width: 1.1em; height: 1.1em; vertical-align: -0.18em; flex: none; }
   * { box-sizing: border-box; }
   html, body {
     margin: 0; height: 100%; overflow: hidden;
@@ -30,25 +42,30 @@
     display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
     pointer-events: none;
   }
-  .card { background: var(--panel); border-radius: 14px; box-shadow: var(--shadow); padding: 10px 14px; }
+  .card { background: var(--panel); border-radius: var(--r-m); box-shadow: var(--shadow); padding: 10px 14px; }
   #zoneCard { min-width: 190px; max-width: 60vw; }
   #zoneName { font-weight: 800; font-size: 17px; display: flex; align-items: center; gap: 8px; }
-  #zoneDot { width: 14px; height: 14px; border-radius: 4px; flex: none; }
-  #floorText { font-size: 14px; margin-top: 2px; opacity: 0.8; }
+  #zoneDot { width: 14px; height: 14px; border-radius: var(--r-s); flex: none; }
+  #floorText { font-size: 14px; margin-top: 2px; color: var(--muted); }
   #progress { display: flex; gap: 2px; margin-top: 8px; }
-  #progress span { flex: 1; height: 8px; border-radius: 2px; background: rgba(0, 0, 0, 0.12); }
+  #progress span { flex: 1; height: 8px; border-radius: var(--r-s); background: rgba(0, 0, 0, 0.12); }
   #rightHud { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
   #timer { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
-  #score { font-size: 14px; font-weight: 800; padding: 6px 12px; }
+  #score { font-size: 14px; font-weight: 800; padding: 6px 12px; display: flex; gap: 10px; align-items: center; font-variant-numeric: tabular-nums; }
+  #score span { display: inline-flex; align-items: center; gap: 3px; }
+  #score .c-ok { color: var(--go-dark); }
+  #score .c-bad { color: var(--bad); }
+  #score .c-gold { color: var(--gold-ink); }
   .hudBtns { display: flex; gap: 6px; }
   @media (max-width: 520px) { #respawnBtn .lbl { display: none; } }
   #respawnBtn, #soundBtn, #lockBtn {
     pointer-events: auto; border: 0; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700;
-    background: var(--panel); color: var(--ink); border-radius: 10px; padding: 7px 10px; box-shadow: var(--shadow);
+    background: var(--panel); color: var(--ink); border-radius: var(--r-m); padding: 7px 10px; box-shadow: var(--shadow);
+    display: inline-flex; align-items: center; gap: 4px;
   }
   #hint {
     position: fixed; left: 12px; bottom: 12px; font-size: 13px; padding: 7px 12px;
-    pointer-events: none; opacity: 0.9;
+    pointer-events: none; color: var(--muted);
   }
   body.touch #hint { display: none; }
 
@@ -59,28 +76,30 @@
   }
   body.touch #qPanel, body.touch #feedback { bottom: 140px; }
   #qPanel { display: none; }
-  #qPanel .qtag { font-size: 13px; font-weight: 800; opacity: 0.65; margin-bottom: 4px; }
+  #qPanel .qtag { font-size: 13px; font-weight: 800; color: var(--muted); margin-bottom: 4px; }
   #qPanel .qtext { font-size: clamp(16px, 2.6vw, 21px); font-weight: 800; line-height: 1.45; word-break: keep-all; white-space: pre-wrap; }
   #qPanel .opts { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
   .opts button {
     pointer-events: auto; border: 0; cursor: pointer; font: inherit; color: #fff; font-weight: 800; font-size: 16px;
-    padding: 8px 14px; border-radius: 10px; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22);
+    padding: 8px 14px; border-radius: var(--r-m); box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22);
   }
   .opts button:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.22); }
-  #qPanel .qhelp, #bonusPanel .qhelp { font-size: 12px; opacity: 0.6; margin-top: 8px; }
+  #qPanel .qhelp, #bonusPanel .qhelp { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  #qPanel .qhelp.bonus { color: var(--gold-ink); font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 4px; }
 
   /* ---------- 보너스 문제 (유물 받침대) ---------- */
   #bonusPanel {
     position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); display: none;
-    width: min(520px, calc(100vw - 32px)); text-align: center; pointer-events: auto; border: 3px solid #f2c94c;
+    width: min(520px, calc(100vw - 32px)); text-align: center; pointer-events: auto; border: 3px solid var(--gold);
   }
   body.touch #bonusPanel { bottom: 140px; }
-  #bonusPanel .btag { font-size: 13px; font-weight: 900; color: #b07d00; }
-  #bonusPanel img { width: 120px; height: 120px; display: block; margin: 6px auto; border-radius: 12px; background: radial-gradient(circle at 50% 40%, #fff, #e7ecf3); }
+  #bonusPanel .btag { font-size: 13px; font-weight: 900; color: var(--gold-ink); display: flex; align-items: center; justify-content: center; gap: 4px; }
+  #bonusPanel img { width: 120px; height: 120px; display: block; margin: 6px auto; border-radius: var(--r-m); background: var(--surface); }
   #bonusPanel .btitle { font-size: 18px; font-weight: 900; }
   #bonusPanel .opts { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
-  #bonusPanel .opts button { background: #8e5bd6; }
-  #bonusPanel .closeX { position: absolute; top: 6px; right: 8px; border: 0; background: none; font-size: 18px; cursor: pointer; color: #8a93a3; }
+  #bonusPanel .opts button { background: var(--gold); color: var(--ink); box-shadow: 0 4px 0 #c9a12f; }
+  #bonusPanel .closeX { position: absolute; top: 6px; right: 6px; border: 0; background: none; padding: 4px; cursor: pointer; color: var(--muted); display: flex; }
+  #bonusPanel .closeX .ic { width: 20px; height: 20px; }
 
   /* ---------- 시선 고정 ---------- */
   #crosshair {
@@ -88,42 +107,42 @@
     background: #fff; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45); display: none; pointer-events: none;
   }
   body.shiftlock #crosshair { display: block; }
-  body.shiftlock #lockBtn { background: #2fbf71; color: #fff; }
+  body.shiftlock #lockBtn { background: var(--go); color: #fff; }
 
   /* ---------- 캐릭터 고르기 ---------- */
   .pickTitle { font-weight: 900; font-size: 15px; text-align: left; margin: 0 0 6px; }
   .skins { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 16px; }
   @media (max-width: 520px) { .skins { grid-template-columns: repeat(3, 1fr); } }
   .skin {
-    border: 3px solid transparent; background: #f2f5fa; border-radius: 12px; padding: 4px 2px 6px; cursor: pointer;
+    border: 3px solid transparent; background: var(--surface); border-radius: var(--r-m); padding: 4px 2px 6px; cursor: pointer;
     font: inherit; font-size: 11px; font-weight: 800; color: var(--ink); line-height: 1.25; word-break: keep-all;
   }
   .skin img { width: 100%; aspect-ratio: 1; display: block; }
-  .skin.sel { border-color: var(--go); background: #e8f8ee; }
+  .skin.sel { border-color: var(--go); background: var(--go-soft); }
 
   /* ---------- 모드 고르기 ---------- */
   .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
   .modeBtn {
-    border: 3px solid transparent; background: #f2f5fa; border-radius: 12px; padding: 8px 10px; cursor: pointer;
+    border: 3px solid transparent; background: var(--surface); border-radius: var(--r-m); padding: 8px 10px; cursor: pointer;
     font: inherit; color: var(--ink); text-align: left; line-height: 1.4; word-break: keep-all;
   }
   .modeBtn b { display: block; font-size: 15px; }
-  .modeBtn span { font-size: 12px; opacity: 0.75; }
-  .modeBtn.sel { border-color: var(--go); background: #e8f8ee; }
-  .modeBtn.sel[data-mode="challenge"] { border-color: var(--bad); background: #fdecec; }
-  .modeBadge { display: none; margin-top: 6px; font-size: 12px; font-weight: 900; color: #fff; background: var(--bad); padding: 2px 8px; border-radius: 6px; }
-  .modeTag { display: inline-block; font-size: 16px; font-weight: 900; color: #fff; background: var(--bad); padding: 2px 10px; border-radius: 8px; }
+  .modeBtn span { font-size: 12px; color: var(--muted); }
+  .modeBtn.sel { border-color: var(--go); background: var(--go-soft); }
+  .modeBtn.sel[data-mode="challenge"] { border-color: var(--bad); background: var(--bad-soft); }
+  .modeBadge { display: none; margin-top: 6px; font-size: 12px; font-weight: 900; color: #fff; background: var(--bad); padding: 2px 8px; border-radius: var(--r-s); }
+  .modeTag { display: inline-block; font-size: 16px; font-weight: 900; color: #fff; background: var(--bad); padding: 2px 10px; border-radius: var(--r-s); }
   #feedback { display: none; color: #fff; }
   #feedback.ok { background: var(--go); }
   #feedback.bad { background: var(--bad); }
-  #feedback .ft { font-size: 24px; font-weight: 900; }
+  #feedback .ft { font-size: 24px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 6px; }
   #feedback .fd { font-size: 16px; margin-top: 4px; line-height: 1.5; word-break: keep-all; }
 
   /* ---------- 알림 ---------- */
   #toast {
     position: fixed; top: 92px; left: 50%; transform: translate(-50%, -10px);
     background: var(--ink); color: #fff; font-weight: 800; font-size: 18px;
-    padding: 10px 18px; border-radius: 12px; opacity: 0; transition: opacity .25s, transform .25s;
+    padding: 10px 18px; border-radius: var(--r-m); opacity: 0; transition: opacity .25s, transform .25s;
     pointer-events: none; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis;
   }
   #toast.show { opacity: 1; transform: translate(-50%, 0); }
@@ -140,68 +159,97 @@
   }
   .overlay.hidden { display: none; }
   .panel {
-    background: #fff; border-radius: 22px; box-shadow: 0 8px 0 rgba(0, 0, 0, 0.2);
+    background: #fff; border-radius: var(--r-l); box-shadow: 0 8px 0 rgba(0, 0, 0, 0.2);
     width: min(520px, 100%); padding: 26px 24px; text-align: center;
     max-height: calc(100vh - 32px); overflow: auto;
   }
   .panel h1 { margin: 0 0 6px; font-size: clamp(28px, 7vw, 40px); letter-spacing: -0.5px; }
-  .panel .sub { margin: 0 0 18px; font-size: 16px; opacity: 0.8; }
+  .panel .sub { margin: 0 0 18px; font-size: 16px; color: var(--muted); }
   .zones { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 18px; }
-  .zones span { font-size: 13px; font-weight: 700; color: #fff; padding: 4px 9px; border-radius: 8px; }
+  .zones span { font-size: 13px; font-weight: 700; color: #fff; padding: 4px 9px; border-radius: var(--r-s); }
   .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin-bottom: 20px; }
-  .controls div { background: #f2f5fa; border-radius: 12px; padding: 10px 12px; font-size: 14px; line-height: 1.6; }
-  .controls b { display: block; margin-bottom: 2px; }
+  .controls section { background: var(--surface); border-radius: var(--r-m); padding: 10px 12px 12px; font-size: 14px; line-height: 1.55; }
+  .controls h3 { margin: 0 0 6px; font-size: 14px; }
+  .controls h3 + * { margin-top: 0; }
+  .controls ul + h3 { margin-top: 12px; }
+  .controls ul { margin: 0; padding-left: 18px; }
+  .controls li + li { margin-top: 3px; }
+  /* 한 줄에 "키 + 설명", 좁으면 설명만 다음 줄로 */
+  .controls dl { margin: 0; }
+  .controls dt { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; white-space: nowrap; margin-right: 6px; }
+  .controls dd { display: inline; margin: 0; color: var(--muted); word-break: keep-all; }
+  .controls dd::after { content: ""; display: block; margin-bottom: 4px; }
   .controls .rule { grid-column: 1 / -1; }
+  kbd {
+    font: inherit; font-size: 12px; font-weight: 800; line-height: 1.5; color: var(--ink);
+    background: #fff; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: var(--r-s); padding: 0 5px;
+  }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: var(--r-s); margin-right: 3px; flex: none; }
+  .sw-wall { background: repeating-linear-gradient(90deg, #e5484d 0 4px, #fff 4px 8px); box-shadow: inset 0 0 0 1px var(--line); }
   @media (max-width: 420px) { .controls { grid-template-columns: 1fr; } }
   .bigBtn {
     border: 0; cursor: pointer; font: inherit; font-size: 22px; font-weight: 900; color: #fff;
-    background: var(--go); border-radius: 14px; padding: 14px 40px; box-shadow: 0 6px 0 var(--go-dark);
+    background: var(--go); border-radius: var(--r-m); padding: 14px 40px; box-shadow: 0 6px 0 var(--go-dark);
   }
   .bigBtn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--go-dark); }
-  .note { margin-top: 14px; font-size: 12px; opacity: 0.6; }
-  .result { font-size: 18px; line-height: 1.8; margin-bottom: 20px; }
-  .result b { font-size: 30px; }
+  .note { margin-top: 14px; font-size: 12px; color: var(--muted); }
+  .note.err { color: var(--bad); font-weight: 800; }
+  .result { margin-bottom: 20px; }
+  .result .modeTag { margin-bottom: 10px; }
+  .result .time { font-size: 44px; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; margin-bottom: 14px; }
+  .result .time small { display: block; font-size: 13px; font-weight: 800; color: var(--muted); margin-bottom: 2px; }
+  .result .stats {
+    display: grid; grid-template-columns: auto auto; gap: 6px 16px; justify-content: center; text-align: left;
+    margin: 0 auto; font-size: 16px; font-variant-numeric: tabular-nums;
+  }
+  .result .stats dt { color: var(--muted); }
+  .result .stats dd { margin: 0; font-weight: 800; }
+  .result .stats small { font-weight: 600; color: var(--muted); }
+  .result .c-ok { color: var(--go-dark); }
+  .result .c-bad { color: var(--bad); }
   .btnRow { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
   .subBtn {
     border: 0; cursor: pointer; font: inherit; font-size: 16px; font-weight: 800; color: var(--ink);
-    background: #f2f5fa; border-radius: 12px; padding: 12px 18px; box-shadow: 0 5px 0 #c9d1dd;
+    background: var(--surface); border-radius: var(--r-m); padding: 12px 18px; box-shadow: 0 5px 0 var(--line);
+    display: inline-flex; align-items: center; gap: 6px;
   }
-  .subBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #c9d1dd; }
+  .subBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--line); }
   .runCards { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: -6px 0 20px; }
   .runCards figure { margin: 0; width: 64px; font-size: 11px; font-weight: 700; line-height: 1.3; }
-  .runCards img { width: 64px; height: 64px; border-radius: 10px; background: #eef2f7; display: block; }
-  .runCards .shiny img { box-shadow: 0 0 0 2px #ffd84d, 0 0 10px rgba(255, 200, 40, .8); }
+  .runCards img { width: 64px; height: 64px; border-radius: var(--r-m); background: var(--surface); display: block; }
+  .runCards .shiny img { box-shadow: 0 0 0 2px var(--gold), 0 0 10px rgba(255, 200, 40, .8); }
   .stickyRow { position: sticky; bottom: -26px; background: #fff; padding: 12px 0 4px; }
 
   /* ---------- 틀린 문제 복습 ---------- */
   .review { text-align: left; margin: 0 0 8px; }
   .review h2 { font-size: 19px; margin: 0 0 4px; text-align: center; }
-  .review .rsub { font-size: 13px; opacity: 0.65; text-align: center; margin-bottom: 12px; }
-  .review .perfect { text-align: center; font-size: 17px; font-weight: 800; background: #e8f8ee; color: #1f8a50; border-radius: 12px; padding: 14px; }
-  .rItem { background: #f6f8fb; border-radius: 12px; padding: 10px 12px 11px; margin-bottom: 8px; border-left: 6px solid #c3ccd8; }
-  .rItem .rmeta { font-size: 12px; font-weight: 800; opacity: 0.6; margin-bottom: 3px; }
+  .review .rsub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 12px; }
+  .review .perfect { text-align: center; font-size: 17px; font-weight: 800; background: var(--go-soft); color: var(--go-dark); border-radius: var(--r-m); padding: 14px; }
+  .rItem { background: var(--surface); border-radius: var(--r-m); padding: 10px 12px 11px; margin-bottom: 8px; }
+  .rItem .rmeta { font-size: 12px; font-weight: 800; color: var(--muted); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+  .rItem .rmeta i { width: 10px; height: 10px; border-radius: var(--r-s); flex: none; }
   .rItem .rq { font-size: 15px; font-weight: 700; line-height: 1.6; word-break: keep-all; }
-  .rItem mark { background: #c9f2d9; color: #0f6b3a; padding: 0 5px; border-radius: 5px; font-weight: 900; }
+  .rItem mark { background: #c9f2d9; color: #0f6b3a; padding: 0 5px; border-radius: var(--r-s); font-weight: 900; }
   .rItem .rans { font-size: 13px; margin-top: 6px; line-height: 1.6; word-break: keep-all; }
   .rItem .mine { color: var(--bad); font-weight: 800; text-decoration: line-through; }
-  .rItem .right { color: #1f8a50; font-weight: 900; }
-  .rItem .oxBadge { display: inline-block; font-weight: 900; color: #fff; border-radius: 6px; padding: 0 7px; margin-right: 6px; }
+  .rItem .right { color: var(--go-dark); font-weight: 900; }
+  .rItem .oxBadge { display: inline-block; font-weight: 900; color: #fff; border-radius: var(--r-s); padding: 0 7px; margin-right: 6px; }
 
   /* ---------- 유물 카드 ---------- */
   .acard {
-    position: relative; width: 100%; border-radius: 16px; padding: 10px 10px 12px; text-align: center;
-    background: #f4f6fa; border: 3px solid #c3ccd8; box-shadow: 0 5px 0 rgba(0, 0, 0, 0.15); color: var(--ink);
+    position: relative; width: 100%; border-radius: var(--r-m); padding: 10px 10px 12px; text-align: center;
+    background: var(--surface); border: 3px solid var(--line); box-shadow: 0 5px 0 rgba(0, 0, 0, 0.15); color: var(--ink);
   }
-  .acard img { width: 100%; aspect-ratio: 1; display: block; border-radius: 10px; background: radial-gradient(circle at 50% 40%, #fff, #dfe5ee); }
-  .acard .rar { position: absolute; top: 14px; left: 14px; font-size: 11px; font-weight: 900; color: #fff; padding: 2px 7px; border-radius: 6px; background: #7d8796; }
-  .acard .shinyTag { position: absolute; top: 14px; right: 14px; font-size: 11px; font-weight: 900; color: #7a5600; padding: 2px 7px; border-radius: 6px; background: #ffe27a; }
+  .acard img { width: 100%; aspect-ratio: 1; display: block; border-radius: var(--r-s); background: #fff; }
+  .acard .rar { position: absolute; top: 14px; left: 14px; font-size: 11px; font-weight: 900; color: #fff; padding: 2px 7px; border-radius: var(--r-s); background: var(--muted); }
+  .acard .shinyTag { position: absolute; top: 14px; right: 14px; font-size: 11px; font-weight: 900; color: var(--gold-ink); padding: 2px 7px; border-radius: var(--r-s); background: #ffe27a; }
   .acard.r2 { background: #eef4ff; border-color: #4c8df6; }
   .acard.r2 .rar { background: #4c8df6; }
   .acard.r3 { background: #fff7e0; border-color: #e3a917; }
   .acard.r3 .rar { background: #e3a917; }
-  .acard.shiny { box-shadow: 0 0 0 3px #ffd84d, 0 0 18px 4px rgba(255, 200, 40, 0.7); }
+  .acard.shiny { box-shadow: 0 0 0 3px var(--gold), 0 0 18px 4px rgba(255, 200, 40, 0.7); }
   .acard .nm { font-weight: 900; font-size: 16px; margin-top: 8px; word-break: keep-all; }
-  .acard .era { font-size: 12px; opacity: 0.65; }
+  .acard .era { font-size: 12px; color: var(--muted); }
   .acard .ds { font-size: 12px; line-height: 1.5; margin-top: 6px; text-align: left; word-break: keep-all; }
   .acard.locked { background: #eceff3; border-color: #d3d9e1; }
   .acard.locked img { filter: brightness(0) opacity(0.22); }
@@ -212,7 +260,7 @@
     transform: translate(calc(100% + 24px), -50%); transition: transform .35s cubic-bezier(.2, 1.3, .4, 1);
   }
   #cardPop.show { transform: translate(0, -50%); }
-  #cardPop .pill { display: inline-block; padding: 4px 10px; border-radius: 10px; text-shadow: none; font-size: 14px; line-height: 1.4; word-break: keep-all; }
+  #cardPop .pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: var(--r-m); text-shadow: none; font-size: 14px; line-height: 1.4; word-break: keep-all; }
   #cardPop .pill.good { background: var(--go); }
   #cardPop .pill.bad { background: var(--bad); }
   #cardPop .popHead {
@@ -226,11 +274,11 @@
   }
 
   #bookScreen .panel { width: min(960px, 100%); }
-  #bookStats { margin: -8px 0 16px; font-size: 15px; opacity: 0.8; }
+  #bookStats { margin: -8px 0 16px; font-size: 15px; color: var(--muted); }
   .bookZone { text-align: left; font-weight: 900; font-size: 15px; margin: 18px 0 8px; display: flex; align-items: center; gap: 8px; }
-  .bookZone span { width: 12px; height: 12px; border-radius: 3px; }
+  .bookZone span { width: 12px; height: 12px; border-radius: var(--r-s); }
   .bookGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-  .linkBtn { border: 0; background: none; font: inherit; font-size: 12px; color: #8a93a3; text-decoration: underline; cursor: pointer; margin-top: 14px; }
+  .linkBtn { border: 0; background: none; font: inherit; font-size: 12px; color: var(--muted); text-decoration: underline; cursor: pointer; margin-top: 14px; }
 
   /* ---------- 터치 조작 ---------- */
   #stickBase, #jumpBtn { display: none; }
@@ -255,6 +303,20 @@
 </style>
 </head>
 <body>
+<!-- 아이콘: 기기마다 모양이 달라지는 이모지 대신 한 세트의 단색 SVG를 씀 (글자색을 따라감) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 16.5h6"/><circle cx="12" cy="10" r="2.6"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8l2.8 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17.1l-5.7 3 1.2-6.3-4.6-4.4 6.3-.8z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.3 6.5a8 8 0 0 1 0 11"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5v5.5h5.5"/><path d="M4.6 10A8 8 0 1 1 6.3 17.7"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5zM12 6.5V19"/></symbol>
+  </defs>
+</svg>
 <canvas id="game" tabindex="0"></canvas>
 
 <div id="hud">
@@ -262,15 +324,15 @@
     <div id="zoneName"><span id="zoneDot"></span><span id="zoneLabel">출발</span></div>
     <div id="floorText">0층 / 18층</div>
     <div id="progress"></div>
-    <span id="modeBadge" class="modeBadge">🔥 도전자 모드 · 체크포인트 없음</span>
+    <span id="modeBadge" class="modeBadge">도전자 모드 · 체크포인트 없음</span>
   </div>
   <div id="rightHud">
     <div id="timer" class="card">00:00</div>
-    <div id="score" class="card">⭕ 0 · ❌ 0 · 🏺 0</div>
+    <div id="score" class="card"></div>
     <div class="hudBtns">
-      <button id="lockBtn" type="button" title="시선 고정 켜기/끄기 (Shift)">🔒</button>
-      <button id="soundBtn" type="button" title="소리 켜기/끄기 (M)">🔊</button>
-      <button id="respawnBtn" type="button" title="체크포인트로 (R)">↺<span class="lbl"> 체크포인트로</span></button>
+      <button id="lockBtn" type="button" title="시선 고정 켜기/끄기 (Shift)" aria-label="시선 고정"><svg class="ic"><use href="#i-lock"/></svg></button>
+      <button id="soundBtn" type="button" title="소리 켜기/끄기 (M)" aria-label="소리"><svg class="ic"><use href="#i-sound"/></svg></button>
+      <button id="respawnBtn" type="button" title="체크포인트로 (R)"><svg class="ic"><use href="#i-back"/></svg><span class="lbl">체크포인트로</span></button>
     </div>
   </div>
 </div>
@@ -284,24 +346,59 @@
 
 <div id="titleScreen" class="overlay">
   <div class="panel">
-    <h1>🗼 역사 타워 레이스</h1>
-    <p class="sub">구석기에서 고려까지, 탑 꼭대기에 먼저 오르자!</p>
+    <h1>역사 타워 레이스</h1>
+    <p class="sub">구석기에서 고려까지, 탑 꼭대기에 먼저 오르자</p>
     <div class="zones" id="zoneChips"></div>
-    <div class="pickTitle">🧑 캐릭터 고르기</div>
+    <h2 class="pickTitle">캐릭터</h2>
     <div class="skins" id="skins"></div>
-    <div class="pickTitle">🎮 모드 고르기</div>
+    <h2 class="pickTitle">모드</h2>
     <div class="modes" id="modes">
-      <button type="button" class="modeBtn" data-mode="normal"><b>🙂 기본 모드</b><span>떨어지면 마지막 체크포인트에서 다시 시작</span></button>
-      <button type="button" class="modeBtn" data-mode="challenge"><b>🔥 도전자 모드</b><span>체크포인트 없음! 떨어지면 떨어진 곳에서 다시 올라가요. 땅까지 떨어지면 출발 광장으로 걸어가기</span></button>
+      <button type="button" class="modeBtn" data-mode="normal"><b>기본 모드</b><span>떨어지면 마지막 체크포인트에서 다시 시작해요.</span></button>
+      <button type="button" class="modeBtn" data-mode="challenge"><b>도전자 모드</b><span>체크포인트가 없어요. 떨어진 곳에서 다시 올라가고, 땅까지 떨어지면 출발 광장부터 걸어가요.</span></button>
     </div>
     <div class="controls">
-      <div><b>⌨️ 컴퓨터</b>WASD·↑↓: 이동 · ←→: 방향 돌리기<br>스페이스: 점프 · 마우스 끌기: 시점<br>Shift: 시선 고정 (마우스로 바로 시점)<br>1·2·3: 정답 고르기 · R: 체크포인트 · M: 소리</div>
-      <div><b>📱 태블릿</b>왼쪽 아래 조이스틱: 이동<br>점프 버튼 또는 오른쪽 화면 톡: 점프<br>오른쪽 화면 끌기: 시점 · 🔒: 시선 고정<br>문제 창의 버튼을 눌러도 정답을 골라요</div>
-      <div class="rule"><b>📜 규칙</b>층마다 문제가 나와요. <b style="display:inline">정답 발판</b>으로 점프하거나 문제 창에서 답을 고르면 다음 층으로!<br>틀린 발판은 무너지고, 그 <b style="display:inline">구역의 시작점</b>으로 돌아가요.<br>맞히면 그 층의 <b style="display:inline">유물 카드</b>를 얻어요. 한 번에 맞히면 ✨반짝 카드!<br>광장 옆 <b style="display:inline">황금 다리</b>를 건너 유물 받침대에 올라가면 ⭐보너스 문제 (맞히면 기록 15초 단축)<br>🧱 벽은 점프로 넘고, 🔴 회전 막대에 맞으면 튕겨 나가니 점프로 피하고, 🩷 점프대에 올라타면 다음 구역으로 슝!</div>
+      <section>
+        <h3>컴퓨터</h3>
+        <dl>
+          <dt><kbd>WASD</kbd> <kbd>↑↓</kbd></dt><dd>이동</dd>
+          <dt><kbd>←→</kbd></dt><dd>방향 돌리기</dd>
+          <dt><kbd>스페이스</kbd></dt><dd>점프</dd>
+          <dt>마우스 끌기</dt><dd>시점</dd>
+          <dt><kbd>Shift</kbd></dt><dd>시선 고정</dd>
+          <dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>정답 고르기</dd>
+          <dt><kbd>R</kbd></dt><dd>체크포인트로</dd>
+          <dt><kbd>M</kbd></dt><dd>소리 끄기·켜기</dd>
+        </dl>
+      </section>
+      <section>
+        <h3>태블릿</h3>
+        <dl>
+          <dt>왼쪽 조이스틱</dt><dd>이동</dd>
+          <dt>점프 버튼</dt><dd>점프 (오른쪽 화면 톡도 가능)</dd>
+          <dt>오른쪽 화면 끌기</dt><dd>시점</dd>
+          <dt><svg class="ic"><use href="#i-lock"/></svg> 버튼</dt><dd>시선 고정</dd>
+          <dt>문제 창 버튼</dt><dd>정답 고르기</dd>
+        </dl>
+      </section>
+      <section class="rule">
+        <h3>규칙</h3>
+        <ul>
+          <li>층마다 문제가 나와요. <b>정답 발판</b>으로 점프하거나 문제 창에서 답을 고르면 다음 층으로 올라가요.</li>
+          <li>틀린 발판은 무너지고 그 <b>구역의 시작점</b>으로 돌아가요.</li>
+          <li>맞히면 그 층의 <b>유물 카드</b>를 얻어요. 한 번에 맞히면 반짝 카드예요.</li>
+          <li>광장 옆 <b>황금 다리</b>를 건너 유물 받침대에 오르면 보너스 문제가 나와요. 맞히면 기록이 15초 줄어요.</li>
+        </ul>
+        <h3>장애물</h3>
+        <dl>
+          <dt><i class="sw sw-wall"></i>줄무늬 벽</dt><dd>점프로 넘어요.</dd>
+          <dt><i class="sw" style="background:#e5484d"></i>회전 막대</dt><dd>맞으면 튕겨 나가요. 점프로 피해요.</dd>
+          <dt><i class="sw" style="background:#ff5fa2"></i>점프대</dt><dd>올라타면 다음 구역으로 날아가요.</dd>
+        </dl>
+      </section>
     </div>
     <div class="btnRow">
       <button class="bigBtn" id="startBtn" type="button">시작하기</button>
-      <button class="subBtn" id="bookBtn" type="button">📖 유물 도감</button>
+      <button class="subBtn" id="bookBtn" type="button">유물 도감</button>
     </div>
     <div class="note" id="note">사회 5-2 1단원 · 유적과 유물로 살펴본 옛 사람들의 생활</div>
   </div>
@@ -309,20 +406,20 @@
 
 <div id="finishScreen" class="overlay hidden">
   <div class="panel">
-    <h1>🏆 정상 도착!</h1>
+    <h1>정상 도착</h1>
     <div class="result" id="resultText"></div>
     <div class="runCards" id="runCards"></div>
     <div class="review" id="review"></div>
     <div class="btnRow stickyRow">
       <button class="bigBtn" id="againBtn" type="button">다시 하기</button>
-      <button class="subBtn" id="bookBtn2" type="button">📖 유물 도감</button>
+      <button class="subBtn" id="bookBtn2" type="button">유물 도감</button>
     </div>
   </div>
 </div>
 
 <div id="bookScreen" class="overlay hidden">
   <div class="panel">
-    <h1>📖 유물 도감</h1>
+    <h1>유물 도감</h1>
     <div id="bookStats"></div>
     <div id="bookBody"></div>
     <div class="btnRow" style="margin-top:20px">
@@ -345,7 +442,8 @@
 <script src="sound.js"></script>
 <script type="module">
 if (typeof THREE === "undefined") {
-  document.getElementById("note").textContent = "⚠ lib/three.min.js를 불러오지 못했어요. 게임 폴더를 통째로 옮겼는지 확인해 주세요.";
+  document.getElementById("note").textContent = "lib/three.min.js를 불러오지 못했어요. 게임 폴더를 통째로 옮겼는지 확인해 주세요.";
+  document.getElementById("note").classList.add("err");
   throw new Error("three.js not loaded");
 }
 // 오래된 브라우저(구형 아이패드 사파리 등)에 없는 둥근 사각형 그리기 보충
@@ -880,7 +978,7 @@ const shrines = [];
     mesh.scale.setScalar(s);
     mesh.position.set(x, top + 2.3, z);
     scene.add(mesh);
-    const sign = makeSign("⭐ 보너스 문제", `맞히면 기록 ${BONUS_SEC}초 단축!`, "#f2c94c");
+    const sign = makeSign("보너스 문제", `맞히면 기록 ${BONUS_SEC}초 단축`, "#f2c94c");
     sign.scale.set(3.6, 1.8, 1);
     sign.position.set(x, top + 6.2, z);   // 떠 있는 유물(높이 2.3~4.6)을 가리지 않게 그 위에
     scene.add(sign);
@@ -1298,6 +1396,8 @@ let now = performance.now() / 1000;
 
 // ================= HUD =================
 const $ = (id) => document.getElementById(id);
+// body 맨 위 <symbol> 세트의 아이콘 (check, x, card, star, lock, sound, mute, back, book)
+const icon = (name) => `<svg class="ic" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 const progressEl = $("progress");
 for (let f = 1; f <= TOTAL_FLOORS; f++) progressEl.appendChild(document.createElement("span"));
 ZONES.forEach((z, i) => {
@@ -1307,8 +1407,8 @@ ZONES.forEach((z, i) => {
   $("zoneChips").appendChild(chip);
 });
 if (!hasQuestions) {
-  $("note").textContent = "⚠ questions.js를 불러오지 못했어요. index.html과 같은 폴더에 있는지 확인해 주세요.";
-  $("note").style.opacity = 1;
+  $("note").textContent = "questions.js를 불러오지 못했어요. index.html과 같은 폴더에 있는지 확인해 주세요.";
+  $("note").classList.add("err");
 }
 
 function updateHud() {
@@ -1323,7 +1423,11 @@ function updateHud() {
   [...progressEl.children].forEach((el, i) => {
     el.style.background = i < f ? ZONES[Math.floor(i / FLOORS_PER_ZONE)].color : "";
   });
-  $("score").textContent = `⭕ ${correctCount} · ❌ ${wrongCount} · 🏺 ${runCards.length}` + (bonusStars ? ` · ⭐ ${bonusStars}` : "");
+  $("score").innerHTML =
+    `<span class="c-ok" title="맞힌 문제">${icon("check")}${correctCount}</span>` +
+    `<span class="c-bad" title="틀린 문제">${icon("x")}${wrongCount}</span>` +
+    `<span title="이번 판에 모은 유물">${icon("card")}${runCards.length}</span>` +
+    (bonusStars ? `<span class="c-gold" title="보너스 정답">${icon("star")}${bonusStars}</span>` : "");
 }
 const fmtTime = (sec) => {
   const s = Math.max(0, Math.floor(sec));
@@ -1360,7 +1464,7 @@ function updateQuestionPanel() {
     `<div class="opts">${chips}</div>` +
     `<div class="qhelp">정답 발판으로 점프하거나, 위 버튼을 눌러 고르세요 (키보드 1·2·3)</div>` +
     (shrines[progress.floor] && !bonusDone[progress.floor]
-      ? `<div class="qhelp" style="opacity:1;color:#b07d00;font-weight:800">⭐ 옆의 황금 다리를 건너 유물 받침대에 올라가면 보너스 문제! (맞히면 ${BONUS_SEC}초 단축)</div>` : "");
+      ? `<div class="qhelp bonus">${icon("star")}옆의 황금 다리를 건너 유물 받침대에 오르면 보너스 문제 (맞히면 ${BONUS_SEC}초 단축)</div>` : "");
   el.style.display = "block";
 }
 // 문제 창에서 답 고르기 → 그 발판으로 자동으로 폴짝
@@ -1386,8 +1490,8 @@ function openBonus(f) {
   bonusChoices = shuffle([art, ...others]);
   const el = $("bonusPanel");
   el.innerHTML =
-    `<button class="closeX" type="button" data-close="1" title="닫기">✕</button>` +
-    `<div class="btag">⭐ 보너스 문제 · 맞히면 기록 ${BONUS_SEC}초 단축!</div>` +
+    `<button class="closeX" type="button" data-close="1" title="닫기" aria-label="닫기">${icon("x")}</button>` +
+    `<div class="btag">${icon("star")}보너스 문제 · 맞히면 기록 ${BONUS_SEC}초 단축</div>` +
     `<img src="${cardImages[art.id]}" alt="">` +
     `<div class="btitle">이 유물의 이름은 무엇일까요?</div>` +
     `<div class="opts">${bonusChoices.map((a, i) => `<button type="button" data-b="${i}">${"①②③"[i]} ${esc(a.name)}</button>`).join("")}</div>` +
@@ -1404,8 +1508,8 @@ function answerBonus(i) {
   // 보너스 창은 바로 닫고 바로 움직일 수 있음. 결과는 아래 문제 창과 겹치지 않게 오른쪽 카드 팝업으로 보여 줌
   closeBonus();
   showCardPop(ok
-    ? `<span class="pill good">⭐ 보너스 정답! 기록 ${BONUS_SEC}초 단축</span>`
-    : `<span class="pill bad">아쉬워요! 정답은 「${esc(art.name)}」</span>`, art, {}, ok ? 2800 : 4000);
+    ? `<span class="pill good">${icon("star")}보너스 정답 · 기록 ${BONUS_SEC}초 단축</span>`
+    : `<span class="pill bad">아쉬워요. 정답은 「${esc(art.name)}」</span>`, art, {}, ok ? 2800 : 4000);
   updateHud();
 }
 function closeBonus() {
@@ -1422,7 +1526,7 @@ let feedbackTimer = 0;
 function showFeedback(ok, title, detail, ms) {
   const el = $("feedback");
   el.className = "card " + (ok ? "ok" : "bad");
-  el.innerHTML = `<div class="ft">${esc(title)}</div>` + (detail ? `<div class="fd">${detail}</div>` : "");
+  el.innerHTML = `<div class="ft">${icon(ok ? "check" : "x")}${esc(title)}</div>` + (detail ? `<div class="fd">${detail}</div>` : "");
   el.style.display = "block";
   clearTimeout(feedbackTimer);
   feedbackTimer = setTimeout(() => { el.style.display = "none"; }, ms);
@@ -1446,15 +1550,15 @@ function cardHTML(art, opts = {}) {
   const locked = !!opts.locked;
   return `<div class="acard r${art.rarity}${opts.shiny ? " shiny" : ""}${locked ? " locked" : ""}">` +
     `<img src="${cardImages[art.id]}" alt="${locked ? "" : esc(art.name)}">` +
-    `<span class="rar">${RARITY[art.rarity]}</span>` + (opts.shiny ? `<span class="shinyTag">✨반짝</span>` : "") +
+    `<span class="rar">${RARITY[art.rarity]}</span>` + (opts.shiny ? `<span class="shinyTag">반짝</span>` : "") +
     `<div class="nm">${locked ? "???" : esc(art.name)}</div>` +
     `<div class="era">${esc(art.era)} · ${art.floor}층</div>` +
     `<div class="ds">${locked ? `${art.floor}층 문제를 맞히면 얻을 수 있어요.` : esc(art.desc)}</div></div>`;
 }
 function updateBookButtons() {
-  const label = `📖 유물 도감 (${collectedCount()}/${artifactList.length})`;
-  $("bookBtn").textContent = label;
-  $("bookBtn2").textContent = label;
+  const label = `${icon("book")}유물 도감 <span style="color:var(--muted)">${collectedCount()}/${artifactList.length}</span>`;
+  $("bookBtn").innerHTML = label;
+  $("bookBtn2").innerHTML = label;
 }
 let popTimer = 0;
 function awardCard(floor, shiny) {
@@ -1464,7 +1568,7 @@ function awardCard(floor, shiny) {
   collection[art.id] = { n: (prev ? prev.n : 0) + 1, shiny: !!(shiny || (prev && prev.shiny)) };
   saveCollection();
   runCards.push({ art, shiny });
-  showCardPop(prev ? "🏺 유물 획득!" : "🎉 새 유물 발견!", art, { shiny }, 3200);
+  showCardPop(prev ? "유물 획득" : "새 유물 발견", art, { shiny }, 3200);
   setTimeout(() => sfx("card"), 300);
   updateHud();
 }
@@ -1478,7 +1582,7 @@ function showCardPop(headHtml, art, opts, ms) {
 }
 function openBook() {
   const shinyN = artifactList.filter((a) => collection[a.id] && collection[a.id].shiny).length;
-  $("bookStats").textContent = `모은 유물 ${collectedCount()} / ${artifactList.length} · ✨반짝 ${shinyN}`;
+  $("bookStats").textContent = `모은 유물 ${collectedCount()} / ${artifactList.length} · 반짝 카드 ${shinyN}`;
   $("bookBody").innerHTML = ZONES.map((z, zi) => {
     const arts = artifactList.filter((a) => Math.floor((a.floor - 1) / FLOORS_PER_ZONE) === zi);
     return `<div class="bookZone"><span style="background:${z.color}"></span>${zi + 1}구역 · ${esc(z.name)}</div>` +
@@ -1535,9 +1639,9 @@ function onOptionLanded(s) {
     correctCount++;
     const pad = fl.pads[s.index];
     pad.mat.color.set("#2fbf71");
-    setPadLabel(pad, `✔ ${opt.text}`, "#2fbf71");
+    setPadLabel(pad, opt.text, "#2fbf71");
     fl.pads.forEach((p, i) => { if (i !== s.index && p.solid.active) dropPad(p); });
-    showFeedback(true, "⭕ 정답!", q.explain ? esc(q.explain) : "", q.explain ? 3000 : 1500);
+    showFeedback(true, "정답!", q.explain ? esc(q.explain) : "", q.explain ? 3000 : 1500);
     sfx("correct");
     awardCard(s.floor, fl.tries === 0);
   } else {
@@ -1553,7 +1657,7 @@ function onOptionLanded(s) {
     lastGrounded = -1;
     jumpQueued = -1;
     const back = WRONG_SENDS_TO === "zone" ? `${fl.zone + 1}구역 시작점으로 돌아가요.` : "이 층 광장으로 돌아가요.";
-    showFeedback(false, "❌ 아쉬워요!",
+    showFeedback(false, "아쉬워요",
       `정답은 <b>${esc(answerText)}</b>` + (q.explain ? `<br>${esc(q.explain)}` : "") + `<br><small>${back} 이 층에는 새 문제가 나와요.</small>`,
       4500);
     // 발판이 다 떨어진 뒤 이 층에 새 문제를 냄
@@ -1713,7 +1817,7 @@ function setShiftLock(on) {
     try { const p = canvas.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch { /* 지원하지 않는 브라우저 */ }
   }
   if (!on && document.pointerLockElement === canvas) document.exitPointerLock();
-  toast(on ? "🔒 시선 고정 켜짐 (Shift로 끄기)" : "🔓 시선 고정 꺼짐");
+  toast(on ? "시선 고정 켜짐 (Shift로 끄기)" : "시선 고정 꺼짐");
 }
 function toggleShiftLock() { setShiftLock(!shiftLock); }
 document.addEventListener("pointerlockchange", () => {
@@ -1740,14 +1844,14 @@ canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 $("jumpBtn").addEventListener("pointerdown", (e) => { e.preventDefault(); jumpQueued = now; });
 // 틀린 직후에 누르면 체크포인트가 아니라 틀렸을 때처럼 구역 시작점으로 보냄
 function backToCheckpoint() {
-  if (mode === "challenge") { toast("🔥 도전자 모드에는 체크포인트가 없어요!"); return; }
+  if (mode === "challenge") { toast("도전자 모드에는 체크포인트가 없어요"); return; }
   if (pendingWrong !== null) fellOff();
   else respawn("체크포인트로 돌아왔어요");
 }
 $("respawnBtn").addEventListener("click", () => { if (state === "play") backToCheckpoint(); canvas.focus(); });
 function updateSoundBtn() {
   if (!snd) { $("soundBtn").style.display = "none"; return; }
-  $("soundBtn").textContent = snd.muted ? "🔇" : "🔊";
+  $("soundBtn").innerHTML = icon(snd.muted ? "mute" : "sound");
 }
 function toggleSound() {
   if (!snd) return;
@@ -1797,7 +1901,7 @@ function finishRace() {
   closeBonus();
   if (shiftLock) setShiftLock(false);
   $("cardPop").classList.remove("show");
-  toast("🏆 정상 도착! L을 가져가~ 🕺");
+  toast("정상 도착! L을 가져가~");
   launchConfetti();
   sfx("fanfare");
   setTimeout(() => { if (state === "ceremony") showResults(); }, CEREMONY_SEC * 1000);
@@ -1805,12 +1909,15 @@ function finishRace() {
 function showResults() {
   state = "finish";
   $("resultText").innerHTML =
-    (mode === "challenge" ? `<span class="modeTag">🔥 도전자 모드 완주!</span><br>` : "") +
-    `기록 <b>${fmtTime(finishTime)}</b><br>` +
-    `맞힌 문제 ⭕ ${correctCount}개 · 틀린 문제 ❌ ${wrongCount}개<br>` +
-    `떨어진 횟수 ${falls}번<br>` +
-    `이번 판에 모은 유물 🏺 ${runCards.length}개 (✨반짝 ${runCards.filter((c) => c.shiny).length}개)` +
-    (bonusStars ? `<br>보너스 문제 ⭐ ${bonusStars}개 (기록 ${bonusStars * BONUS_SEC}초 단축)` : "");
+    (mode === "challenge" ? `<span class="modeTag">도전자 모드 완주</span>` : "") +
+    `<div class="time"><small>기록</small>${fmtTime(finishTime)}</div>` +
+    `<dl class="stats">` +
+    `<dt>맞힌 문제</dt><dd class="c-ok">${correctCount}개</dd>` +
+    `<dt>틀린 문제</dt><dd class="c-bad">${wrongCount}개</dd>` +
+    `<dt>떨어진 횟수</dt><dd>${falls}번</dd>` +
+    `<dt>모은 유물</dt><dd>${runCards.length}개 <small>(반짝 ${runCards.filter((c) => c.shiny).length}개)</small></dd>` +
+    (bonusStars ? `<dt>보너스 정답</dt><dd>${bonusStars}개 <small>(${bonusStars * BONUS_SEC}초 단축)</small></dd>` : "") +
+    `</dl>`;
   $("runCards").innerHTML = runCards.map(({ art, shiny }) =>
     `<figure class="${shiny ? "shiny" : ""}"><img src="${cardImages[art.id]}" alt=""><figcaption>${esc(art.name)}</figcaption></figure>`).join("");
   $("review").innerHTML = reviewHTML();
@@ -1828,7 +1935,7 @@ function filledSentence(q) {
   return text.replace(/\(\s+\)/g, () => `<mark>${esc(fills[k++] ?? "")}</mark>`);
 }
 function reviewHTML() {
-  if (!wrongLog.length) return `<h2>📝 틀린 문제 복습</h2><div class="perfect">🎉 틀린 문제가 하나도 없어요! 완벽해요!</div>`;
+  if (!wrongLog.length) return `<h2>틀린 문제 복습</h2><div class="perfect">틀린 문제가 하나도 없어요. 완벽해요!</div>`;
   // 같은 문제를 여러 번 틀렸으면 한 번만 보여 주고 횟수를 표시
   const byId = new Map();
   for (const w of wrongLog) {
@@ -1850,12 +1957,12 @@ function reviewHTML() {
       ans = `내가 고른 답: <span class="mine">${[...new Set(e.chosenList)].map(esc).join(", ")}</span>` +
         ` → 정답: <span class="right">${esc(correctText(q))}</span>`;
     }
-    return `<div class="rItem" style="border-left-color:${zone.color}">` +
-      `<div class="rmeta">${e.floor}층 · ${esc(zone.name)}${times}</div>` +
+    return `<div class="rItem">` +
+      `<div class="rmeta"><i style="background:${zone.color}"></i>${e.floor}층 · ${esc(zone.name)}${times}</div>` +
       `<div class="rq">${filledSentence(q)}</div>` +
       `<div class="rans">${ans}</div></div>`;
   }).join("");
-  return `<h2>📝 틀린 문제 복습</h2><div class="rsub">초록색이 정답이에요. 한 번 더 읽어 보세요!</div>${items}`;
+  return `<h2>틀린 문제 복습</h2><div class="rsub">초록색이 정답이에요. 한 번 더 읽어 보세요.</div>${items}`;
 }
 $("startBtn").addEventListener("click", startRace);
 // 모드 고르기 (이 기기에 기억됨)
@@ -1893,7 +2000,7 @@ function onLanded() {
       progress = s;
       if (record) { maxCp = s.cp; maxZone = s.zone; }
       updateHud();
-      if (newZone) { toast(`🔥 ${s.zone + 1}구역 「${ZONES[s.zone].name}」 시대에 들어왔어요!`); sfx("zone"); }
+      if (newZone) { toast(`${s.zone + 1}구역 「${ZONES[s.zone].name}」 시대에 들어왔어요!`); sfx("zone"); }
       else if (record && s.kind === "plaza") toast(`${s.floor}층 도착!`);
     }
   } else if (s.kind === "option") {
@@ -1914,7 +2021,7 @@ function onLanded() {
       sfx("fall");
       progress = { kind: "ground", floor: 0, zone: 0, cp: -1 };
       updateHud();
-      toast("😱 땅까지 떨어졌어요! 「출발!」 광장으로 걸어가서 다시 올라가세요");
+      toast("땅까지 떨어졌어요. 「출발!」 광장으로 걸어가서 다시 올라가세요");
     }
   }
 }
