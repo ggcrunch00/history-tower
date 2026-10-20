@@ -127,6 +127,7 @@ const GameSound = (() => {
     wrong(t) { soft(62, t, 0.25, 0.35, sfxBus, "triangle"); soft(57, t + 0.18, 0.45, 0.35, sfxBus, "triangle"); },
     card(t) { [84, 88, 91, 96].forEach((m, i) => soft(m, t + i * 0.06, 0.35, 0.18, sfxBus)); },
     zone(t) { [72, 74, 76, 79].forEach((m, i) => pluck(m, t + i * 0.1, 0.6, 0.4, sfxBus, 3500)); },
+    checkpoint(t) { [79, 86].forEach((m, i) => soft(m, t + i * 0.07, 0.25, 0.16, sfxBus, "triangle")); },   // 깃발이 초록색으로 바뀔 때
     fall(t) {
       const o = ctx.createOscillator(), g = ctx.createGain();
       o.type = "sine";
