@@ -1042,7 +1042,12 @@ function placeSign(sign, s, height, lateral = 3, along = 0) {
   sign.position.set(s.cx + lateral * s.c + along * s.sn, s.maxY + height, s.cz - lateral * s.sn + along * s.c);
   scene.add(sign);
 }
-placeSign(makeSign("출발!", "1구역 구석기 →", ZONES[0].color), plazas[0], 3.2);
+// 출발 표지판은 광장 뒤쪽에 세움 (가운데에 두면 첫 발판의 "점프!" 안내 표지판을 가림)
+{
+  const sign = makeSign("출발!", "1구역 구석기 →", ZONES[0].color);
+  sign.scale.set(4, 2, 1);
+  placeSign(sign, plazas[0], 3.2, 3, -1.5);
+}
 for (let f = 1; f <= TOTAL_FLOORS; f++) {
   const zi = plazas[f].zone;
   // 광장 입구 안쪽(탑 쪽)에 세워서, 정답 발판 글자와 바깥쪽 유물 받침대를 가리지 않게 함
@@ -1805,7 +1810,7 @@ function answerBonus(i) {
   // 유물 창은 바로 닫고 바로 움직일 수 있음. 결과는 아래 문제 창과 겹치지 않게 오른쪽 카드 팝업으로 보여 줌
   closeBonus();
   if (ok) {
-    bonusStars++; startTime -= BONUS_SEC; sfx("correct");
+    bonusStars++; startTime += BONUS_SEC; sfx("correct");   // 기록 = now - startTime 이므로 startTime을 늦춰야 기록이 줄어듦
     // 반짝 카드: 이 층 문제를 아직 한 번도 틀리지 않았을 때
     awardCard(f, floors[f].tries === 0);
   } else {
@@ -2335,12 +2340,26 @@ function showResults() {
 }
 
 // 틀린 문제 복습: 빈칸에 정답을 채운 문장, 내가 고른 답, 해설
+// 빈칸 뒤 "을/를", "(으)로" 같은 조사는 채운 낱말의 받침에 맞춰 하나로 고름 (예: 덮개돌을/를 → 덮개돌을)
+function particle(word, p) {
+  const code = word.charCodeAt(word.length - 1) - 0xac00;
+  const jong = code >= 0 && code < 11172 ? code % 28 : 0;   // 0: 받침 없음, 8: ㄹ 받침
+  if (p === "을/를") return jong ? "을" : "를";
+  if (p === "이/가") return jong ? "이" : "가";
+  if (p === "은/는") return jong ? "은" : "는";
+  if (p === "(이)") return jong ? "이" : "";
+  if (p === "(으)") return jong && jong !== 8 ? "으" : "";
+  return p;
+}
 function filledSentence(q) {
   const text = esc(displayQuestion(q));
   if (q.type === "ox") return text;
   const fills = q.type === "choice" ? [q.answer] : q.answers.map((a) => a[0]);
   let k = 0;
-  return text.replace(/\(\s+\)/g, () => `<mark>${esc(fills[k++] ?? "")}</mark>`);
+  return text.replace(/\(\s+\)(을\/를|이\/가|은\/는|\(이\)|\(으\))?/g, (m, p) => {
+    const word = fills[k++] ?? "";
+    return `<mark>${esc(word)}</mark>${p ? particle(word, p) : ""}`;
+  });
 }
 function reviewHTML() {
   if (!wrongLog.length) return `<h2>틀린 문제 복습</h2><div class="perfect">틀린 문제가 하나도 없어요. 완벽해요!</div>`;
