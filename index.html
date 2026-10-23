@@ -105,6 +105,39 @@
   #bonusPanel .closeX { position: absolute; top: 6px; right: 6px; border: 0; background: none; padding: 4px; cursor: pointer; color: var(--muted); display: flex; }
   #bonusPanel .closeX .ic { width: 20px; height: 20px; }
 
+  /* ---------- 관문 문제 (중간보스) ---------- */
+  /* 화면 위쪽에 둠: 태블릿에서 글자판이 올라와도 가리지 않게 */
+  #gatePanel {
+    position: fixed; left: 50%; top: 84px; transform: translateX(-50%); display: none;
+    width: min(560px, calc(100vw - 32px)); padding: 16px 18px 14px; text-align: center;
+    background: var(--ink); color: #fff; border-radius: var(--r-l);
+    box-shadow: 0 0 0 3px #e5484d, 0 9px 0 3px #8f2629;
+  }
+  #gatePanel .gtag {
+    display: inline-block; font-size: 13px; font-weight: 900; color: #fff; background: #e5484d;
+    padding: 3px 10px; border-radius: var(--r-s); margin-bottom: 10px;
+  }
+  #gatePanel .gq { font-size: clamp(17px, 2.6vw, 21px); font-weight: 800; line-height: 1.5; word-break: keep-all; white-space: pre-wrap; }
+  #gatePanel .gsub { font-size: 12px; color: #c7cede; margin-top: 8px; word-break: keep-all; }
+  #gatePanel .ghint { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 12px; }
+  #gatePanel .ghint span { font-size: 12px; font-weight: 900; color: #ffd84d; margin-right: 6px; }
+  #gatePanel .ghint b {
+    min-width: 34px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 21px; font-weight: 900; color: var(--ink); background: #ffd84d; border-radius: var(--r-s); box-shadow: 0 3px 0 #c9a12f;
+  }
+  #gatePanel .ghint i { width: 10px; }
+  #gatePanel .grow { display: flex; gap: 8px; margin-top: 14px; }
+  #gatePanel input {
+    flex: 1; min-width: 0; font: inherit; font-size: 20px; font-weight: 800; color: var(--ink); text-align: center;
+    border: 0; border-radius: var(--r-m); padding: 10px 12px; outline: 3px solid transparent;
+  }
+  #gatePanel input:focus { outline-color: #ffd84d; }
+  #gatePanel button {
+    flex: none; border: 0; cursor: pointer; font: inherit; font-size: 17px; font-weight: 900; color: #fff;
+    background: #e5484d; border-radius: var(--r-m); padding: 0 18px; box-shadow: 0 4px 0 #8f2629;
+  }
+  #gatePanel button:active { transform: translateY(3px); box-shadow: 0 1px 0 #8f2629; }
+
   /* ---------- 시선 고정 ---------- */
   #crosshair {
     position: fixed; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%;
@@ -426,6 +459,7 @@
 <div id="crosshair"></div>
 <div id="qPanel" class="card"></div>
 <div id="bonusPanel" class="card"></div>
+<form id="gatePanel" autocomplete="off"></form>
 <div id="feedback" class="card"></div>
 <div id="toast"></div>
 <div id="countdown"></div>
@@ -493,12 +527,15 @@
           <li><b>초록 깃발</b>이 지금 체크포인트예요. 떨어지면 거기서 다시 시작해요.</li>
           <li>광장 옆 <b>황금 다리</b> 끝 유물 받침대에 오르면 유물 문제가 나와요. 맞혀야만 <b>유물 카드</b>를 얻고 기록도 15초 줄어요.</li>
           <li>그 층 문제를 한 번도 틀리지 않고 유물 문제까지 맞히면 반짝 카드예요.</li>
+          <li>구역이 끝나는 착지대에는 <b>관문</b>이 있어요. 정답을 직접 써서 맞혀야 다음 구역으로 가는 점프대(마지막은 정상)가 열려요.</li>
+          <li>관문에서 틀리면 이전 체크포인트로 돌아가요. 도전자 모드는 땅바닥까지 떨어져요. 다시 오면 같은 문제에 초성, 글자 힌트가 차례로 붙어요.</li>
         </ul>
         <h3>장애물</h3>
         <dl>
           <dt><i class="sw sw-wall"></i>줄무늬 벽</dt><dd>점프로 넘어요.</dd>
           <dt><i class="sw" style="background:#e5484d"></i>회전 막대</dt><dd>맞으면 튕겨 나가요. 점프로 피해요.</dd>
           <dt><i class="sw" style="background:#ff5fa2"></i>점프대</dt><dd>올라타면 다음 구역 출발점으로 날아가요.</dd>
+          <dt><i class="sw" style="background:rgba(229,72,77,.45);box-shadow:inset 0 0 0 2px #e5484d"></i>빨간 막</dt><dd>관문 문제를 맞히면 사라져요.</dd>
         </dl>
       </section>
     </div>
@@ -1118,8 +1155,8 @@ const cpFlags = [];
   const flagGeo = new THREE.BoxGeometry(1.2, 0.75, 0.06);
   flagGeo.translate(0.6, 0, 0);   // 깃대에 붙은 쪽이 회전축
   for (const s of [...plazas.slice(1), ...strips.slice(1), ...landings.slice(1)]) {
-    // 탑 쪽(안쪽) 뒤 모서리: 다음 발판·정답 발판·황금 다리로 가는 길을 막지 않음
-    const side = s.dir || 1, lx = -side * (s.hx - 0.45), lz = -(s.hz - 0.45);
+    // 탑 바깥쪽 뒤 모서리: 층 표지판(안쪽)과 겹치지 않고, 황금 다리(바깥쪽 앞)·다음 발판으로 가는 길도 막지 않음
+    const side = s.dir || 1, lx = side * (s.hx - 0.45), lz = -(s.hz - 0.45);
     const x = s.cx + lx * s.c + lz * s.sn, z = s.cz - lx * s.sn + lz * s.c;
     m.b(0.4, 0.2, 0.4, "#6f685e", x, s.maxY, z);
     m.b(0.14, 2.7, 0.14, "#8a8378", x, s.maxY, z);
@@ -1130,6 +1167,90 @@ const cpFlags = [];
     cpFlags.push({ sol: s, flag, base: s.theta });
   }
   scene.add(m.mesh());
+}
+
+// ================= 관문 (구역 끝 단답형 문제, 중간보스) =================
+// 구역이 끝나는 착지대(3·6·9·12·15·18층 정답 발판 뒤)에 서면 관문 문제가 나옴.
+// 착지대 앞쪽 끝에 착지대보다 넓고 높은 울타리(돌기둥 + 빨간 창살)를 세워, 맞히기 전에는 점프대(마지막은 정상)로 갈 수 없음.
+// 맞히면 창살이 위로 올라가 사라지고 돌기둥 문만 남음
+const GATE_H = 5.2;
+const gates = [];
+{
+  const stone = new Model();
+  for (let zi = 0; zi < ZONES.length; zi++) {
+    const f = (zi + 1) * FLOORS_PER_ZONE, last = zi === ZONES.length - 1;
+    const st = strips[f];
+    // 착지대 좌표 → 세계 좌표 (lx: 폭 방향, lz: 진행 방향, +면 점프대 쪽)
+    const at = (lx, lz) => [st.cx + lx * st.c + lz * st.sn, st.cz - lx * st.sn + lz * st.c];
+    const halfW = st.hx + 0.5, lz = st.hz - 0.3;
+    const [fx, fz] = at(0, lz);
+    // 충돌: 착지대 폭을 다 막고, 점프로 넘을 수 없는 높이
+    const bar = makeSolid(fx, fz, st.theta, halfW, 0.3, st.maxY + GATE_H, { kind: "barrier", floor: f });
+    bar.minY = st.maxY;
+    solids.push(bar);
+    // 양옆 난간 (늘 있음): 울타리 끝을 돌아가거나 착지대 옆으로 떨어지지 않게 착지대를 ㄷ자로 감쌈.
+    // 점프 높이(약 2)보다 높아서 넘을 수 없음
+    for (const sx of [-1, 1]) {
+      const [rx, rz] = at(sx * (st.hx + 0.25), 0);
+      const rail = makeSolid(rx, rz, st.theta, 0.25, st.hz, st.maxY + 2.6, { kind: "wall", floor: f });
+      rail.minY = st.maxY;
+      solids.push(rail);
+      for (const pz of [-st.hz + 0.15, 0, st.hz - 0.15]) {
+        const [px, pzz] = at(sx * (st.hx + 0.25), pz);
+        stone.b(0.3, 2.6, 0.3, "#8a6a4a", px, st.maxY, pzz, st.theta);
+      }
+      for (const y of [1.0, 2.2]) stone.b(0.2, 0.22, st.hz * 2, "#a67c52", rx, st.maxY + y, rz, st.theta);
+    }
+    // 돌기둥 두 개와 위 들보 (통과해도 남는 문)
+    for (const sx of [-1, 1]) {
+      const [px, pz] = at(sx * (halfW + 0.45), lz);
+      stone.b(1.1, GATE_H + 2.6, 1.1, "#8a8378", px, st.maxY - 2, pz, st.theta);
+      stone.b(1.4, 0.5, 1.4, ZONES[zi].color, px, st.maxY + GATE_H + 0.6, pz, st.theta);
+    }
+    stone.b(halfW * 2 + 2, 0.7, 0.9, "#6f685e", fx, st.maxY + GATE_H, fz, st.theta);
+    // 빨간 창살 (맞히면 위로 올라감)
+    const bars = new Model();
+    for (let x = -halfW + 0.3; x <= halfW - 0.2; x += 0.75) {
+      const [bx, bz] = at(x, lz);
+      bars.b(0.16, GATE_H, 0.16, "#c0392b", bx, st.maxY, bz, st.theta);
+    }
+    for (const y of [1.2, 3.4]) bars.b(halfW * 2, 0.22, 0.2, "#e5484d", fx, st.maxY + y, fz, st.theta);
+    const mesh = bars.mesh();
+    scene.add(mesh);
+    const sign = makeSign(last ? "마지막 관문" : `${zi + 1}구역 관문`, "문제를 맞히면 열려요", "#e5484d");
+    sign.scale.set(4.4, 2.2, 1);
+    sign.position.set(fx, st.maxY + GATE_H + 2.2, fz);
+    scene.add(sign);
+    // 마지막 관문: 정상 발판은 돌아간 각도 때문에 모서리가 울타리 안쪽까지 들어와 있어서, 정상 발판 위도 함께 막음
+    let cover = null;
+    if (last) {
+      cover = makeSolid(goal.cx, goal.cz, goal.theta, goal.hx, goal.hz, goal.maxY + GATE_H, { kind: "barrier", floor: f });
+      cover.minY = goal.maxY - 0.5;
+      solids.push(cover);
+    }
+    gates.push({ zi, f, last, strip: st, bar, cover, mesh, sign, q: null, wrong: 0, cleared: false, rise: 0 });
+  }
+  scene.add(stone.mesh());
+}
+const gateByStrip = new Map(gates.map((g) => [g.strip, g]));
+// on: 열림. animate가 참이면 창살이 위로 올라가며 사라짐 (맞혔을 때)
+function setGateCleared(g, on, animate = false) {
+  g.cleared = on;
+  g.bar.active = !on;
+  if (g.cover) g.cover.active = !on;
+  g.rise = on && animate ? 0.001 : 0;
+  g.mesh.visible = !on || animate;
+  g.mesh.position.y = 0;
+  g.sign.visible = !on;
+}
+function animateGates(dt) {
+  for (const g of gates) {
+    if (!g.rise) continue;
+    g.rise += dt;
+    const k = Math.min(1, g.rise / 0.9);
+    g.mesh.position.y = k * k * (GATE_H + 1);
+    if (k >= 1) { g.rise = 0; g.mesh.visible = false; }
+  }
 }
 
 // ================= 시대별 배경 섬 =================
@@ -1265,6 +1386,7 @@ function correctText(q) {
   if (q.type === "choice") return q.answer;
   return q.answers.map((a) => a[0]).join(", ");
 }
+// ①②③ 보기 순서는 문제를 낼 때마다 새로 섞음 (정답 자리를 외워서 풀지 못하게). O·X는 늘 O가 왼쪽, X가 오른쪽
 function buildOptions(q) {
   if (q.type === "ox") return ["O", "X"].map((t) => ({ text: t, correct: t === q.answer }));
   if (q.type === "choice") return shuffle(q.options).map((t) => ({ text: t, correct: t === q.answer }));
@@ -1313,6 +1435,17 @@ function setupQuestions() {
   for (let f = 1; f <= TOTAL_FLOORS; f++) {
     const zi = floors[f].zone;
     if (pools[zi].list.length) assignQuestion(f, nextQuestion(zi));
+  }
+  setupGates();
+}
+// 관문 문제는 판마다 구역별로 하나를 골라, 그 판에서는 틀려도 같은 문제를 냄 (틀린 횟수만큼 힌트가 늘어남)
+const hasGates = typeof GATES !== "undefined";
+function setupGates() {
+  for (const g of gates) {
+    const pool = hasGates ? GATES.filter((x) => x.zone === g.zi) : [];
+    g.q = pool.length ? { ...pool[Math.floor(Math.random() * pool.length)], type: "gate" } : null;
+    g.wrong = 0;
+    setGateCleared(g, !g.q);   // 문제가 없으면 막지 않음
   }
 }
 
@@ -1558,6 +1691,8 @@ const TIPS = [
   "그 층 문제를 한 번도 안 틀리고 유물 문제까지 맞히면 <b>반짝 카드</b>!",
   "분홍 <b>점프대</b>에 올라타면 다음 구역 출발점으로 날아가요.",
   "정상에 오르면 이마에 <b>L</b>을 붙이고 마음껏 돌아다닐 수 있어요.",
+  "구역 끝 <b>관문</b>은 직접 써서 답해요. 틀릴수록 초성, 글자 힌트가 늘어나요.",
+  "정답 발판 순서는 매번 바뀌어요. 자리를 외우지 말고 <b>문제를 읽어요</b>!",
 ];
 let tipIndex = Math.floor(Math.random() * TIPS.length);
 function showTip() { $("tip").innerHTML = `<b>TIP</b> ${TIPS[tipIndex++ % TIPS.length]}`; }
@@ -1690,6 +1825,89 @@ $("bonusPanel").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-b]");
   if (b) { answerBonus(+b.dataset.b); canvas.focus(); }
 });
+// ================= 관문 문제: 직접 써서 답하는 단답형 =================
+// 틀리면 기본 모드는 이전 체크포인트로, 도전자 모드는 땅바닥까지 떨어짐.
+// 같은 판에서는 같은 문제가 다시 나오고, 1번 틀리면 초성, 2번 틀리면 글자 일부, 3번부터는 한 글자 빼고 모두 보여 줌
+let gateOpen = null, gateWrongs = 0;
+const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+const choOf = (ch) => { const c = ch.charCodeAt(0) - 0xac00; return c >= 0 && c < 11172 ? CHO[Math.floor(c / 588)] : ch; };
+function gateHint(ans, level) {
+  if (level <= 0) return null;
+  const chars = [...ans];
+  const letters = chars.map((ch, i) => i).filter((i) => chars[i].trim());
+  const shown = new Set();
+  if (level >= 2) letters.forEach((i, k) => { if (k % 2 === 0) shown.add(i); });           // 앞에서부터 한 글자씩 건너 공개
+  if (level >= 3) letters.filter((i, k) => k % 2 === 1).slice(0, -1).forEach((i) => shown.add(i));   // 숨은 글자도 마지막 하나만 남기고 공개
+  return chars.map((ch, i) => (!ch.trim() ? " " : shown.has(i) ? ch : choOf(ch)));
+}
+// 채점: 띄어쓰기·문장 부호는 무시
+const normAnswer = (t) => String(t).replace(/[\s·.,()'"‘’“”「」《》<>]/g, "").toLowerCase();
+function openGate(g) {
+  if (gateOpen === g || g.cleared || !g.q || state !== "play") return;
+  gateOpen = g;
+  const hint = gateHint(g.q.answers[0][0], g.wrong);
+  const penalty = mode === "normal" ? "이전 체크포인트로 돌아가요" : "땅바닥까지 떨어져요";
+  const el = $("gatePanel");
+  el.innerHTML =
+    `<div class="gtag">${g.last ? "마지막 관문" : `${g.zi + 1}구역 관문`} · ${esc(ZONES[g.zi].name)}</div>` +
+    `<div class="gq">${esc(displayQuestion(g.q))}</div>` +
+    (hint
+      ? `<div class="ghint"><span>${g.wrong === 1 ? "초성 힌트" : "글자 힌트"}</span>${hint.map((c) => (c === " " ? `<i></i>` : `<b>${esc(c)}</b>`)).join("")}</div>`
+      : `<div class="gsub">답을 직접 써요. 틀리면 ${penalty}. 다시 오면 같은 문제에 힌트가 붙어요.</div>`) +
+    `<div class="grow"><input id="gateInput" type="text" lang="ko" autocomplete="off" spellcheck="false" maxlength="24" placeholder="정답을 써요" aria-label="관문 문제 정답"><button type="submit">확인</button></div>` +
+    (g.wrong ? `<div class="gsub">${g.wrong}번 틀렸어요 · 틀리면 ${penalty}</div>` : "");
+  el.style.display = "block";
+  setTimeout(() => { if (gateOpen === g) $("gateInput").focus(); }, 0);
+  sfx("bonus");
+}
+function closeGate() {
+  gateOpen = null;
+  const el = $("gatePanel");
+  if (el.contains(document.activeElement)) canvas.focus();
+  el.style.display = "none";
+}
+function submitGate(text) {
+  const g = gateOpen;
+  const t = normAnswer(text);
+  if (!g || !t) return;
+  const ok = g.q.answers[0].some((a) => normAnswer(a) === t);
+  closeGate();
+  if (ok) {
+    setGateCleared(g, true, true);
+    sfx("zone");
+    showFeedback(true, g.last ? "마지막 관문 통과!" : "관문 통과!", `정답: <b>${esc(g.q.answers[0][0])}</b> · ${g.last ? "정상으로 올라가요" : "점프대를 타고 다음 구역으로"}`, 2600);
+    // 기본 모드: 관문을 통과해야 이 착지대가 체크포인트가 됨
+    if (mode === "normal" && g.strip.cp > checkpoint.cp) {
+      checkpoint = g.strip; progress = g.strip;
+      maxCp = Math.max(maxCp, g.strip.cp);
+    }
+    updateHud();
+    return;
+  }
+  g.wrong++; gateWrongs++;
+  wrongLog.push({ q: g.q, chosen: text.trim(), floor: g.f, zone: g.zi });
+  sfx("wrong");
+  const next = g.wrong === 1 ? "초성 힌트" : "글자 힌트";
+  if (mode === "normal") {
+    showFeedback(false, "관문 실패", `이전 체크포인트로 돌아가요. 다시 오면 ${next}가 나와요.`, 3200);
+    respawn();
+    updateHud();
+  } else {
+    showFeedback(false, "관문 실패", `땅바닥까지 쭉~ 다시 오면 ${next}가 나와요.`, 3200);
+    plunge();
+  }
+}
+$("gatePanel").addEventListener("submit", (e) => { e.preventDefault(); submitGate($("gateInput").value); });
+// 도전자 모드 관문 오답: 발밑이 열려 땅바닥까지 그대로 떨어짐 (가는 길의 발판은 모두 통과)
+let plunging = false;
+function plunge() {
+  plunging = true;
+  hop = null; launching = false;
+  vel.set(0, 3, 0);
+  lastGrounded = -1; jumpQueued = -1;
+  sfx("fall");
+}
+
 let feedbackTimer = 0;
 function showFeedback(ok, title, detail, ms) {
   const el = $("feedback");
@@ -1845,6 +2063,7 @@ function respawn(msg) {
   vel.set(0, 0, 0);
   hop = null;
   launching = false;
+  plunging = false;
   stunUntil = -1;
   progress = checkpoint;
   facing = checkpoint.theta;   // 발판의 앞쪽 = 코스 진행 방향을 바라보게
@@ -1893,6 +2112,7 @@ function knockBack(s) {
 const overlapsY = (s) => pos.y + PLAYER_H > s.minY + EPS && pos.y < s.maxY - EPS;
 function moveHorizontal(dx, dz) {
   pos.x += dx; pos.z += dz;
+  if (plunging) return;   // 관문 오답 추락 중: 옆으로 부딪히는 것 없음
   for (let pass = 0; pass < 2; pass++) {
     for (const s of solids) if (s.active && !s.oneWay && overlapsY(s)) pushOutHorizontal(s);
   }
@@ -1901,6 +2121,7 @@ function moveVertical(d) {
   pos.y += d;
   for (const s of solids) {
     if (!s.active || !overlapsY(s) || !footOverlaps(s, pos.x, pos.z)) continue;
+    if (plunging && s.kind !== "ground") continue;   // 관문 오답 추락 중: 땅에 닿을 때까지 발판을 모두 통과
     // 한쪽 통과 발판(공중 착지대): 아래에서 올라올 때는 통과, 위에서 떨어질 때만 밟힘
     if (s.oneWay && (d > 0 || pos.y - d < s.maxY - 0.02)) continue;
     if (d < 0) { pos.y = s.maxY; grounded = true; groundSolid = s; }
@@ -1913,6 +2134,10 @@ function moveVertical(d) {
 const keys = new Set();
 const isKey = (...codes) => codes.some((c) => keys.has(c));
 addEventListener("keydown", (e) => {
+  if (e.target instanceof HTMLInputElement) {   // 관문 정답을 쓰는 중
+    if (e.key === "Escape") canvas.focus();
+    return;
+  }
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
   keys.add(e.code);
   if (e.code === "Space" && !e.repeat) jumpQueued = now;
@@ -2052,7 +2277,8 @@ function startRace() {
   closeBonus();
   checkpoint = plazas[0]; progress = plazas[0]; maxCp = 0; maxZone = 0;
   falls = 0; correctCount = 0; wrongCount = 0; wrongIds = []; wrongLog = []; pendingWrong = null; runCards = [];
-  bonusDone = {}; bonusStars = 0; bonusSkip = null;
+  bonusDone = {}; bonusStars = 0; bonusSkip = null; gateWrongs = 0;
+  closeGate();
   respawn();
   updateHud();
   $("timer").textContent = "00:00";
@@ -2076,6 +2302,7 @@ function finishRace() {
   ceremonyStart = now;
   hideFeedback();
   closeBonus();
+  closeGate();
   if (shiftLock) setShiftLock(false);
   $("cardPop").classList.remove("show");
   toast("정상 도착! L을 가져가~");
@@ -2094,6 +2321,7 @@ function showResults() {
     `<dl class="stats">` +
     `<dt>맞힌 문제</dt><dd class="c-ok">${correctCount}개</dd>` +
     `<dt>틀린 문제</dt><dd class="c-bad">${wrongCount}개</dd>` +
+    `<dt>관문</dt><dd>${gates.filter((g) => g.cleared).length}/${gates.length} 통과${gateWrongs ? ` <small>(오답 ${gateWrongs}번)</small>` : ""}</dd>` +
     `<dt>떨어진 횟수</dt><dd>${falls}번</dd>` +
     `<dt>모은 유물</dt><dd>${runCards.length}개 <small>(반짝 ${runCards.filter((c) => c.shiny).length}개)</small></dd>` +
     (bonusStars ? `<dt>기록 단축</dt><dd>${bonusStars * BONUS_SEC}초</dd>` : "") +
@@ -2134,11 +2362,11 @@ function reviewHTML() {
         (q.answer === "O" ? "맞는 문장이에요." : "틀린 문장이에요.") +
         (q.explain ? ` <b>${esc(q.explain)}</b>` : "");
     } else {
-      ans = `내가 고른 답: <span class="mine">${[...new Set(e.chosenList)].map(esc).join(", ")}</span>` +
+      ans = `${q.type === "gate" ? "내가 쓴 답" : "내가 고른 답"}: <span class="mine">${[...new Set(e.chosenList)].map(esc).join(", ")}</span>` +
         ` → 정답: <span class="right">${esc(correctText(q))}</span>`;
     }
     return `<div class="rItem">` +
-      `<div class="rmeta"><i style="background:${zone.color}"></i>${e.floor}층 · ${esc(zone.name)}${times}</div>` +
+      `<div class="rmeta"><i style="background:${zone.color}"></i>${q.type === "gate" ? `${e.zone + 1}구역 관문` : `${e.floor}층`} · ${esc(zone.name)}${times}</div>` +
       `<div class="rq">${filledSentence(q)}</div>` +
       `<div class="rans">${ans}</div></div>`;
   }).join("");
@@ -2169,10 +2397,14 @@ function onLanded() {
   if (mode === "challenge" && pendingWrong !== null && s.kind !== "option") pendingWrong = null;
   // 도전자 모드: 떨어져서 아래층 점프 발판에 내려앉아도 화면의 층 표시를 그 층으로
   if (mode === "challenge" && s.kind === "pad" && s !== progress) { progress = s; updateHud(); }
+  // 관문 착지대에서 내려가면 관문 창을 닫음 (다시 올라오면 다시 열림)
+  if (gateOpen && s !== gateOpen.strip) closeGate();
   if (s.kind === "plaza" || s.kind === "strip") {
+    const gate = gateByStrip.get(s), locked = !!gate && !gate.cleared;
     if (mode === "normal") {
       // 광장뿐 아니라 정답 발판 뒤 착지대(다음 구역의 시작점이기도 함)에서도 체크포인트 저장
-      if (s.cp > checkpoint.cp) {
+      // 단, 관문이 있는 착지대는 관문 문제를 맞혀야 저장됨
+      if (!locked && s.cp > checkpoint.cp) {
         const newZone = s.zone !== checkpoint.zone || checkpoint.cp === 0;
         checkpoint = s; progress = s;
         maxCp = Math.max(maxCp, s.cp);
@@ -2189,9 +2421,10 @@ function onLanded() {
       progress = s;
       if (record) { maxCp = s.cp; maxZone = s.zone; }
       updateHud();
-      if (newZone) { toast(`${s.zone + 1}구역 「${ZONES[s.zone].name}」 시대에 들어왔어요!`); sfx("zone"); }
+      if (newZone && !locked) { toast(`${s.zone + 1}구역 「${ZONES[s.zone].name}」 시대에 들어왔어요!`); sfx("zone"); }
       else if (record && s.kind === "plaza") toast(`${s.floor}층 도착!`);
     }
+    if (locked) openGate(gate);
   } else if (s.kind === "option") {
     onOptionLanded(s);
   } else if (s.kind === "bounce") {
@@ -2267,7 +2500,7 @@ function physicsStep(dt) {
   const stunned = now < stunUntil;   // 회전 막대에 맞아 넘어진 동안은 조작 불가
   const canMove = state === "play" || state === "ceremony";   // 정상 세레모니 중에도 돌아다닐 수 있음
   // 유물 문제 창이 열려 있어도 움직일 수 있음 (받침대에서 내려가면 창이 닫힘)
-  if (canMove && !stunned) {
+  if (canMove && !stunned && !plunging) {
     if (isKey("KeyW", "ArrowUp")) f += 1;
     if (isKey("KeyS", "ArrowDown")) f -= 1;
     if (isKey("KeyD")) r += 1;
@@ -2311,6 +2544,7 @@ function physicsStep(dt) {
   if (grounded) {
     lastGrounded = now;
     launching = false;
+    plunging = false;
     if (!wasGrounded || groundSolid.kind !== "pad") onLanded();
   }
   // 코스 아래로 떨어지면 체크포인트로
@@ -2411,6 +2645,7 @@ function frame() {
   animateHero(dt);
   animatePads(dt);
   animateShrines(dt);
+  animateGates(dt);
   animateConfetti(dt);
   for (const s of spinners) s.mesh.rotation.y = s.theta;
   for (const fl of cpFlags) if (fl.flag.material === flagOn) fl.flag.rotation.y = fl.base + Math.sin(now * 5) * 0.25;   // 지금 체크포인트 깃발만 펄럭임
@@ -2430,6 +2665,9 @@ requestAnimationFrame(frame);
 window.__tower = {
   solids, plazas, strips, floors, goal, pos, vel, zoneStart, OPT_ALONG, landings, spinners, walls, bouncePads,
   get bonus() { return { floor: bonusFloor, stars: bonusStars, done: { ...bonusDone } }; },
+  gates, submitGate, setupQuestions,
+  get gateOpen() { return gateOpen ? gateOpen.zi : null; },
+  get plunging() { return plunging; },
   get shiftLock() { return shiftLock; },
   answerBonus, chooseOption, setSkin, setMode,
   get mode() { return mode; },
