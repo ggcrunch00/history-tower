@@ -159,6 +159,30 @@ const GameSound = (() => {
       o.connect(g); g.connect(sfxBus);
       o.start(t); o.stop(t + 0.35);
     },
+    zap(t) {   // 관문 오답: 찌릿찌릿 감전 + 쿵
+      drum(t, 0.5);
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "sawtooth";
+      for (let i = 0; i < 9; i++) o.frequency.setValueAtTime(i % 2 ? 110 : 260, t + i * 0.035);
+      g.gain.setValueAtTime(0.16, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+      o.connect(g); g.connect(sfxBus);
+      o.start(t); o.stop(t + 0.45);
+    },
+    whirl(t) {   // 회오리: 휘이잉 올라갔다 내려오는 바람 소리
+      const o = ctx.createOscillator(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(320, t);
+      o.frequency.exponentialRampToValueAtTime(980, t + 0.45);
+      o.frequency.exponentialRampToValueAtTime(260, t + 1.0);
+      lfo.frequency.value = 14; lg.gain.value = 60;
+      lfo.connect(lg); lg.connect(o.frequency);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.16, t + 0.12);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.05);
+      o.connect(g); g.connect(sfxBus);
+      o.start(t); lfo.start(t); o.stop(t + 1.1); lfo.stop(t + 1.1);
+    },
     bonus(t) { [79, 84, 79, 88].forEach((m, i) => soft(m, t + i * 0.08, 0.3, 0.2, sfxBus, "triangle")); },
     fanfare(t) {
       [67, 72, 74, 76, 79].forEach((m, i) => pluck(m, t + i * 0.12, 0.6, 0.45, sfxBus, 4000));

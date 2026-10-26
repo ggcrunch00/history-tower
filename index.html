@@ -57,8 +57,8 @@
   #score .c-bad { color: var(--bad); }
   #score .c-gold { color: var(--gold-ink); }
   .hudBtns { display: flex; gap: 6px; }
-  @media (max-width: 520px) { #respawnBtn .lbl { display: none; } }
-  #respawnBtn, #soundBtn, #lockBtn {
+  @media (max-width: 520px) { #respawnBtn .lbl, #menuBtn .lbl { display: none; } }
+  #respawnBtn, #soundBtn, #lockBtn, #menuBtn {
     pointer-events: auto; border: 0; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700;
     background: var(--panel); color: var(--ink); border-radius: var(--r-m); padding: 7px 10px; box-shadow: var(--shadow);
     display: inline-flex; align-items: center; gap: 4px;
@@ -178,9 +178,18 @@
   /* ---------- 정상 세레모니 ---------- */
   #partyBar {
     position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
-    display: flex; align-items: center; gap: 14px; width: max-content; max-width: calc(100vw - 32px);
+    width: max-content; max-width: calc(100vw - 32px);
     font-size: 15px; line-height: 1.4; word-break: keep-all; transition: opacity .3s, transform .3s;
   }
+  #partyBar .ptop { margin-bottom: 8px; }
+  #partyBar .prow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  #partyBar .dances { display: flex; gap: 6px; flex-wrap: wrap; }
+  #partyBar .dances button {
+    border: 2px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font: inherit;
+    font-size: 14px; font-weight: 800; border-radius: var(--r-m); padding: 6px 10px; display: inline-flex; align-items: center; gap: 5px;
+  }
+  #partyBar .dances button.sel { border-color: var(--go); background: var(--go-soft); }
+  body.touch #partyBar .dances kbd { display: none; }
   #partyBar.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
   body.touch #partyBar { bottom: 140px; }
   #resultBtn {
@@ -248,9 +257,11 @@
   }
   .pickHead { display: flex; align-items: baseline; justify-content: space-between; }
   .pickVal { font-size: 13px; font-weight: 800; color: var(--muted); }
-  .titleCard .skins { grid-template-columns: repeat(6, 1fr); margin-bottom: 14px; }
+  .titleCard .skins { grid-template-columns: repeat(5, 1fr); margin-bottom: 14px; }
   .titleCard .skin { font-size: 0; padding: 2px; }   /* 이름은 위 '캐릭터' 옆에 따로 보여 줌 */
-  .titleCard .modes { margin-bottom: 14px; }
+  .titleCard .modes { margin-bottom: 14px; grid-template-columns: repeat(3, 1fr); }
+  .modeBtn.locked { opacity: 0.6; }
+  .modeBtn.sel[data-mode="explore"] { border-color: #2e86de; background: #e6f1fc; }
   .titleCard .modeBtn { text-align: center; padding: 8px 6px; }
   .startBtn { width: 100%; font-size: 26px; padding: 14px 0; letter-spacing: 1px; }
   .titleLinks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
@@ -279,8 +290,13 @@
     .eraMap { display: none; }
   }
   @media (max-width: 420px) {
-    .titleCard .skins { grid-template-columns: repeat(3, 1fr); }
+    .titleCard .skins { grid-template-columns: repeat(5, 1fr); gap: 4px; }
   }
+
+  /* ---------- 일시 정지 ---------- */
+  .pausePanel { width: min(380px, 100%); }
+  .pauseBtns { display: grid; gap: 10px; }
+  .pauseBtns .subBtn { justify-content: center; }
 
   /* ---------- 조작법·규칙 창 ---------- */
   #helpScreen .panel { width: min(600px, 100%); }
@@ -432,6 +448,7 @@
     <symbol id="i-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18.3 6.5a8 8 0 0 1 0 11"/></symbol>
     <symbol id="i-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5v5.5h5.5"/><path d="M4.6 10A8 8 0 1 1 6.3 17.7"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h14"/></symbol>
     <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.3-2.5 3.8"/><path d="M12 17.2v.1"/></symbol>
     <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5zM12 6.5V19"/></symbol>
   </defs>
@@ -449,6 +466,7 @@
     <div id="timer" class="card">00:00</div>
     <div id="score" class="card"></div>
     <div class="hudBtns">
+      <button id="menuBtn" type="button" title="일시 정지 · 메뉴 (Esc)" aria-label="메뉴"><svg class="ic"><use href="#i-menu"/></svg><span class="lbl">메뉴</span></button>
       <button id="lockBtn" type="button" title="시선 고정 켜기/끄기 (Shift)" aria-label="시선 고정"><svg class="ic"><use href="#i-lock"/></svg></button>
       <button id="soundBtn" type="button" title="소리 켜기/끄기 (M)" aria-label="소리"><svg class="ic"><use href="#i-sound"/></svg></button>
       <button id="respawnBtn" type="button" title="체크포인트로 (R)"><svg class="ic"><use href="#i-back"/></svg><span class="lbl">체크포인트로</span></button>
@@ -479,6 +497,7 @@
       <div class="modes" id="modes">
         <button type="button" class="modeBtn" data-mode="normal"><b>기본</b><span>초록 깃발에서 다시 시작</span></button>
         <button type="button" class="modeBtn" data-mode="challenge"><b>도전자</b><span>깃발 없음 · 떨어진 곳부터</span></button>
+        <button type="button" class="modeBtn" data-mode="explore"></button>
       </div>
       <button class="bigBtn startBtn" id="startBtn" type="button">출발!</button>
       <div class="titleLinks">
@@ -528,12 +547,14 @@
           <li>광장 옆 <b>황금 다리</b> 끝 유물 받침대에 오르면 유물 문제가 나와요. 맞혀야만 <b>유물 카드</b>를 얻고 기록도 15초 줄어요.</li>
           <li>그 층 문제를 한 번도 틀리지 않고 유물 문제까지 맞히면 반짝 카드예요.</li>
           <li>구역이 끝나는 착지대에는 <b>관문</b>이 있어요. 정답을 직접 써서 맞혀야 다음 구역으로 가는 점프대(마지막은 정상)가 열려요.</li>
+          <li>정상에 한 번 오르면 <b>탐험 모드</b>가 열려요. 문제 없이 탑을 오르며, 광장의 파란 구경 발판을 밟으면 시대별 섬에 건너가 볼 수 있어요.</li>
           <li>관문에서 틀리면 이전 체크포인트로 돌아가요. 도전자 모드는 땅바닥까지 떨어져요. 다시 오면 같은 문제에 초성, 글자 힌트가 차례로 붙어요.</li>
         </ul>
         <h3>장애물</h3>
         <dl>
           <dt><i class="sw sw-wall"></i>줄무늬 벽</dt><dd>점프로 넘어요.</dd>
           <dt><i class="sw" style="background:#e5484d"></i>회전 막대</dt><dd>맞으면 튕겨 나가요. 점프로 피해요.</dd>
+          <dt><i class="sw" style="background:#e8eef5;box-shadow:inset 0 0 0 2px #9aa6b4"></i>회오리</dt><dd>좌우로 오가요. 닿으면 빙글빙글 날아가니 피해 가요.</dd>
           <dt><i class="sw" style="background:#ff5fa2"></i>점프대</dt><dd>올라타면 다음 구역 출발점으로 날아가요.</dd>
           <dt><i class="sw" style="background:rgba(229,72,77,.45);box-shadow:inset 0 0 0 2px #e5484d"></i>빨간 막</dt><dd>관문 문제를 맞히면 사라져요.</dd>
         </dl>
@@ -554,7 +575,22 @@
     <div class="btnRow stickyRow">
       <button class="bigBtn" id="againBtn" type="button">다시 하기</button>
       <button class="subBtn" id="bookBtn2" type="button">유물 도감</button>
+      <button class="subBtn" id="titleBtn2" type="button">시작 화면</button>
     </div>
+  </div>
+</div>
+
+<!-- 일시 정지: HUD의 메뉴 버튼이나 Esc. 그동안 시간이 멈춤 -->
+<div id="pauseScreen" class="overlay hidden">
+  <div class="panel pausePanel">
+    <h1>일시 정지</h1>
+    <p class="sub" id="pauseSub">시간이 멈췄어요</p>
+    <div class="pauseBtns">
+      <button class="bigBtn" id="resumeBtn" type="button">계속하기</button>
+      <button class="subBtn" id="restartBtn" type="button">처음부터 다시</button>
+      <button class="subBtn" id="titleBtn" type="button">시작 화면으로</button>
+    </div>
+    <p class="note">시작 화면으로 가면 이번 판 기록은 남지 않아요. 모은 유물 카드는 그대로예요.</p>
   </div>
 </div>
 
@@ -571,7 +607,10 @@
 </div>
 
 <div id="cardPop"></div>
-<div id="partyBar" class="card"><span><b>정상 도착!</b> 이마에 L을 붙인 채로 마음껏 돌아다녀 보세요</span><button id="resultBtn" type="button">기록 보기 <kbd>Enter</kbd></button></div>
+<div id="partyBar" class="card">
+  <div class="ptop"><b>정상 도착!</b> 세레머니를 고르고 마음껏 돌아다녀 보세요</div>
+  <div class="prow"><div class="dances" id="dances"></div><button id="resultBtn" type="button">기록 보기 <kbd>Enter</kbd></button></div>
+</div>
 
 <div id="stickBase"><div id="stickKnob"></div></div>
 <button id="jumpBtn" type="button">점프</button>
@@ -665,12 +704,16 @@ const OX_COLORS = { O: "#2e86de", X: "#e5484d" };
 // 틀렸을 때 돌아가는 곳: "zone" = 그 구역의 시작점, "floor" = 그 층 광장
 const WRONG_SENDS_TO = "zone";
 const GRAVITY = 30, JUMP_V = 11, SPEED = 6.5;
+const FALL_MULT = 1.6;   // 떨어질 때 중력 배수 (시뮬레이션: 점프 성공 구간 최소 2.6→2.4m, 평균 3.8→3.65m로 조금만 줄어듦)
+let fallMult = FALL_MULT;
 const PLAYER_R = 0.35, PLAYER_H = 1.9, EPS = 1e-4;
 
 // ================= 렌더러 =================
 const canvas = document.getElementById("game");
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+// 사양이 낮아 보이는 기기(CPU 4개 이하, 터치 태블릿)는 처음부터 계단 현상 줄이기(antialias)를 끄고 해상도를 1배로
+const LOW_END = (navigator.hardwareConcurrency || 4) <= 4 || matchMedia("(pointer: coarse)").matches;
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !LOW_END });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, LOW_END ? 1 : 1.5));
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#a8dcff");
 scene.fog = new THREE.Fog("#a8dcff", 70, 230);
@@ -848,7 +891,10 @@ const ringOf = (zi) => RINGS[zi % 2];
 const BOUNCE_H = 6;                                          // 점프대 → 착지대 높이 차
 const BOUNCE_V = Math.sqrt(2 * GRAVITY * (BOUNCE_H + 1.2));  // 착지대보다 1.2 더 높이 튀어 오름
 // 층 안 몇 번째 점프 발판을 장애물로 바꿀지 (구역별). hurdle: 벽 넘기, spinner: 회전 막대
-const OBSTACLES = [{}, { 2: "hurdle" }, { 1: "hurdle", 3: "spinner" }, { 2: "spinner" }, { 1: "spinner", 3: "hurdle" }, { 1: "hurdle", 3: "spinner" }];
+// tornado: 넓은 발판 위를 회오리가 좌우로 오가며, 닿으면 빙글빙글 돌며 붕 떠서 뒤로 밀려남
+const OBSTACLES = [{}, { 2: "hurdle" }, { 1: "hurdle", 3: "spinner" }, { 2: "spinner", 4: "tornado" }, { 0: "tornado", 1: "spinner", 3: "hurdle" }, { 1: "hurdle", 3: "spinner" }];
+// 회오리: 좌우로 오가는 폭과 빠르기, 닿았을 때 날아가는 힘
+const TORNADO = { size: 7, amp: 2.4, radius: 1.0, up: 12, back: 2.5, spin: 1.1 };
 // 회전 막대: 반지름(길이의 절반)과 구역별 회전 속도(초당 라디안). 위 구역일수록 빨라짐
 const SPINNER_LEN = 4.4;
 const SPINNER_SPEED = (zi) => 1.7 + (zi - 2) * 0.25;
@@ -859,7 +905,7 @@ const KNOCK = { side: 8, up: 6.5, stun: 0.75 };
 // 유물 받침대 보너스 문제를 맞히면 줄어드는 기록(초)
 const BONUS_SEC = 15;
 const solids = [], staticBlocks = [], plazas = [], strips = [], floors = [], landings = [];
-const walls = [], spinners = [], bouncePads = [];
+const walls = [], spinners = [], bouncePads = [], tornados = [];
 const ringPoint = (a, r, dir) => ({ x: Math.cos(a) * r, z: Math.sin(a) * r, theta: dir > 0 ? -a : Math.PI - a });
 function addStatic(p, top, across, along, color, info) {
   const sol = makeSolid(p.x, p.z, p.theta, across / 2, along / 2, top, info);
@@ -917,6 +963,12 @@ for (let f = 1; f <= TOTAL_FLOORS; f++) {
         solids.push(bar); spinners.push(bar);
       }
       prevHalf = size / 2;
+    } else if (kind === "tornado") {  // 넓은 발판 위를 회오리가 좌우로 오감
+      const size = TORNADO.size;
+      stepAlong(prevHalf + gap + size / 2); top += RISE;
+      const pad = addStatic(ringPoint(ang, rad, dir), top, size, size, zone.light, { kind: "pad", floor: f, zone: zi });
+      tornados.push({ pad, floor: f, zone: zi, speed: 1.4 + zi * 0.1, phase: f * 1.7, x: pad.cx, z: pad.cz });
+      prevHalf = size / 2;
     } else {
       stepAlong(prevHalf + gap + zone.pad / 2); top += RISE;
       addStatic(ringPoint(ang, rad, dir), top, zone.pad, zone.pad, zone.color, { kind: "pad", floor: f, zone: zi });
@@ -957,11 +1009,15 @@ for (let f = 1; f <= TOTAL_FLOORS; f++) {
 stepAlong(prevHalf + 2 + 4.5); top += RISE;
 const goal = addStatic(ringPoint(ang, rad, dir), top, 9, 9, "#f2c94c", { kind: "goal", floor: TOTAL_FLOORS + 1, zone: ZONES.length - 1, dir });
 const zoneStart = (zi) => (zi === 0 ? plazas[0] : landings[zi]);
-// 회전 막대 각도 갱신 (물리 계산 전에 호출)
+// 회전 막대 각도·회오리 위치 갱신 (물리 계산 전에 호출)
 function updateSpinners(t) {
   for (const s of spinners) {
     s.theta = s.base + s.speed * t;
     s.c = Math.cos(s.theta); s.sn = Math.sin(s.theta);
+  }
+  for (const w of tornados) {   // 발판 폭 방향(로컬 x)으로 왔다 갔다
+    const lx = Math.sin(t * w.speed + w.phase) * TORNADO.amp;
+    w.x = w.pad.cx + lx * w.pad.c; w.z = w.pad.cz - lx * w.pad.sn;
   }
 }
 
@@ -1071,6 +1127,7 @@ placeSign(makeSign("정상", "고려 정복 완료!", "#f2c94c"), goal, 4.5);
   const spinPad = solids.find((s) => s.kind === "pad" && s.cx === spinners[0].cx && s.cz === spinners[0].cz);
   const spinZone = Math.floor((spinners[0].floor - 1) / FLOORS_PER_ZONE);
   tutor("회전 막대", "점프로 피해요", spinPad, 3.4, spinZone);
+  tutor("회오리", "닿으면 빙글빙글 날아가요", tornados[0].pad, 4.6, tornados[0].zone);
 }
 
 // ================= 장애물 모양 =================
@@ -1092,6 +1149,27 @@ placeSign(makeSign("정상", "고려 정복 완료!", "#f2c94c"), goal, 4.5);
     sign.scale.set(3.6, 1.8, 1);
     sign.position.set(b.cx, b.maxY + 3, b.cz);
     scene.add(sign);
+  });
+  // 회오리: 위로 갈수록 넓어지는 반투명 고리를 겹쳐 쌓고 고리마다 다른 빠르기로 돌림
+  const windMat = new THREE.MeshLambertMaterial({ color: "#e8eef5", transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false });
+  const dustMat = new THREE.MeshLambertMaterial({ color: "#8a7a66" });
+  tornados.forEach((w) => {
+    const g = new THREE.Group();
+    w.rings = [];
+    for (let k = 0; k < 7; k++) {
+      const r0 = 0.25 + k * 0.17, r1 = r0 + 0.17;
+      const ring = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, 0.62, 12, 1, true), windMat);
+      ring.position.y = 0.31 + k * 0.58;
+      g.add(ring); w.rings.push(ring);
+    }
+    for (let k = 0; k < 6; k++) {   // 함께 도는 흙먼지
+      const d = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.16), dustMat);
+      d.userData = { r: 0.6 + (k % 3) * 0.35, y: 0.4 + k * 0.55, a: k * 1.1 };
+      g.add(d);
+    }
+    g.position.set(w.x, w.pad.maxY, w.z);
+    scene.add(g);
+    w.mesh = g;
   });
   spinners.forEach((s) => {
     const g = new THREE.Group();
@@ -1275,6 +1353,145 @@ if (typeof SCENERY !== "undefined") {
     sign.position.set(mesh.position.x, mesh.position.y + 9, mesh.position.z);
     scene.add(sign);
   });
+}
+
+// ================= 역사 갤러리 (탐험 모드) =================
+// 정상에 한 번 오르면 열림. 탑에서 멀리 떨어진 하늘 위 광장에 시대별 섬 12개와 유물 전시대 18개를 둠.
+// 가운데 광장 → 다리 6개 → 구역마다 전시실(그 구역 유물 3개) → 그 뒤로 그 구역의 섬 2개.
+// 모은 유물은 진짜 모양으로 빙글빙글 돌고, 못 모은 유물은 검은 그림자로 보임
+const GAL = { x: 0, y: 40, z: 160, R: 32, hall: 10 };
+const gallery = { built: false, group: new THREE.Group(), solids: [], pedestals: [], isles: [], hall: null };
+gallery.group.visible = false;
+scene.add(gallery.group);
+const shadowMat = new THREE.MeshLambertMaterial({ color: "#3a3f47" });
+function buildGallery() {
+  if (gallery.built) return;
+  gallery.built = true;
+  const G = gallery.group, stone = new Model();
+  const addSolid = (x, z, th, hx, hz, top, info) => {
+    const sol = makeSolid(x, z, th, hx, hz, top, info);
+    sol.active = false;
+    solids.push(sol); gallery.solids.push(sol);
+    return sol;
+  };
+  // 가운데 광장 (체크포인트: 떨어지면 여기로)
+  gallery.hall = addSolid(GAL.x, GAL.z, 0, GAL.hall, GAL.hall, GAL.y, { kind: "gallery", floor: 0, zone: 0, cp: 0, dir: 1 });
+  stone.b(GAL.hall * 2, 1.2, GAL.hall * 2, "#e4ddd0", GAL.x, GAL.y - 1.2, GAL.z);
+  stone.b(GAL.hall * 2 - 3, 1.6, GAL.hall * 2 - 3, "#b9b2a6", GAL.x, GAL.y - 2.8, GAL.z);
+  stone.b(GAL.hall * 2 - 8, 1.6, GAL.hall * 2 - 8, "#8a8378", GAL.x, GAL.y - 4.4, GAL.z);
+  // 광장 바닥: 가운데 금색 원판에서 구역마다 그 구역 색 길이 다리 쪽으로 뻗음 (어디로 가면 되는지 보이게)
+  stone.b(2.4, 0.06, 2.4, "#f2c94c", GAL.x, GAL.y, GAL.z);
+  ZONES.forEach((zone, zi) => {
+    const ang = (zi / ZONES.length) * Math.PI * 2, ux = Math.sin(ang), uz = Math.cos(ang);
+    stone.b(1.0, 0.06, GAL.hall - 2.2, zone.color, GAL.x + ux * (GAL.hall / 2 + 0.4), GAL.y, GAL.z + uz * (GAL.hall / 2 + 0.4), Math.atan2(ux, uz));
+  });
+  const title = makeSign("나의 역사 갤러리", "시대별 섬과 내가 모은 유물", "#f2c94c");
+  title.scale.set(8, 4, 1);
+  title.position.set(GAL.x, GAL.y + 12, GAL.z);
+  G.add(title);
+  ZONES.forEach((zone, zi) => {
+    const ang = (zi / ZONES.length) * Math.PI * 2;
+    const ux = Math.sin(ang), uz = Math.cos(ang);             // 가운데에서 바깥쪽 방향
+    const th = Math.atan2(-ux, -uz), c = Math.cos(th), sn = Math.sin(th);   // 로컬 +z가 가운데를 바라봄
+    const wx = GAL.x + ux * GAL.R, wz = GAL.z + uz * GAL.R;   // 섬 두 개의 가운데
+    const at = (lx, lz) => [wx + lx * c + lz * sn, wz - lx * sn + lz * c];
+    // 다리: 광장 안쪽부터 전시실 앞까지
+    const r0 = GAL.hall - 1.5, r1 = GAL.R - 9.8, len = r1 - r0, mid = (r0 + r1) / 2;
+    const bx = GAL.x + ux * mid, bz = GAL.z + uz * mid;
+    addSolid(bx, bz, th, 1.6, len / 2, GAL.y, { kind: "gallery", floor: 0 });
+    stone.b(3.2, 0.6, len, "#c9b79c", bx, GAL.y - 0.6, bz, th);
+    // 전시실 바닥 (로컬 z +5 ~ +10)
+    const [ex, ez] = at(0, 7.5);
+    addSolid(ex, ez, th, 11, 2.5, GAL.y, { kind: "gallery", floor: 0 });
+    stone.b(22, 1, 5, zone.light, ex, GAL.y - 1, ez, th);
+    const sign = makeSign(`${zi + 1}구역 · ${zone.name}`, "유물 전시실", zone.color);
+    sign.scale.set(5.6, 2.8, 1);
+    const [sx, sz] = at(0, 5.6);
+    sign.position.set(sx, GAL.y + 7.2, sz);
+    G.add(sign);
+    // 유물 전시대 3개 (층 순서대로 왼쪽부터)
+    artifactList.filter((x) => Math.floor((x.floor - 1) / FLOORS_PER_ZONE) === zi).forEach((art, k) => {
+      const [px, pz] = at((k - 1) * 6, 7.5);
+      stone.b(2.2, 1.0, 2.2, "#8a8378", px, GAL.y, pz, th);
+      stone.b(2.6, 0.25, 2.6, "#f0d27a", px, GAL.y + 1.0, pz, th);
+      addSolid(px, pz, th, 1.1, 1.1, GAL.y + 1.25, { kind: "pedestal", floor: art.floor });
+      const geo = artifactGeoById[art.id];
+      const mesh = new THREE.Mesh(geo, modelMaterial);
+      mesh.scale.setScalar(Math.min(2.0 / geo.userData.height, 2.4 / geo.userData.width));
+      mesh.position.set(px, GAL.y + 1.3, pz);
+      G.add(mesh);
+      const glow = new THREE.Mesh(new THREE.TorusGeometry(1.3, 0.08, 6, 28), new THREE.MeshBasicMaterial({ color: "#ffd84d" }));
+      glow.rotation.x = Math.PI / 2;
+      glow.position.set(px, GAL.y + 1.32, pz);
+      G.add(glow);
+      gallery.pedestals.push({ art, x: px, z: pz, mesh, glow, label: null, zone: zi, near: false });
+    });
+    // 섬 두 개 (A 왼쪽, B 오른쪽). 섬 앞쪽(+z)이 전시실과 이어짐
+    SCENERY.filter((s2) => s2.zone === zi).forEach((s2) => {
+      const lx = s2.slot === "A" ? -7.2 : 7.2;
+      const m = new Model();
+      s2.build(m);
+      const geo = m.geometry();
+      const mesh = new THREE.Mesh(geo, modelMaterial);
+      const [ix, iz] = at(lx, 0);
+      mesh.position.set(ix, GAL.y, iz);
+      mesh.rotation.y = th;
+      G.add(mesh);
+      geo.computeBoundingBox();
+      const bb = geo.boundingBox;
+      const land = addSolid(ix, iz, th, Math.min(7, (bb.max.x - bb.min.x) / 2 - 0.2), Math.min(5.5, (bb.max.z - bb.min.z) / 2 - 0.2), GAL.y, { kind: "island", floor: 0 });
+      const isign = makeSign(s2.title, s2.sub, zone.color);
+      isign.scale.set(5, 2.5, 1);
+      isign.position.set(ix, GAL.y + 8.5, iz);
+      G.add(isign);
+      gallery.isles.push({ land, title: s2.title, sub: s2.sub, zone: zi });
+    });
+  });
+  G.add(stone.mesh());
+}
+// 모은 유물 반영: 모은 것은 진짜 모양(반짝 카드는 금테), 못 모은 것은 검은 그림자와 "???"
+function updateGallery() {
+  for (const ped of gallery.pedestals) {
+    const got = collection[ped.art.id];
+    ped.mesh.material = got ? modelMaterial : shadowMat;
+    ped.glow.visible = !!(got && got.shiny);
+    if (ped.label) gallery.group.remove(ped.label);
+    ped.label = makeSign(got ? ped.art.name : "???", got ? `${ped.art.era} · ${ped.art.floor}층` : `${ped.art.floor}층 유물 문제`, got ? ZONES[ped.zone].color : "#8a93a3");
+    ped.label.scale.set(3.4, 1.7, 1);
+    ped.label.position.set(ped.x, GAL.y + 4.6, ped.z);
+    gallery.group.add(ped.label);
+    ped.near = false;
+  }
+}
+// 전시대 가까이 가면 유물 카드, 섬에 올라서면 섬 이름
+let lastIsle = null;
+function checkGallery() {
+  if (!exploring || state !== "play") return;
+  for (const ped of gallery.pedestals) {
+    const d = Math.hypot(pos.x - ped.x, pos.z - ped.z);
+    if (!ped.near && d < 2.4 && Math.abs(pos.y - GAL.y) < 2) {
+      ped.near = true;
+      seenArts.add(ped.art.id);
+      const got = collection[ped.art.id];
+      showCardPop(got ? `<span class="pill good">${icon("card")}내가 모은 유물</span>` : `<span class="pill bad">아직 못 모은 유물</span>`, ped.art, { shiny: got && got.shiny, locked: !got }, 5000);
+      sfx(got ? "card" : "bonus");
+    } else if (ped.near && d > 3.2) ped.near = false;
+  }
+  if (!grounded) return;
+  const isle = gallery.isles.find((x) => x.land === groundSolid) || null;
+  if (isle && isle !== lastIsle) {
+    seenIslands.add(isle.title);
+    toast(`${isle.title} · ${isle.sub}`);
+  }
+  if (grounded) lastIsle = isle;
+}
+// 탐험 모드 켜고 끄기: 갤러리를 보이고 밟을 수 있게, 시작 위치는 갤러리 가운데 광장
+function setupExplore() {
+  seenIslands.clear(); seenArts.clear(); lastIsle = null;
+  if (exploring) { buildGallery(); updateGallery(); }
+  gallery.group.visible = exploring;
+  gallery.solids.forEach((sol) => { sol.active = exploring; });
+  if (exploring) { checkpoint = gallery.hall; progress = gallery.hall; }
 }
 
 // 땅 위 나무, 하늘의 구름
@@ -1463,6 +1680,11 @@ const SKINS = [
   { id: "warrior", name: "고구려 무사",   skin: "#e8b88a", body: "#b03a2e", legs: "#3a3a3a", acc: "helmet" },
   { id: "hwarang", name: "신라 화랑",     skin: "#f1c79c", body: "#2f5fa8", legs: "#e9e2d0", acc: "feather" },
   { id: "seonbi",  name: "고려 선비",     skin: "#f1c79c", body: "#efe9dc", legs: "#d9d1bf", acc: "gat" },
+  // 여자 캐릭터: 머리 모양과 치마(skirt)로 구분
+  { id: "girl",     name: "기본 (여)",     skin: "#f6c945", body: "#ef6f9a", legs: "#3a9d5d", acc: "ponytail", skirt: "#d94f7d", girl: true },
+  { id: "gatherer", name: "신석기 소녀",   skin: "#e8b88a", body: "#d8c39a", legs: "#9c8058", acc: "longhair", skirt: "#b89a68", girl: true },
+  { id: "princess", name: "신라 공주",     skin: "#f1c79c", body: "#c0392b", legs: "#f2c94c", acc: "crown", skirt: "#e9b93c", girl: true },
+  { id: "goryeo",   name: "고려 여인",     skin: "#f1c79c", body: "#7fb3a6", legs: "#efe9dc", acc: "bun", skirt: "#efe9dc", girl: true },
 ];
 const SKIN_KEY = "historyTower.skin";
 function loadSkinId() {
@@ -1492,9 +1714,34 @@ function makeCharacter(skin = SKINS[0]) {
   } else if (skin.acc === "feather") { // 화랑 모자와 깃
     add(box(0.5, 0.2, 0.5, "#2b2b2b"), 0, 2.26, 0);
     add(box(0.07, 0.5, 0.06, "#ffffff"), 0.2, 2.5, -0.1, -0.35);
+  } else if (skin.acc === "ponytail") {   // 묶은 머리와 리본
+    add(box(0.66, 0.2, 0.66, "#3b2618"), 0, 2.21, 0);
+    add(box(0.66, 0.34, 0.14, "#3b2618"), 0, 2.02, -0.27);
+    add(box(0.22, 0.55, 0.2, "#3b2618"), 0, 1.86, -0.42, 0.12);
+    add(box(0.3, 0.14, 0.12, "#ff5fa2"), 0, 2.16, -0.4);
+  } else if (skin.acc === "longhair") {   // 길게 늘어뜨린 머리
+    add(box(0.68, 0.2, 0.68, "#2b1d14"), 0, 2.21, 0);
+    add(box(0.68, 0.9, 0.16, "#2b1d14"), 0, 1.72, -0.28);
+    add(box(0.12, 0.6, 0.5, "#2b1d14"), -0.33, 1.88, -0.05);
+    add(box(0.12, 0.6, 0.5, "#2b1d14"), 0.33, 1.88, -0.05);
+  } else if (skin.acc === "crown") {   // 신라 금관 (나뭇가지 모양 장식과 곡옥)
+    add(box(0.66, 0.18, 0.66, "#2b1d14"), 0, 2.2, 0);
+    add(box(0.7, 0.12, 0.7, "#f2c94c"), 0, 2.28, 0);
+    for (const x of [-0.22, 0, 0.22]) add(box(0.07, 0.34, 0.05, "#f2c94c"), x, 2.5, 0.33);
+    for (const x of [-0.22, 0.22]) add(box(0.07, 0.07, 0.05, "#3fb36b"), x, 2.42, 0.36);
+    add(box(0.66, 0.6, 0.14, "#2b1d14"), 0, 1.88, -0.27);
+  } else if (skin.acc === "bun") {   // 쪽머리와 비녀
+    add(box(0.66, 0.2, 0.66, "#1f1611"), 0, 2.2, 0);
+    add(box(0.32, 0.3, 0.26, "#1f1611"), 0, 1.98, -0.42);
+    add(box(0.56, 0.05, 0.05, "#e3b94a"), 0, 1.98, -0.46);
   } else if (skin.acc === "gat") {    // 갓
     add(new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.04, 18), new THREE.MeshLambertMaterial({ color: "#1a1a1a" })), 0, 2.19, 0);
     add(new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.27, 0.34, 14), new THREE.MeshLambertMaterial({ color: "#1a1a1a" })), 0, 2.37, 0);
+  }
+  if (skin.skirt) add(box(0.92, 0.5, 0.58, skin.skirt), 0, 0.62, 0);   // 치마 (다리는 안에서 움직임)
+  if (skin.girl) {   // 볼터치
+    add(box(0.1, 0.06, 0.02, "#f28aa0"), -0.2, 1.8, 0.305);
+    add(box(0.1, 0.06, 0.02, "#f28aa0"), 0.2, 1.8, 0.305);
   }
   const limb = (w, h, d, c, x, y) => {
     const pivot = new THREE.Group();
@@ -1626,28 +1873,80 @@ function animateConfetti(dt) {
   });
   confetti.instanceMatrix.needsUpdate = true;
 }
-// 이마에 손으로 L을 만든 채로 돌아다님. 멈춰 있으면 양발을 번갈아 옆으로 차며 콩콩 뛰는 춤
+// 세레모니 춤: 정상에서 버튼이나 1~4 키로 고름 (이 기기에 기억됨). 걷거나 뛰는 중에도 팔 자세는 유지
+const DANCES = [
+  { id: "L", name: "L을 가져가", float: "L", color: "#2fbf71" },
+  { id: "hooray", name: "만세", float: "만세!", color: "#e5484d" },
+  { id: "spin", name: "빙글빙글", float: "빙글빙글~", color: "#2e86de" },
+  { id: "wave", name: "손 흔들기", float: "안녕!", color: "#f08c2e" },
+];
+const DANCE_KEY = "historyTower.dance";
+let danceId = (() => { try { const d = localStorage.getItem(DANCE_KEY); return DANCES.some((x) => x.id === d) ? d : "L"; } catch { return "L"; } })();
+// 머리 위에 떠오르는 글자 (L은 기존 큰 L 그림)
+const danceSprites = {};
+function floatSprite(d) {
+  if (d.id === "L") return bigL;
+  if (danceSprites[d.id]) return danceSprites[d.id];
+  const c = document.createElement("canvas");
+  c.width = 512; c.height = 160;
+  const g = c.getContext("2d");
+  g.textAlign = "center"; g.textBaseline = "middle";
+  fitFont(g, d.float, 900, 120, 480);
+  g.lineWidth = 16; g.strokeStyle = "#ffffff"; g.strokeText(d.float, 256, 88);
+  g.fillStyle = d.color; g.fillText(d.float, 256, 88);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+  sp.visible = false;
+  scene.add(sp);
+  return (danceSprites[d.id] = sp);
+}
+function setDance(id) {
+  if (!DANCES.some((x) => x.id === id)) return;
+  danceId = id;
+  try { localStorage.setItem(DANCE_KEY, id); } catch { /* 저장이 막힌 환경 */ }
+  document.querySelectorAll("#dances [data-dance]").forEach((b) => b.classList.toggle("sel", b.dataset.dance === id));
+  for (const d of DANCES) floatSprite(d).visible = false;
+}
 // pose: animateHero가 정한 이번 프레임의 팔다리 목표 각도. 여기서 세레모니 자세로 덮어씀
 function ceremonyPose(pose, idle) {
-  const t = now - ceremonyStart;
-  pose.armR.x = -2.42; pose.armR.z = -0.66;   // 오른손은 늘 이마에 L
-  if (idle) {
-    const beat = Math.floor(t * 4) % 2;
-    pose.armL.x = -0.4 + Math.sin(t * Math.PI * 4) * 0.5; pose.armL.z = -0.5;
-    pose.legL.x = 0; pose.legR.x = 0;
-    pose.legL.z = beat === 0 ? -0.75 : 0; pose.legR.z = beat === 1 ? 0.75 : 0;
-    hero.group.position.y += Math.abs(Math.sin(t * Math.PI * 4)) * 0.22;
-    hero.group.rotation.y += Math.sin(t * Math.PI * 2) * 0.2;
+  const t = now - ceremonyStart, d = DANCES.find((x) => x.id === danceId) || DANCES[0];
+  const g = hero.group, beatT = Math.sin(t * Math.PI * 4);
+  if (d.id === "L") {   // 이마에 손으로 L, 멈추면 양발을 번갈아 차며 콩콩
+    pose.armR.x = -2.42; pose.armR.z = -0.66;
+    if (idle) {
+      const beat = Math.floor(t * 4) % 2;
+      pose.armL.x = -0.4 + beatT * 0.5; pose.armL.z = -0.5;
+      pose.legL.x = 0; pose.legR.x = 0;
+      pose.legL.z = beat === 0 ? -0.75 : 0; pose.legR.z = beat === 1 ? 0.75 : 0;
+      g.position.y += Math.abs(beatT) * 0.22;
+      g.rotation.y += Math.sin(t * Math.PI * 2) * 0.2;
+    }
+  } else if (d.id === "hooray") {   // 두 팔을 번쩍, 멈추면 팔을 흔들며 높이 콩콩
+    const pump = idle ? beatT * 0.35 : 0;
+    pose.armR.x = -2.9 + pump; pose.armR.z = -0.25;
+    pose.armL.x = -2.9 - pump; pose.armL.z = 0.25;
+    if (idle) { pose.legL.x = 0; pose.legR.x = 0; g.position.y += Math.abs(beatT) * 0.35; }
+  } else if (d.id === "spin") {   // 두 팔을 옆으로 쭉, 멈추면 팽이처럼 빙글빙글
+    pose.armR.x = 0; pose.armR.z = 1.5;
+    pose.armL.x = 0; pose.armL.z = -1.5;
+    if (idle) { pose.legL.x = 0; pose.legR.x = 0; g.rotation.y += t * 9; g.position.y += Math.abs(Math.sin(t * 6)) * 0.08; }
+  } else if (d.id === "wave") {   // 오른팔을 들고 좌우로 흔들기, 멈추면 몸도 살랑살랑
+    pose.armR.x = -0.2; pose.armR.z = 2.5 + Math.sin(t * 11) * 0.35;
+    if (idle) { pose.armL.x = 0; pose.armL.z = -0.15; pose.legL.x = 0; pose.legR.x = 0; g.rotation.y += Math.sin(t * 3) * 0.25; }
   }
-  hero.lSign.visible = true;
-  bigL.visible = true;
-  bigL.position.set(pos.x, pos.y + 3.2 + Math.sin(t * Math.PI * 4) * 0.15, pos.z);
-  const s = 1.6 + Math.abs(Math.sin(t * Math.PI * 2)) * 0.3;
-  bigL.scale.set(s, s, 1);
+  hero.lSign.visible = d.id === "L";
+  for (const x of DANCES) if (x.id !== d.id && (x.id === "L" || danceSprites[x.id])) floatSprite(x).visible = false;
+  const sp = floatSprite(d);
+  sp.visible = true;
+  sp.position.set(pos.x, pos.y + 3.2 + Math.sin(t * Math.PI * 4) * 0.15, pos.z);
+  const k = 1 + Math.abs(Math.sin(t * Math.PI * 2)) * 0.18;
+  if (d.id === "L") sp.scale.set(1.6 * k, 1.6 * k, 1); else sp.scale.set(3.4 * k, 1.06 * k, 1);
 }
 function stopCeremony() {
   hero.lSign.visible = false;
   bigL.visible = false;
+  for (const d of DANCES) if (danceSprites[d.id]) danceSprites[d.id].visible = false;
   confetti.visible = false;
   hero.group.rotation.y = facing;
   ["armL", "armR", "legL", "legR"].forEach((n) => { hero[n].rotation.z = 0; });
@@ -1667,8 +1966,14 @@ const pos = new THREE.Vector3(), vel = new THREE.Vector3();
 let grounded = false, groundSolid = null, lastGrounded = -1, jumpQueued = -1;
 let checkpoint = plazas[0], facing = 0, walkPhase = 0;
 // 게임 모드: normal = 기본(체크포인트 있음), challenge = 도전자(체크포인트 없음, 떨어지면 아래층으로 그대로 떨어짐)
-const MODE_KEY = "historyTower.mode";
-let mode = (() => { try { return localStorage.getItem(MODE_KEY) === "challenge" ? "challenge" : "normal"; } catch { return "normal"; } })();
+// selMode: 시작 화면에서 고른 모드 (normal·challenge·explore). explore(탐험)는 정상에 한 번 오르면 열림
+// 탐험 모드는 물리·체크포인트는 기본 모드와 같고(mode = "normal"), 문제·관문·기록 없이 둘러보기만 함
+const MODE_KEY = "historyTower.mode", EXPLORE_KEY = "historyTower.explorer";
+let explorerUnlocked = (() => { try { return localStorage.getItem(EXPLORE_KEY) === "1"; } catch { return false; } })();
+let selMode = (() => { try { const m = localStorage.getItem(MODE_KEY); return m === "challenge" || (m === "explore" && explorerUnlocked) ? m : "normal"; } catch { return "normal"; } })();
+let mode = selMode === "challenge" ? "challenge" : "normal";
+let exploring = false;   // 이번 판이 탐험 모드인지
+const seenIslands = new Set(), seenArts = new Set();
 // progress: 지금 서 있는(마지막으로 밟은) 광장·착지대. 기본 모드에서는 체크포인트와 같음
 let progress = plazas[0], maxCp = 0, maxZone = 0;
 let yaw = Math.PI, pitch = 0.35, camDist = 9, lastManualCam = -10;
@@ -1697,6 +2002,8 @@ const TIPS = [
   "분홍 <b>점프대</b>에 올라타면 다음 구역 출발점으로 날아가요.",
   "정상에 오르면 이마에 <b>L</b>을 붙이고 마음껏 돌아다닐 수 있어요.",
   "구역 끝 <b>관문</b>은 직접 써서 답해요. 틀릴수록 초성, 글자 힌트가 늘어나요.",
+  "정상에 한 번 오르면 <b>탐험 모드</b>가 열려요. 시대별 섬에 건너가 구경할 수 있어요.",
+  "정상에서는 <b>세레머니</b>를 골라요. L을 가져가, 만세, 빙글빙글, 손 흔들기!",
   "정답 발판 순서는 매번 바뀌어요. 자리를 외우지 말고 <b>문제를 읽어요</b>!",
 ];
 let tipIndex = Math.floor(Math.random() * TIPS.length);
@@ -1714,11 +2021,28 @@ function updateHud() {
   if (snd) snd.setZone(progress.zone);   // 위로 올라갈수록 음악이 조금씩 빨라지고 풍성해짐
   const f = progress.floor;
   const zone = ZONES[progress.zone];
+  if (exploring) {   // 갤러리: 층 대신 모은 유물 수
+    $("zoneLabel").textContent = "나의 역사 갤러리";
+    $("zoneDot").style.background = "#f2c94c";
+    $("floorText").textContent = `모은 유물 ${collectedCount()} / ${artifactList.length}`;
+    $("modeBadge").style.display = "inline-block";
+    $("modeBadge").textContent = "탐험 모드 · 나의 역사 갤러리";
+    $("modeBadge").style.background = "#2e86de";
+    $("respawnBtn").style.display = "none";
+    $("hint").classList.add("off");   // 정답·깃발 키 안내는 갤러리에서 필요 없음
+    [...progressEl.children].forEach((el) => { el.style.background = ""; });
+    return;
+  }
   $("zoneLabel").textContent = progress.kind === "ground" ? "땅 (출발 광장으로!)" : f === 0 ? "출발" : `${progress.zone + 1}구역 · ${zone.name}`;
-  $("modeBadge").style.display = mode === "challenge" ? "inline-block" : "none";
+  $("modeBadge").style.display = mode === "challenge" || exploring ? "inline-block" : "none";
+  $("modeBadge").textContent = exploring ? "탐험 모드 · 나의 역사 갤러리" : "도전자 모드 · 체크포인트 없음";
+  $("modeBadge").style.background = exploring ? "#2e86de" : "";
   $("respawnBtn").style.display = mode === "challenge" ? "none" : "";
   $("zoneDot").style.background = zone.color;
-  $("floorText").textContent = `${f}층 / ${TOTAL_FLOORS}층`;
+  // 착지대·공중 착지대는 그 층 문제를 지난 곳: "13층 출발점"처럼 다음 층 기준으로 보여 줌 (예전에는 지난 층 번호만 떠서 뒤로 간 것처럼 보였음)
+  $("floorText").textContent = progress.kind === "strip"
+    ? (f >= TOTAL_FLOORS ? "정상 바로 앞" : `${f + 1}층 ${progress.oneWay ? "구역 출발점" : "가는 길"}`) + ` / ${TOTAL_FLOORS}층`
+    : `${f}층 / ${TOTAL_FLOORS}층`;
   [...progressEl.children].forEach((el, i) => {
     el.style.background = i < f ? ZONES[Math.floor(i / FLOORS_PER_ZONE)].color : "";
   });
@@ -1786,6 +2110,14 @@ let bonusChoices = [];
 let bonusSkip = null;   // 답하지 않고 닫은 받침대: 내려갔다가 다시 올라오면 다시 열림
 function openBonus(f) {
   const art = artifactByFloor[f];
+  if (exploring) {   // 탐험 모드: 문제 없이 유물 설명 카드만 보여 줌
+    if (!art || bonusSkip === f || state !== "play") return;
+    bonusSkip = f;
+    seenArts.add(art.id);
+    showCardPop(`<span class="pill good">${icon("card")}유물 살펴보기</span>`, art, {}, 5000);
+    sfx("card");
+    return;
+  }
   if (!art || bonusDone[f] || bonusFloor !== null || bonusSkip === f || state !== "play") return;
   bonusFloor = f;
   const others = shuffle(artifactList.filter((a) => a.id !== art.id)).slice(0, 2);
@@ -1893,25 +2225,32 @@ function submitGate(text) {
   wrongLog.push({ q: g.q, chosen: text.trim(), floor: g.f, zone: g.zi });
   sfx("wrong");
   const next = g.wrong === 1 ? "초성 힌트" : "글자 힌트";
+  gateShock(g);
   if (mode === "normal") {
-    showFeedback(false, "관문 실패", `이전 체크포인트로 돌아가요. 다시 오면 ${next}가 나와요.`, 3200);
-    respawn();
-    updateHud();
+    showFeedback(false, "찌릿! 관문 실패", `튕겨 나가서 이전 체크포인트로 돌아가요. 다시 오면 ${next}가 나와요.`, 3200);
+    // 뒤로 날아가 공중제비 돌고 벌러덩 넘어진 뒤에 체크포인트로 (그동안은 떨어진 횟수로 세지 않음)
+    gateFailPending = true;
+    gateFailUntil = now + GATE_FAIL_SEC;
   } else {
-    showFeedback(false, "관문 실패", `땅바닥까지 쭉~ 다시 오면 ${next}가 나와요.`, 3200);
-    plunge();
+    showFeedback(false, "찌릿! 관문 실패", `땅바닥까지 쭉~ 다시 오면 ${next}가 나와요.`, 3200);
+    plunging = true;   // 튕겨 오른 뒤 발판을 모두 통과해 땅까지 떨어짐
   }
 }
-$("gatePanel").addEventListener("submit", (e) => { e.preventDefault(); submitGate($("gateInput").value); });
-// 도전자 모드 관문 오답: 발밑이 열려 땅바닥까지 그대로 떨어짐 (가는 길의 발판은 모두 통과)
-let plunging = false;
-function plunge() {
-  plunging = true;
+// 관문 오답: 울타리에 찌릿 감전돼 착지대 뒤쪽으로 튕겨 나가며 공중제비
+const GATE_FAIL_SEC = 1.8;
+let gateFailPending = false, gateFailUntil = -1, tumbling = false, tumbleStart = 0, shakeUntil = -1;
+function gateShock(g) {
+  const st = g.strip;
   hop = null; launching = false;
-  vel.set(0, 3, 0);
+  vel.set(-st.sn * 6, 13, -st.c * 6);   // 착지대 뒤쪽(-z)으로 높이 튕겨 나감
   lastGrounded = -1; jumpQueued = -1;
-  sfx("fall");
+  tumbling = true; tumbleStart = now;
+  shakeUntil = now + 0.5;
+  sfx("zap");
 }
+$("gatePanel").addEventListener("submit", (e) => { e.preventDefault(); submitGate($("gateInput").value); });
+// 도전자 모드 관문 오답: 튕겨 오른 뒤 땅바닥까지 그대로 떨어짐 (가는 길의 발판은 모두 통과)
+let plunging = false;
 
 let feedbackTimer = 0;
 function showFeedback(ok, title, detail, ms) {
@@ -2069,6 +2408,8 @@ function respawn(msg) {
   hop = null;
   launching = false;
   plunging = false;
+  tumbling = false;
+  gateFailPending = false;
   stunUntil = -1;
   progress = checkpoint;
   facing = checkpoint.theta;   // 발판의 앞쪽 = 코스 진행 방향을 바라보게
@@ -2100,7 +2441,17 @@ function pushOutHorizontal(s) {
   if (s.kind === "spinner") knockBack(s);
 }
 // 회전 막대에 맞음: 막대가 도는 방향 + 바깥쪽으로 튕겨 나가고 잠깐 넘어짐
-let stunUntil = -1, knockReady = 0;
+let stunUntil = -1, stunLen = KNOCK.stun, knockReady = 0;
+let whirlReady = 0, whirlStart = -10, whirlUntil = -1;
+function whirl(w, nx, nz) {
+  hop = null; launching = false;
+  vel.set(-w.pad.sn * TORNADO.back + nx * 1.0, TORNADO.up, -w.pad.c * TORNADO.back + nz * 1.0);
+  lastGrounded = -1; jumpQueued = -1;
+  stunUntil = now + TORNADO.spin; stunLen = TORNADO.spin;   // 그동안 조작 불가
+  whirlStart = now; whirlUntil = now + TORNADO.spin;
+  whirlReady = now + TORNADO.spin + 0.3;
+  sfx("whirl");
+}
 function knockBack(s) {
   if (now < knockReady || state !== "play") return;
   const dx = pos.x - s.cx, dz = pos.z - s.cz, r = Math.hypot(dx, dz) || 1;
@@ -2110,7 +2461,7 @@ function knockBack(s) {
   vel.z = (-dx / r) * sg * KNOCK.side + (dz / r) * 3;
   vel.y = KNOCK.up;
   lastGrounded = -1; jumpQueued = -1;
-  stunUntil = now + KNOCK.stun;
+  stunUntil = now + KNOCK.stun; stunLen = KNOCK.stun;
   knockReady = now + 0.5;
   sfx("bonk");
 }
@@ -2129,6 +2480,11 @@ function moveVertical(d) {
     if (plunging && s.kind !== "ground") continue;   // 관문 오답 추락 중: 땅에 닿을 때까지 발판을 모두 통과
     // 한쪽 통과 발판(공중 착지대): 아래에서 올라올 때는 통과, 위에서 떨어질 때만 밟힘
     if (s.oneWay && (d > 0 || pos.y - d < s.maxY - 0.02)) continue;
+    // 회전 막대 윗면에 내려앉아도 튕겨 나감 (예전에는 막대 위에 올라타고 갈 수 있었음)
+    if (d < 0 && s.kind === "spinner") {
+      if (now >= knockReady && state === "play") { pos.y = s.maxY; knockBack(s); return; }
+      continue;   // 방금 튕긴 직후(0.5초)에는 막대를 통과해 아래 발판으로 떨어짐
+    }
     if (d < 0) { pos.y = s.maxY; grounded = true; groundSolid = s; }
     else pos.y = s.minY - PLAYER_H;
     vel.y = 0;
@@ -2143,6 +2499,8 @@ addEventListener("keydown", (e) => {
     if (e.key === "Escape") canvas.focus();
     return;
   }
+  if ((e.code === "Escape" || e.code === "KeyP") && !e.repeat) { togglePause(); return; }
+  if (state === "paused") return;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
   keys.add(e.code);
   if (e.code === "Space" && !e.repeat) jumpQueued = now;
@@ -2151,6 +2509,9 @@ addEventListener("keydown", (e) => {
   if (e.code === "Enter" && !e.repeat && state === "ceremony") showResults();
   if ((e.code === "ShiftLeft" || e.code === "ShiftRight") && !e.repeat && state === "play") toggleShiftLock();
   // 1·2·3 (또는 O·X)로 정답·보너스 고르기
+  // 정상 세레모니 중: 1~4로 춤 고르기
+  const dn = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Numpad1: 0, Numpad2: 1, Numpad3: 2, Numpad4: 3 }[e.code];
+  if (state === "ceremony" && !e.repeat && dn !== undefined) { setDance(DANCES[dn].id); return; }
   const num = { Digit1: 0, Digit2: 1, Digit3: 2, Numpad1: 0, Numpad2: 1, Numpad3: 2 }[e.code];
   if (!e.repeat && num !== undefined) { if (bonusFloor !== null) answerBonus(num); else chooseOption(num); }
   if (!e.repeat && (e.code === "KeyO" || e.code === "KeyX") && bonusFloor === null) {
@@ -2267,7 +2628,9 @@ $("soundBtn").addEventListener("click", () => { toggleSound(); canvas.focus(); }
 updateSoundBtn();
 
 // ================= 게임 흐름 =================
+let raceId = 0;
 function startRace() {
+  $("pauseScreen").classList.add("hidden");
   if (snd) snd.start();   // 브라우저는 버튼을 누른 뒤에만 소리를 낼 수 있게 함
   $("titleScreen").classList.add("hidden");
   document.body.classList.remove("onTitle");
@@ -2283,15 +2646,24 @@ function startRace() {
   checkpoint = plazas[0]; progress = plazas[0]; maxCp = 0; maxZone = 0;
   falls = 0; correctCount = 0; wrongCount = 0; wrongIds = []; wrongLog = []; pendingWrong = null; runCards = [];
   bonusDone = {}; bonusStars = 0; bonusSkip = null; gateWrongs = 0;
+  exploring = selMode === "explore";
+  setupExplore();
   closeGate();
   respawn();
   updateHud();
-  $("timer").textContent = "00:00";
+  $("timer").textContent = exploring ? "갤러리" : "00:00";
+  if (exploring) {   // 갤러리는 카운트다운 없이 바로 둘러봄
+    state = "play"; startTime = now;
+    toast("나의 역사 갤러리 · 다리를 건너 시대별 전시실과 섬을 둘러보세요");
+    canvas.focus();
+    return;
+  }
   state = "countdown";
   const cd = $("countdown");
   cd.style.display = "flex";
-  const steps = ["3", "2", "1", "출발!"];
+  const steps = ["3", "2", "1", "출발!"], id = ++raceId;
   steps.forEach((txt, i) => setTimeout(() => {
+    if (id !== raceId) return;   // 그사이 시작 화면으로 갔거나 다시 시작함
     cd.textContent = txt;
     if (i === steps.length - 1) {
       state = "play";
@@ -2301,6 +2673,7 @@ function startRace() {
   }, i * 800));
   canvas.focus();
 }
+let newlyUnlocked = false;
 function finishRace() {
   state = "ceremony";
   finishTime = now - startTime;
@@ -2310,17 +2683,37 @@ function finishRace() {
   closeGate();
   if (shiftLock) setShiftLock(false);
   $("cardPop").classList.remove("show");
-  toast("정상 도착! L을 가져가~");
+  toast(exploring ? "탐험 완료! 정상에 도착했어요" : "정상 도착! 세레머니를 골라 보세요");
+  // 정상 보상: 처음 정상에 오르면 탐험 모드가 열림
+  newlyUnlocked = false;
+  if (!exploring && !explorerUnlocked) {
+    explorerUnlocked = true; newlyUnlocked = true;
+    try { localStorage.setItem(EXPLORE_KEY, "1"); } catch { /* 저장이 막힌 환경 */ }
+    renderModeButtons();
+    showFeedback(true, "정상 보상: 탐험 모드가 열렸어요!", "시작 화면에서 「탐험」을 고르면 문제 없이 탑과 시대별 섬을 둘러볼 수 있어요.", 5000);
+  }
   launchConfetti();
   sfx("fanfare");
-  // 결과 화면은 바로 띄우지 않고, 마음껏 돌아다니다가 버튼(또는 Enter)으로 봄
+  // 결과 화면은 바로 띄우지 않고, 세레머니를 고르며 마음껏 돌아다니다가 버튼(또는 Enter)으로 봄
+  $("dances").innerHTML = DANCES.map((d, i) => `<button type="button" data-dance="${d.id}" class="${d.id === danceId ? "sel" : ""}"><kbd>${i + 1}</kbd>${d.name}</button>`).join("");
   $("partyBar").classList.add("show");
 }
 function showResults() {
   if (state !== "ceremony") return;
   state = "finish";
   $("partyBar").classList.remove("show");
+  if (exploring) {   // 탐험 모드: 기록 대신 둘러본 것
+    $("resultText").innerHTML = `<span class="modeTag" style="background:#2e86de">탐험 완료</span>` +
+      `<dl class="stats"><dt>둘러본 섬</dt><dd>${seenIslands.size} / ${gallery.isles.length}</dd>` +
+      `<dt>살펴본 유물</dt><dd>${seenArts.size} / ${artifactList.length}</dd></dl>`;
+    $("runCards").innerHTML = ""; $("review").innerHTML = "";
+    updateBookButtons();
+    $("finishScreen").classList.remove("hidden");
+    $("finishScreen").querySelector(".panel").scrollTop = 0;
+    return;
+  }
   $("resultText").innerHTML =
+    (newlyUnlocked ? `<span class="modeTag" style="background:#2e86de">정상 보상 · 탐험 모드 열림</span><br>` : "") +
     (mode === "challenge" ? `<span class="modeTag">도전자 모드 완주</span>` : "") +
     `<div class="time"><small>기록</small>${fmtTime(finishTime)}</div>` +
     `<dl class="stats">` +
@@ -2393,20 +2786,75 @@ function reviewHTML() {
 }
 $("startBtn").addEventListener("click", startRace);
 $("resultBtn").addEventListener("click", showResults);
+$("dances").addEventListener("click", (e) => { const b = e.target.closest("[data-dance]"); if (b) { setDance(b.dataset.dance); canvas.focus(); } });
 // 모드 고르기 (이 기기에 기억됨)
 function setMode(m) {
-  mode = m === "challenge" ? "challenge" : "normal";
-  try { localStorage.setItem(MODE_KEY, mode); } catch { /* 저장이 막힌 환경 */ }
-  document.querySelectorAll(".modeBtn").forEach((b) => b.classList.toggle("sel", b.dataset.mode === mode));
+  if (m === "explore" && !explorerUnlocked) { toast("정상에 한 번 오르면 탐험 모드가 열려요"); return; }
+  selMode = m === "challenge" || m === "explore" ? m : "normal";
+  mode = selMode === "challenge" ? "challenge" : "normal";
+  try { localStorage.setItem(MODE_KEY, selMode); } catch { /* 저장이 막힌 환경 */ }
+  renderModeButtons();
   updateHud();
 }
+function renderModeButtons() {
+  const ex = document.querySelector('.modeBtn[data-mode="explore"]');
+  ex.classList.toggle("locked", !explorerUnlocked);
+  ex.innerHTML = explorerUnlocked
+    ? `<b>탐험</b><span>섬·유물 갤러리</span>`
+    : `<b><svg class="ic"><use href="#i-lock"/></svg>탐험</b><span>정상에 오르면 열려요</span>`;
+  document.querySelectorAll(".modeBtn").forEach((b) => b.classList.toggle("sel", b.dataset.mode === selMode));
+}
 $("modes").addEventListener("click", (e) => { const b = e.target.closest("[data-mode]"); if (b) setMode(b.dataset.mode); });
-setMode(mode);
+setMode(selMode);
 $("againBtn").addEventListener("click", startRace);
+
+// ================= 일시 정지 · 시작 화면으로 =================
+let pausedFrom = null, pauseStart = 0;
+function pauseGame() {
+  if (!["play", "ceremony"].includes(state)) return;   // 카운트다운 중에는 멈추지 않음
+  pausedFrom = state; pauseStart = now;
+  state = "paused";
+  keys.clear(); stick = null;
+  closeGate();
+  $("pauseSub").textContent = exploring ? "갤러리 구경을 잠깐 멈췄어요" : "시간이 멈췄어요";
+  $("pauseScreen").classList.remove("hidden");
+}
+function resumeGame() {
+  if (state !== "paused") return;
+  state = pausedFrom;
+  if (state === "play") startTime += now - pauseStart;   // 멈춘 시간은 기록에서 뺌
+  $("pauseScreen").classList.add("hidden");
+  canvas.focus();
+}
+function togglePause() { if (state === "paused") resumeGame(); else pauseGame(); }
+function goTitle() {
+  raceId++;
+  state = "title";
+  ["pauseScreen", "finishScreen", "bookScreen", "helpScreen"].forEach((id) => $(id).classList.add("hidden"));
+  $("countdown").style.display = "none";
+  $("cardPop").classList.remove("show");
+  $("partyBar").classList.remove("show");
+  hideFeedback(); closeBonus(); closeGate(); stopCeremony();
+  if (shiftLock) setShiftLock(false);
+  exploring = false;
+  setupExplore();
+  checkpoint = plazas[0]; progress = plazas[0]; maxCp = 0; maxZone = 0;
+  respawn();
+  updateHud();
+  $("titleScreen").classList.remove("hidden");
+  document.body.classList.add("onTitle");
+  showTip();
+}
+$("menuBtn").addEventListener("click", () => { pauseGame(); });
+$("resumeBtn").addEventListener("click", resumeGame);
+$("restartBtn").addEventListener("click", startRace);
+$("titleBtn").addEventListener("click", goTitle);
+$("titleBtn2").addEventListener("click", goTitle);
 
 function onLanded() {
   const s = groundSolid;
   if (state !== "play" || !s) return;
+  if (gateFailPending) return;   // 관문에서 튕겨 나가는 중에는 어디에 떨어져도 그대로 (곧 체크포인트로 감)
   // 받침대에서 내려오면: 열려 있던 유물 문제 창은 닫히고(기회는 남음), 다시 올라오면 다시 열림
   if (s.kind !== "shrine") { if (bonusFloor !== null) closeBonus(); else bonusSkip = null; }
   // 기본 모드: 체크포인트보다 2칸 넘게 아래(점프대 앞 착지대, 아래층 코스 등)에 내려앉으면 떨어진 것으로 봄.
@@ -2494,8 +2942,9 @@ function startHop(target) {
 // (예전에는 점프대 앞쪽 끝을 밟거나 방향을 잘못 잡으면 착지대를 지나쳐 떨어지고 체크포인트도 저장되지 않았음)
 let launching = false;
 function launchTo(target) {
-  const h = target.maxY - pos.y;
-  const t = (BOUNCE_V + Math.sqrt(Math.max(0, BOUNCE_V * BOUNCE_V - 2 * GRAVITY * h))) / GRAVITY;
+  // 날아가는 시간 = 꼭대기까지 올라가는 시간 + 꼭대기에서 착지대까지 떨어지는 시간 (떨어질 때 중력이 더 셈)
+  const h = target.maxY - pos.y, apex = BOUNCE_V * BOUNCE_V / (2 * GRAVITY);
+  const t = BOUNCE_V / GRAVITY + Math.sqrt(2 * Math.max(0, apex - h) / (GRAVITY * fallMult));
   vel.set((target.cx - pos.x) / t, BOUNCE_V, (target.cz - pos.z) / t);
   facing = Math.atan2(vel.x, vel.z);
   launching = true;
@@ -2514,12 +2963,19 @@ function stepHop(dt) {
 
 function physicsStep(dt) {
   updateSpinners(now);
+  // 회오리에 닿음: 빙글빙글 돌며 붕 떠서 온 쪽(뒤)으로 밀려남
+  if (state === "play" && now >= whirlReady && !gateFailPending) {
+    for (const w of tornados) {
+      const dx = pos.x - w.x, dz = pos.z - w.z, r = Math.hypot(dx, dz);
+      if (r < TORNADO.radius + PLAYER_R && pos.y > w.pad.maxY - 0.3 && pos.y < w.pad.maxY + 3.6) { whirl(w, dx / (r || 1), dz / (r || 1)); break; }
+    }
+  }
   if (hop) { stepHop(dt); return; }
   let f = 0, r = 0, turn = 0;
   const stunned = now < stunUntil;   // 회전 막대에 맞아 넘어진 동안은 조작 불가
   const canMove = state === "play" || state === "ceremony";   // 정상 세레모니 중에도 돌아다닐 수 있음
   // 유물 문제 창이 열려 있어도 움직일 수 있음 (받침대에서 내려가면 창이 닫힘)
-  if (canMove && !stunned && !plunging) {
+  if (canMove && !stunned && !plunging && !gateFailPending) {
     if (isKey("KeyW", "ArrowUp")) f += 1;
     if (isKey("KeyS", "ArrowDown")) f -= 1;
     if (isKey("KeyD")) r += 1;
@@ -2554,7 +3010,8 @@ function physicsStep(dt) {
   if (canMove && pendingWrong === null && !stunned && jumpQueued > 0 && now - jumpQueued < 0.15 && now - lastGrounded < 0.12) {
     vel.y = JUMP_V; jumpQueued = -1; lastGrounded = -1;
   }
-  vel.y = Math.max(vel.y - GRAVITY * dt, -40);
+  // 떨어질 때는 중력을 더 세게: 붕 떠 있는 느낌 없이 훅 떨어짐 (FALL_MULT은 모든 간격 시뮬레이션으로 정함)
+  vel.y = Math.max(vel.y - GRAVITY * (vel.y < 0 ? fallMult : 1) * dt, -40);
 
   moveHorizontal(vel.x * dt, vel.z * dt);
   const wasGrounded = grounded;
@@ -2564,10 +3021,21 @@ function physicsStep(dt) {
     lastGrounded = now;
     launching = false;
     plunging = false;
+    if (tumbling) {   // 공중제비 끝: 기본 모드는 체크포인트로 가기 전까지 벌러덩 누워 있음
+      tumbling = false;
+      if (gateFailPending) { stunUntil = gateFailUntil; stunLen = Math.max(0.3, gateFailUntil - now); }
+    }
     if (!wasGrounded || groundSolid.kind !== "pad") onLanded();
   }
+  checkGallery();
+  // 관문 오답으로 튕겨 나간 뒤 시간이 되면 체크포인트로
+  if (gateFailPending && now >= gateFailUntil) {
+    gateFailPending = false;
+    respawn("이전 체크포인트에서 다시!");
+    updateHud();
+  }
   // 코스 아래로 떨어지면 체크포인트로
-  if (state === "play" && mode === "normal" && pos.y < checkpoint.maxY - 7) fellOff();
+  if (state === "play" && mode === "normal" && !gateFailPending && pos.y < checkpoint.maxY - 7) fellOff();
   // 세레모니 중에 정상에서 떨어지면 정상으로 되돌려 놓음
   if (state === "ceremony" && pos.y < goal.maxY - 5) {
     pos.set(goal.cx, goal.maxY + 0.01, goal.cz);
@@ -2584,7 +3052,9 @@ function animateHero(dt) {
   // 회전 막대에 맞으면 뒤로 벌러덩 넘어졌다가 일어남
   const left = stunUntil - now;
   g.rotation.order = "YXZ";
-  g.rotation.x = left > 0 ? -Math.sin((1 - left / KNOCK.stun) * Math.PI) * 1.4 : 0;
+  g.rotation.x = left > 0 ? -Math.sin((1 - left / stunLen) * Math.PI) * 1.4 : 0;
+  if (tumbling) g.rotation.x = -(now - tumbleStart) * 11;   // 관문에서 튕겨 나가는 중: 뒤로 공중제비
+  if (now < whirlUntil) { g.rotation.x = 0; g.rotation.y = facing + (now - whirlStart) * 22; }   // 회오리: 팽이처럼 빙글빙글
   // 팔다리 목표 각도: 걷기·점프 자세
   const pose = { legL: { x: 0.4, z: 0 }, legR: { x: -0.3, z: 0 }, armL: { x: -2.7, z: 0 }, armR: { x: -2.7, z: 0 } };
   if (grounded) {
@@ -2648,29 +3118,78 @@ function updateCamera(dt) {
     ty + Math.sin(pitch) * camDist,
     tz + Math.cos(yaw) * Math.cos(pitch) * camDist
   );
+  if (now < shakeUntil) {   // 관문 감전: 화면이 잠깐 덜덜
+    const a = (shakeUntil - now) * 0.7;
+    camera.position.x += (Math.random() - 0.5) * a;
+    camera.position.y += (Math.random() - 0.5) * a;
+  }
   camera.lookAt(tx, ty, tz);
+}
+
+// ================= 성능: 멀리 있는 층 숨기기 · 느린 기기에서 해상도 낮추기 =================
+// 1) 높이별 묶음: 표지판·정답 발판·깃발·유물·섬처럼 층마다 있는 작은 물체를 높이 12칸 단위 묶음에 넣고,
+//    지금 서 있는 높이에서 멀리 떨어진 묶음은 그리지 않음 (시작 화면에서는 탑 전체를 보여 줌)
+const CULL_RANGE = 70;
+const cullBuckets = new Map();
+{
+  const keep = new Set([hero.group, blob, confetti, stars, bigL, sun]);
+  const _p = new THREE.Vector3();
+  for (const o of [...scene.children]) {
+    if (keep.has(o) || o.isLight || o.isCamera) continue;
+    o.getWorldPosition(_p);
+    if (_p.y < 3) continue;   // 땅, 나무, 탑 전체를 한 번에 그리는 큰 물체(원점에 있음)는 그대로
+    const key = Math.floor(_p.y / 12);
+    let g = cullBuckets.get(key);
+    if (!g) { g = new THREE.Group(); g.userData.y = key * 12 + 6; cullBuckets.set(key, g); scene.add(g); }
+    g.attach(o);
+  }
+}
+function updateCulling() {
+  const all = state === "title";
+  for (const g of cullBuckets.values()) g.visible = all || Math.abs(g.userData.y - pos.y) < CULL_RANGE;
+  camera.far = all ? 500 : 260;
+  camera.updateProjectionMatrix();
+}
+// 2) 프레임이 계속 느리면(초당 40장 아래) 그리는 해상도를 단계적으로 낮춤 (최저 0.75배)
+let perfAcc = 0, perfFrames = 0;
+function adaptQuality(rawDt) {
+  if (document.visibilityState !== "visible" || rawDt > 0.25) return;   // 숨겨진 탭·멈췄다 돌아온 순간은 세지 않음
+  perfAcc += rawDt; perfFrames++;
+  if (perfAcc < 3) return;
+  const fps = perfFrames / perfAcc;
+  perfAcc = 0; perfFrames = 0;
+  const pr = renderer.getPixelRatio();
+  if (fps < 40 && pr > 0.76) { renderer.setPixelRatio(Math.max(0.75, pr - 0.25)); resize(); }
 }
 
 let last = performance.now() / 1000;
 function frame() {
   now = performance.now() / 1000;
-  const dt = Math.min(0.05, now - last);
+  const rawDt = now - last, dt = Math.min(0.05, rawDt);
   last = now;
-  if (state !== "finish") {
+  adaptQuality(rawDt);
+  if (state !== "finish" && state !== "paused") {
     const n = Math.ceil(dt / (1 / 120));
     for (let i = 0; i < n; i++) physicsStep(dt / n);
   }
-  if (state === "play") $("timer").textContent = fmtTime(now - startTime);
+  if (state === "play") $("timer").textContent = exploring ? "갤러리" : fmtTime(now - startTime);
   animateHero(dt);
   animatePads(dt);
   animateShrines(dt);
   animateGates(dt);
   animateConfetti(dt);
   for (const s of spinners) s.mesh.rotation.y = s.theta;
+  if (exploring) for (const ped of gallery.pedestals) ped.mesh.rotation.y = now * 0.6 + ped.x;   // 전시된 유물이 천천히 돎
+  for (const w of tornados) {
+    w.mesh.position.set(w.x, w.pad.maxY, w.z);
+    w.rings.forEach((r, k) => { r.rotation.y = now * (6 + k * 1.5); r.position.x = Math.sin(now * 3 + k) * 0.06 * k; });
+    w.mesh.children.forEach((c) => { if (c.userData.r) { const a = c.userData.a + now * 7; c.position.set(Math.cos(a) * c.userData.r, c.userData.y, Math.sin(a) * c.userData.r); } });
+  }
   for (const fl of cpFlags) if (fl.flag.material === flagOn) fl.flag.rotation.y = fl.base + Math.sin(now * 5) * 0.25;   // 지금 체크포인트 깃발만 펄럭임
   updateSky();
   updateQuestionPanel();
   updateCamera(dt);
+  updateCulling();
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
@@ -2682,11 +3201,22 @@ requestAnimationFrame(frame);
 
 // 확인·디버그용 (개발 중 자동 점검에 사용)
 window.__tower = {
-  solids, plazas, strips, floors, goal, pos, vel, zoneStart, OPT_ALONG, landings, spinners, walls, bouncePads,
+  solids, plazas, strips, floors, goal, pos, vel, zoneStart, OPT_ALONG, landings, spinners, walls, bouncePads, renderer, scene, camera, updateCulling, cullBuckets,
   get bonus() { return { floor: bonusFloor, stars: bonusStars, done: { ...bonusDone } }; },
   gates, submitGate, setupQuestions,
   get gateOpen() { return gateOpen ? gateOpen.zi : null; },
   get plunging() { return plunging; },
+  set fallMult(v) { fallMult = v; },
+  tornados,
+  get whirling() { return now < whirlUntil; },
+  setDance, get dance() { return danceId; },
+  pauseGame, resumeGame, goTitle, startRace,
+  gallery, get exploring() { return exploring; },
+  unlockExplorer() { explorerUnlocked = true; renderModeButtons(); },
+  get seen() { return { islands: seenIslands.size, arts: seenArts.size }; },
+  get fallMult() { return fallMult; },
+  get gateFailing() { return gateFailPending; },
+  get tumbling() { return tumbling; },
   get shiftLock() { return shiftLock; },
   answerBonus, chooseOption, setSkin, setMode,
   get mode() { return mode; },
