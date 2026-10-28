@@ -32,6 +32,7 @@
     background: var(--sky); color: var(--ink);
     font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
     -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none; -webkit-text-size-adjust: 100%;   /* 아이패드: 길게 누르기 메뉴·글자 키우기 막기 */
     touch-action: none;
   }
   #game { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100vw; height: 100vh; display: block; outline: none; }
@@ -416,6 +417,21 @@
 
   /* ---------- 터치 조작 ---------- */
   #stickBase, #jumpBtn { display: none; }
+  button { touch-action: manipulation; }   /* 버튼을 빠르게 두 번 눌러도 화면이 확대되지 않게 */
+  /* 관문 답을 쓰는 동안: 조이스틱·점프 버튼·HUD를 숨겨 관문 창과 휴대폰 글자판을 가리지 않게 */
+  body.gating #stickBase, body.gating #jumpBtn, body.gating #hint, body.gating #qPanel { display: none !important; }
+  body.touch.gating #hud { display: none; }
+  body.touch #gatePanel { top: 12px; }
+  @media (max-height: 520px) {   /* 가로로 눕힌 휴대폰: 글자판이 화면 절반을 덮으므로 창을 작게 */
+    #gatePanel { top: 6px; padding: 8px 12px 10px; }
+    #gatePanel .gtag { margin-bottom: 4px; }
+    #gatePanel .gq { font-size: 15px; }
+    #gatePanel .ghint { margin-top: 6px; }
+    #gatePanel .ghint b { min-width: 28px; height: 30px; font-size: 17px; }
+    #gatePanel .grow { margin-top: 8px; }
+    #gatePanel input { font-size: 17px; padding: 6px 10px; }
+    #gatePanel .gsub { display: none; }
+  }
   /* 태블릿에서는 조이스틱이 왼쪽 아래에 항상 보임 */
   body.touch #stickBase { display: block; left: 104px; top: calc(100% - 124px); }
   #titleScreen:not(.hidden) ~ #stickBase, #finishScreen:not(.hidden) ~ #stickBase { display: none; }
@@ -2194,6 +2210,7 @@ function openGate(g) {
     `<div class="grow"><input id="gateInput" type="text" lang="ko" autocomplete="off" spellcheck="false" maxlength="24" placeholder="정답을 써요" aria-label="관문 문제 정답"><button type="submit">확인</button></div>` +
     (g.wrong ? `<div class="gsub">${g.wrong}번 틀렸어요 · 틀리면 ${penalty}</div>` : "");
   el.style.display = "block";
+  document.body.classList.add("gating");
   setTimeout(() => { if (gateOpen === g) $("gateInput").focus(); }, 0);
   sfx("bonus");
 }
@@ -2202,6 +2219,8 @@ function closeGate() {
   const el = $("gatePanel");
   if (el.contains(document.activeElement)) canvas.focus();
   el.style.display = "none";
+  document.body.classList.remove("gating");
+  window.scrollTo(0, 0);   // 아이폰·아이패드: 글자판이 올라오며 밀려 올라간 화면을 제자리로
 }
 function submitGate(text) {
   const g = gateOpen;
@@ -2526,6 +2545,18 @@ let stick = null, camDrag = null;
 const stickBase = $("stickBase"), stickKnob = $("stickKnob");
 function useTouchUi() { document.body.classList.add("touch"); }
 if (matchMedia("(pointer: coarse)").matches) useTouchUi();
+// 아이패드·아이폰 사파리(크롬도 같은 엔진)는 확대 막는 설정(user-scalable=no)을 무시함.
+// 두 손가락 모으기와 빠르게 두 번 톡 치기로 확대되는 것을 직접 막음 (글자 입력칸은 그대로 둠)
+["gesturestart", "gesturechange", "gestureend"].forEach((t) => document.addEventListener(t, (e) => e.preventDefault(), { passive: false }));
+document.addEventListener("touchmove", (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+// 같은 곳을 0.35초 안에 다시 톡 칠 때만 막음 (점프 버튼 누르고 바로 정답 버튼 누르기 같은 다른 곳 터치는 그대로)
+let lastTouchEnd = 0, lastTouchTarget = null;
+document.addEventListener("touchend", (e) => {
+  const t = performance.now();
+  if (t - lastTouchEnd < 350 && e.target === lastTouchTarget && !(e.target instanceof HTMLInputElement)) e.preventDefault();
+  lastTouchEnd = t; lastTouchTarget = e.target;
+}, { passive: false });
+document.addEventListener("dblclick", (e) => e.preventDefault());
 
 canvas.addEventListener("pointerdown", (e) => {
   canvas.focus();
