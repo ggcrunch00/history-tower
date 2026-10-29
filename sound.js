@@ -148,6 +148,36 @@ const GameSound = (() => {
       o.connect(g); g.connect(sfxBus);
       o.start(t); o.stop(t + 0.45);
     },
+    splash(t) {   // 나룻배 강에 빠짐: 첨벙 (낮게 걸러 낸 물 소리 + 퐁 하고 가라앉는 소리)
+      const len = 0.6, buf = ctx.createBuffer(1, ctx.sampleRate * len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+      const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = buf;
+      f.type = "lowpass"; f.frequency.setValueAtTime(2600, t); f.frequency.exponentialRampToValueAtTime(400, t + len);
+      g.gain.setValueAtTime(0.45, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+      s.connect(f); f.connect(g); g.connect(sfxBus);
+      s.start(t); s.stop(t + len);
+      const o = ctx.createOscillator(), og = ctx.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(600, t + 0.05);
+      o.frequency.exponentialRampToValueAtTime(150, t + 0.3);
+      og.gain.setValueAtTime(0.2, t + 0.05);
+      og.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+      o.connect(og); og.connect(sfxBus);
+      o.start(t + 0.05); o.stop(t + 0.4);
+    },
+    seesaw(t) {   // 널뛰기: 널 구르는 쿵 + 높이 솟는 소리
+      drum(t, 0.5);
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(180, t);
+      o.frequency.exponentialRampToValueAtTime(1300, t + 0.45);
+      g.gain.setValueAtTime(0.28, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+      o.connect(g); g.connect(sfxBus);
+      o.start(t); o.stop(t + 0.6);
+    },
     bonk(t) {   // 회전 막대에 맞음: 쿵 + 띠용
       drum(t, 0.6);
       const o = ctx.createOscillator(), g = ctx.createGain();
