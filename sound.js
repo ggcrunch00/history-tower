@@ -148,6 +148,27 @@ const GameSound = (() => {
       o.connect(g); g.connect(sfxBus);
       o.start(t); o.stop(t + 0.45);
     },
+    bell(t) {   // 기차 건널목 경고: 땡 (높은 종소리 두 겹)
+      [1320, 1760].forEach((f) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = "sine"; o.frequency.setValueAtTime(f, t);
+        g.gain.setValueAtTime(0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+        o.connect(g); g.connect(sfxBus);
+        o.start(t); o.stop(t + 0.4);
+      });
+    },
+    crack(t) {   // 무너지는 발판: 쩍 갈라지는 소리
+      const len = 0.25, buf = ctx.createBuffer(1, ctx.sampleRate * len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+      const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = buf;
+      f.type = "bandpass"; f.frequency.value = 900; f.Q.value = 0.8;
+      g.gain.setValueAtTime(0.5, t);
+      s.connect(f); f.connect(g); g.connect(sfxBus);
+      s.start(t); s.stop(t + len);
+      drum(t + 0.02, 0.35);
+    },
     splash(t) {   // 나룻배 강에 빠짐: 첨벙 (낮게 걸러 낸 물 소리 + 퐁 하고 가라앉는 소리)
       const len = 0.6, buf = ctx.createBuffer(1, ctx.sampleRate * len, ctx.sampleRate), d = buf.getChannelData(0);
       for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);

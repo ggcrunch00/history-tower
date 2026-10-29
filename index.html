@@ -270,6 +270,10 @@
   .unitBtn span { font-size: 12px; color: var(--muted); }
   .unitBtn.sel { border-color: #f2c94c; background: #fdf4d6; }
   .unitBtn:disabled { opacity: 0.5; cursor: default; }
+  .unitBtn.final { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: center; gap: 10px; background: #1d2433; border-color: #1d2433; }
+  .unitBtn.final b { display: inline; color: #f2c94c; }
+  .unitBtn.final span { color: #c7cede; }
+  .unitBtn.final.sel { border-color: #f2c94c; background: #2a3247; }
   .modeBtn.locked { opacity: 0.6; }
   .modeBtn.sel[data-mode="explore"] { border-color: #2e86de; background: #e6f1fc; }
   .titleCard .modeBtn { text-align: center; padding: 8px 6px; }
@@ -289,7 +293,7 @@
     list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; width: 196px;
   }
   .eraMap li {
-    display: flex; align-items: center; gap: 8px; color: #fff; font-size: 14px; font-weight: 900;
+    display: flex; align-items: center; gap: 8px; color: #fff; font-size: 14px; font-weight: 900; word-break: keep-all;
     padding: 8px 10px; border-radius: var(--r-s); box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.22);
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
   }
@@ -358,6 +362,14 @@
     display: inline-flex; align-items: center; gap: 6px;
   }
   .subBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--line); }
+  .shareBox { margin: 0 0 20px; padding: 14px; border-radius: var(--r-m); background: var(--surface); text-align: left; }
+  .shareBox h3 { margin: 0 0 4px; font-size: 16px; }
+  .shareBox p { margin: 0 0 10px; font-size: 13px; color: var(--muted); line-height: 1.5; word-break: keep-all; }
+  .shareRow { display: flex; gap: 8px; }
+  .shareRow input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 8px 10px; border: 2px solid #c9d0db; border-radius: var(--r-s); }
+  .shareRow .bigBtn { flex: none; padding: 8px 14px; font-size: 15px; }
+  #cardOut img { display: block; width: 100%; max-width: 360px; margin: 12px auto 8px; border-radius: var(--r-m); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); }
+  #cardOut .cardActions { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
   .runCards { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: -6px 0 20px; }
   .runCards figure { margin: 0; width: 64px; font-size: 11px; font-weight: 700; line-height: 1.3; }
   .runCards img { width: 64px; height: 64px; border-radius: var(--r-m); background: var(--surface); display: block; }
@@ -520,7 +532,8 @@
       <div class="units" id="units">
         <button type="button" class="unitBtn" data-unit="1"><b>1단원</b><span>구석기~고려</span></button>
         <button type="button" class="unitBtn" data-unit="2"><b>2단원</b><span>조선</span></button>
-        <button type="button" class="unitBtn" data-unit="3" disabled><b>3단원</b><span>준비 중</span></button>
+        <button type="button" class="unitBtn" data-unit="3"><b>3단원</b><span>일제 강점기~6·25</span></button>
+        <button type="button" class="unitBtn final" data-unit="4"><b>끝판왕</b><span>1~3단원 54층, 우주까지</span></button>
       </div>
       <div class="pickHead"><h2 class="pickTitle">캐릭터</h2><span id="skinName" class="pickVal"></span></div>
       <div class="skins" id="skins"></div>
@@ -589,6 +602,10 @@
           <dt data-kind="seesaw"><i class="sw" style="background:#b07a45"></i>널뛰기</dt><dd data-kind="seesaw">널에 올라타면 위 발판으로 높이 튕겨 올라가요.</dd>
           <dt data-kind="rope"><i class="sw" style="background:#e9d9a8;box-shadow:inset 0 0 0 2px #7a5230"></i>줄타기</dt><dd data-kind="rope">아주 좁은 줄이에요. 줄 방향을 따라 조심조심 건너요.</dd>
           <dt data-kind="jar"><i class="sw" style="background:#7a4a2a"></i>굴러오는 장독</dt><dd data-kind="jar">좌우로 굴러다녀요. 부딪히면 뒤로 밀려나니 피하거나 뛰어넘어요.</dd>
+          <dt data-kind="train"><i class="sw" style="background:#2b2b2b;box-shadow:inset 0 0 0 2px #ff3b30"></i>기차 건널목</dt><dd data-kind="train">경고등이 깜빡이고 땡땡 소리가 나면 기차가 지나가요. 멈췄다가 건너요.</dd>
+          <dt data-kind="tram"><i class="sw" style="background:#7a2f2a"></i>전차</dt><dd data-kind="tram">선로 위를 천천히 오가요. 부딪히면 밀려나니 피해서 건너요.</dd>
+          <dt data-kind="crumble"><i class="sw" style="background:#d6c29a;box-shadow:inset 0 0 0 2px #4a3a2c"></i>무너지는 발판</dt><dd data-kind="crumble">밟으면 곧 무너져요. 머뭇거리지 말고 바로 건너요. 잠시 뒤 다시 생겨요.</dd>
+          <dt data-kind="mover"><i class="sw" style="background:#8d96a3;box-shadow:inset 0 0 0 2px #f2c94c"></i>움직이는 발판</dt><dd data-kind="mover">앞뒤로 오가요. 가까이 왔을 때 올라타 건너요.</dd>
           <dt data-kind="boat"><i class="sw" style="background:#4aa3df"></i>나룻배</dt><dd data-kind="boat">강이 넓어 점프로는 못 건너요. 오가는 배에 올라타 건너요.</dd>
           <dt><i class="sw" style="background:#ff5fa2"></i>점프대</dt><dd>올라타면 다음 구역 출발점으로 날아가요.</dd>
           <dt><i class="sw" style="background:rgba(229,72,77,.45);box-shadow:inset 0 0 0 2px #e5484d"></i>빨간 막</dt><dd>관문 문제를 맞히면 사라져요.</dd>
@@ -606,6 +623,15 @@
     <h1>정상 도착</h1>
     <div class="result" id="resultText"></div>
     <div class="runCards" id="runCards"></div>
+    <section class="shareBox" id="shareBox">
+      <h3>명예의 전당 기록 카드</h3>
+      <p>정상 장면과 기록을 담은 이미지를 만들어 패들렛·클래스룸에 올려요. 이름 대신 <b>번호와 별명</b>을 써요.</p>
+      <div class="shareRow">
+        <input id="nickInput" maxlength="10" placeholder="예: 7번 번개" autocomplete="off">
+        <button class="bigBtn" id="cardBtn" type="button">기록 카드 만들기</button>
+      </div>
+      <div id="cardOut"></div>
+    </section>
     <div class="review" id="review"></div>
     <div class="btnRow stickyRow">
       <button class="bigBtn" id="againBtn" type="button">다시 하기</button>
@@ -658,6 +684,9 @@
 <script src="questions2.js"></script>
 <script src="artifacts2.js"></script>
 <script src="scenery2.js"></script>
+<script src="questions3.js"></script>
+<script src="artifacts3.js"></script>
+<script src="scenery3.js"></script>
 <script src="sound.js"></script>
 <script type="module">
 if (typeof THREE === "undefined") {
@@ -722,7 +751,9 @@ function mergeGeometries(geos) {
 // 장애물(obstacles): 구역마다 "층 안 몇 번째 점프 발판을 무엇으로 바꿀지"
 //   1단원: hurdle 줄무늬 벽, spinner 회전 막대, tornado 회오리
 //   2단원: seesaw 널뛰기, rope 줄타기, jar 굴러오는 장독, boat 나룻배 (+ 1단원 것 몇 개)
-const UNIT = (() => { const u = Number(new URLSearchParams(location.search).get("unit")); return u === 2 ? 2 : 1; })();
+//   3단원: train 기차 건널목, tram 전차, crumble 무너지는 발판, mover 움직이는 발판 (+ 1단원 것 몇 개)
+// 4 = 끝판왕 모드: 1~3단원을 이어 오르는 54층 (올라갈수록 하늘이 어두워지다 우주에서 정상)
+const UNIT = (() => { const u = Number(new URLSearchParams(location.search).get("unit")); return u >= 2 && u <= 4 ? u : 1; })();
 const UNITS = {
   1: {
     kicker: "사회 5-2 · 1단원 유적과 유물", tagline: "구석기에서 고려까지, 18층 탑 꼭대기에 먼저 올라라", summit: "고려 정복 완료!", key: "",
@@ -754,7 +785,37 @@ const UNITS = {
     questions: typeof QUESTIONS_2 !== "undefined" ? QUESTIONS_2 : null, gates: typeof GATES_2 !== "undefined" ? GATES_2 : null,
     artifacts: typeof ARTIFACTS_2 !== "undefined" ? ARTIFACTS_2 : null, scenery: typeof SCENERY_2 !== "undefined" ? SCENERY_2 : null,
   },
+  3: {
+    kicker: "사회 5-2 · 3단원 일제 강점기와 광복", tagline: "나라를 지킨 사람들부터 6·25 전쟁까지, 18층 탑 꼭대기에 올라라", summit: "평화를 기억해요", key: ".u3",
+    calm: true,   // 정상 세레머니를 차분하게 (태극기·만세·손 흔들기만, 꽃가루 없음)
+    // eras는 questions3.js의 era 값과 연결됨
+    zones: [
+      { name: "국권 침탈과 의병", eras: ["침탈"], color: "#8a5a4a", light: "#e6cfc6", pad: 3 },
+      { name: "일제의 통치",      eras: ["통치"], color: "#6b7280", light: "#d5d9df", pad: 3 },
+      { name: "3·1 운동과 임시 정부", eras: ["삼일"], color: "#b5524a", light: "#efc9c5", pad: 3 },
+      { name: "1920~30년대 저항", eras: ["저항"], color: "#4f7a9a", light: "#c9dbe8", pad: 2 },
+      { name: "광복과 정부 수립", eras: ["광복"], color: "#3e8fb0", light: "#c6e3ef", pad: 2 },
+      { name: "6·25 전쟁",        eras: ["전쟁"], color: "#6b8e5a", light: "#d3e3c9", pad: 2 },
+    ],
+    obstacles: [{ 2: "crumble" }, { 1: "mover", 3: "crumble" }, { 2: "tram" }, { 1: "train", 3: "mover" }, { 1: "crumble", 2: "tram", 3: "spinner" }, { 0: "train", 2: "mover", 3: "hurdle" }],
+    questions: typeof QUESTIONS_3 !== "undefined" ? QUESTIONS_3 : null, gates: typeof GATES_3 !== "undefined" ? GATES_3 : null,
+    artifacts: typeof ARTIFACTS_3 !== "undefined" ? ARTIFACTS_3 : null, scenery: typeof SCENERY_3 !== "undefined" ? SCENERY_3 : null,
+  },
 };
+// 끝판왕: 세 단원의 구역·장애물·문제를 이어 붙임. 관문 구역 번호와 유물 층은 앞 단원만큼 밀어 줌
+UNITS[4] = (() => {
+  const parts = [UNITS[1], UNITS[2], UNITS[3]], cat = (k) => parts.flatMap((u) => u[k] || []);
+  const shifted = (k, f) => parts.flatMap((u, i) => (u[k] || []).map((x) => f(x, i * u.zones.length)));
+  return {
+    kicker: "사회 5-2 · 끝판왕 1~3단원", tagline: "구석기부터 6·25 전쟁까지, 54층을 올라 우주까지 가라", summit: "우주 정상 도착!", key: ".all",
+    space: true, noGallery: true,
+    groups: [{ name: "1단원 구석기~고려", color: "#9a7b5f" }, { name: "2단원 조선", color: "#5d74b0" }, { name: "3단원 일제 강점기~6·25", color: "#8a5a4a" }],
+    zones: cat("zones"), obstacles: cat("obstacles"), questions: cat("questions"),
+    gates: shifted("gates", (g, off) => ({ ...g, zone: g.zone + off })),
+    artifacts: shifted("artifacts", (a, off) => ({ ...a, floor: a.floor + off * 3 })),
+    scenery: shifted("scenery", (sc, off) => ({ ...sc, zone: sc.zone + off })),
+  };
+})();
 const U = UNITS[UNIT];
 
 // ================= 설정 =================
@@ -987,6 +1048,16 @@ const BONUS_SEC = 15;
 const solids = [], staticBlocks = [], plazas = [], strips = [], floors = [], landings = [];
 const walls = [], spinners = [], bouncePads = [], tornados = [];
 const seesaws = [], ropes = [], jars = [], boats = [];
+// 3단원 장애물
+// 기차 건널목: 넓은 발판을 가로지르는 선로로 긴 기차가 가끔 지나감. 오기 전에 경고등이 깜빡이고 땡땡 소리. 키가 커서 뛰어넘을 수 없음
+const TRAIN = { size: 7, along: 6, len: 9, half: 0.9, height: 2.4, speed: 13, period: 7, warn: 1.8, back: 3, up: 6, stun: 0.9 };
+// 전차: 같은 모양의 선로 위를 짧은 전차가 천천히 오감 (발판 밖까지 나갔다 들어옴)
+const TRAM = { len: 3.4, half: 0.8, height: 2.2, amp: 5, speed: 0.75, back: 3, up: 6, stun: 0.7 };
+// 무너지는 발판: 밟으면 shake초 동안 흔들리다 무너지고, gone초 뒤 다시 생김
+const CRUMBLE = { shake: 0.6, gone: 2.5 };
+// 움직이는 발판: 나룻배처럼 앞뒤로 오가는 발판 (물은 없음)
+const MOVER = { span: 7, half: 1.4, width: 2.6, period: 6 };
+const trains = [], trams = [], crumbles = [];
 const ringPoint = (a, r, dir) => ({ x: Math.cos(a) * r, z: Math.sin(a) * r, theta: dir > 0 ? -a : Math.PI - a });
 function addStatic(p, top, across, along, color, info) {
   const sol = makeSolid(p.x, p.z, p.theta, across / 2, along / 2, top, info);
@@ -1061,9 +1132,9 @@ for (let f = 1; f <= TOTAL_FLOORS; f++) {
       stepAlong(prevHalf + gap + JAR.size / 2); top += RISE;
       const pad = addStatic(ringPoint(ang, rad, dir), top, JAR.size, JAR.size, zone.light, { kind: "pad", floor: f, zone: zi });
       // 위 구역으로 갈수록 빨라지고, 5구역부터는 한 발판에 두 개가 앞뒤 줄에서 서로 반대쪽으로 굴러옴 (둘이 양 끝에 있을 때 가운데로 지나갈 수 있음)
-      const two = zi >= 4;
+      const uz = zi % 6, two = uz >= 4;   // uz: 단원 안에서 몇 번째 구역인지 (끝판왕에서도 2단원 기준으로)
       for (let k = 0; k < (two ? 2 : 1); k++) {
-        jars.push({ pad, floor: f, zone: zi, speed: 1.0 + zi * 0.18, phase: f * 2.3 + k * Math.PI, lz: two ? (k ? 1.7 : -1.7) : 0, x: pad.cx, z: pad.cz, roll: 0 });
+        jars.push({ pad, floor: f, zone: zi, speed: 1.0 + uz * 0.18, phase: f * 2.3 + k * Math.PI, lz: two ? (k ? 1.7 : -1.7) : 0, x: pad.cx, z: pad.cz, roll: 0 });
       }
       prevHalf = JAR.size / 2;
     } else if (kind === "boat") {     // 나룻배: 강이 넓어 점프로는 못 건너고, 오가는 배에 타야 함
@@ -1071,13 +1142,32 @@ for (let f = 1; f <= TOTAL_FLOORS; f++) {
       const mid = ringPoint(ang, rad, dir);
       const boat = makeSolid(mid.x, mid.z, mid.theta, BOAT.width / 2, BOAT.half, top, { kind: "pad", floor: f, zone: zi, mover: true, dx: 0, dz: 0 });
       solids.push(boat);
-      boats.push({ solid: boat, ang, rad, dir, top, reach: BOAT.river / 2 - BOAT.half - 0.2, phase: f * 1.3, mid });
+      boats.push({ solid: boat, ang, rad, dir, top, reach: BOAT.river / 2 - BOAT.half - 0.2, phase: f * 1.3, mid, water: true, period: BOAT.period });
       prevHalf = BOAT.river / 2;
+    } else if (kind === "mover") {    // 움직이는 발판: 넓은 틈을 앞뒤로 오가는 발판에 올라타 건넘
+      stepAlong(prevHalf + gap + MOVER.span / 2); top += RISE;
+      const mid = ringPoint(ang, rad, dir);
+      const plat = makeSolid(mid.x, mid.z, mid.theta, MOVER.width / 2, MOVER.half, top, { kind: "pad", floor: f, zone: zi, mover: true, dx: 0, dz: 0 });
+      solids.push(plat);
+      boats.push({ solid: plat, ang, rad, dir, top, reach: MOVER.span / 2 - MOVER.half - 0.2, phase: f * 1.9, mid, water: false, period: MOVER.period });
+      prevHalf = MOVER.span / 2;
+    } else if (kind === "train" || kind === "tram") {   // 기차 건널목·전차: 발판을 가로지르는 선로
+      stepAlong(prevHalf + gap + TRAIN.along / 2); top += RISE;
+      const pad = addStatic(ringPoint(ang, rad, dir), top, TRAIN.size, TRAIN.along, zone.light, { kind: "pad", floor: f, zone: zi });
+      if (kind === "train") trains.push({ pad, floor: f, zone: zi, phase: f * 2.1, sgn: f % 2 ? 1 : -1, len: TRAIN.len, half: TRAIN.half, height: TRAIN.height, x: 99, warn: false, lastBell: 0 });
+      else trams.push({ pad, floor: f, zone: zi, phase: f * 1.7, len: TRAM.len, half: TRAM.half, height: TRAM.height, x: 0 });
+      prevHalf = TRAIN.along / 2;
+    } else if (kind === "crumble") {  // 무너지는 발판: 밟으면 곧 무너졌다가 다시 생김
+      stepAlong(prevHalf + gap + zone.pad / 2); top += RISE;
+      const pt = ringPoint(ang, rad, dir);
+      const c = makeSolid(pt.x, pt.z, pt.theta, zone.pad / 2, zone.pad / 2, top, { kind: "pad", floor: f, zone: zi, crumble: true, crumbleAt: 0 });
+      solids.push(c); crumbles.push(c);
+      prevHalf = zone.pad / 2;
     } else if (kind === "tornado") {  // 넓은 발판 위를 회오리가 좌우로 오감
       const size = TORNADO.size;
       stepAlong(prevHalf + gap + size / 2); top += RISE;
       const pad = addStatic(ringPoint(ang, rad, dir), top, size, size, zone.light, { kind: "pad", floor: f, zone: zi });
-      tornados.push({ pad, floor: f, zone: zi, speed: 1.4 + zi * 0.1, phase: f * 1.7, x: pad.cx, z: pad.cz });
+      tornados.push({ pad, floor: f, zone: zi, speed: 1.4 + (zi % 6) * 0.1, phase: f * 1.7, x: pad.cx, z: pad.cz });
       prevHalf = size / 2;
     } else {
       stepAlong(prevHalf + gap + zone.pad / 2); top += RISE;
@@ -1137,8 +1227,21 @@ function updateSpinners(t) {
     j.x = j.pad.cx + lx * j.pad.c + j.lz * j.pad.sn; j.z = j.pad.cz - lx * j.pad.sn + j.lz * j.pad.c;
     j.roll = lx / JAR.radius;
   }
-  for (const b of boats) {      // 배는 코스(원)를 따라 강 이쪽 끝과 저쪽 끝을 오감. 지난번보다 움직인 만큼을 dx·dz에 남김
-    const off = Math.sin((t / BOAT.period) * Math.PI * 2 + b.phase) * b.reach;
+  for (const v of trains) {     // 기차: period초마다 한 번 선로를 따라 지나감 (지나가기 warn초 전부터 경고)
+    const travel = TRAIN.size / 2 + TRAIN.len / 2 + 3, pass = (2 * travel) / TRAIN.speed;
+    const cyc = (t + v.phase) % TRAIN.period, start = TRAIN.period - pass;
+    v.x = cyc >= start ? (-travel + (cyc - start) * TRAIN.speed) * v.sgn : 99;
+    v.warn = cyc >= start - TRAIN.warn;
+  }
+  for (const v of trams) v.x = Math.sin(t * TRAM.speed + v.phase) * TRAM.amp;
+  for (const c of crumbles) {   // 무너지는 발판: 밟힌 뒤 흔들리다 사라지고, 잠시 뒤 다시 생김
+    if (!c.crumbleAt) continue;
+    const k = t - c.crumbleAt;
+    c.active = k < CRUMBLE.shake;
+    if (k > CRUMBLE.shake + CRUMBLE.gone) { c.crumbleAt = 0; c.active = true; }
+  }
+  for (const b of boats) {      // 배(움직이는 발판)는 코스(원)를 따라 이쪽 끝과 저쪽 끝을 오감. 지난번보다 움직인 만큼을 dx·dz에 남김
+    const off = Math.sin((t / b.period) * Math.PI * 2 + b.phase) * b.reach;
     const pt = ringPoint(b.ang + (b.dir * off) / b.rad, b.rad, b.dir), s = b.solid;
     s.dx = pt.x - s.cx; s.dz = pt.z - s.cz;
     s.cx = pt.x; s.cz = pt.z; s.theta = pt.theta; s.c = Math.cos(pt.theta); s.sn = Math.sin(pt.theta);
@@ -1263,7 +1366,13 @@ placeSign(makeSign("정상", U.summit, "#f2c94c"), goal, 4.5);
   if (seesaws[0]) tutor("널뛰기", "올라타면 위 발판으로 쿵!", seesaws[0], 3.2, zoneOf(seesaws[0].floor));
   if (ropes[0]) tutor("줄타기", "좁은 줄을 조심조심 건너요", ropes[0], 2.6, zoneOf(ropes[0].floor));
   if (jars[0]) tutor("굴러오는 장독", "피하거나 뛰어넘어요", jars[0].pad, 3.4, jars[0].zone);
-  if (boats[0]) tutor("나룻배", "배에 올라타 강을 건너요", boats[0].mid, 3.4, zoneOf(boats[0].solid.floor));
+  const midSolid = (b) => ({ cx: b.mid.x, cz: b.mid.z, c: Math.cos(b.mid.theta), sn: Math.sin(b.mid.theta), maxY: b.top });
+  const firstBoat = boats.find((b) => b.water), firstMover = boats.find((b) => !b.water);
+  if (firstBoat) tutor("나룻배", "배에 올라타 강을 건너요", midSolid(firstBoat), 3.4, zoneOf(firstBoat.solid.floor));
+  if (firstMover) tutor("움직이는 발판", "발판에 올라타 건너요", midSolid(firstMover), 3.4, zoneOf(firstMover.solid.floor));
+  if (trains[0]) tutor("기차 건널목", "땡땡 소리가 나면 멈춰요", trains[0].pad, 4.2, trains[0].zone);
+  if (trams[0]) tutor("전차", "오가는 전차를 피해 건너요", trams[0].pad, 4.0, trams[0].zone);
+  if (crumbles[0]) tutor("무너지는 발판", "밟으면 곧 무너져요", crumbles[0], 2.6, zoneOf(crumbles[0].floor));
 }
 
 // ================= 장애물 모양 =================
@@ -1334,6 +1443,17 @@ placeSign(makeSign("정상", U.summit, "#f2c94c"), goal, 4.5);
   // 나룻배: 강(파란 물길)과 그 위를 오가는 나무배
   const waterMat = new THREE.MeshLambertMaterial({ color: "#4aa3df", transparent: true, opacity: 0.85 });
   boats.forEach((b) => {
+    if (!b.water) {   // 움직이는 발판: 회색 돌판에 노란 테두리
+      const g = new THREE.Group();
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(MOVER.width, 0.6, MOVER.half * 2), new THREE.MeshLambertMaterial({ color: "#8d96a3", map: tiledTexture(3, 3) }));
+      slab.position.y = -0.3;
+      const edge = new THREE.Mesh(new THREE.BoxGeometry(MOVER.width + 0.1, 0.12, MOVER.half * 2 + 0.1), new THREE.MeshLambertMaterial({ color: "#f2c94c" }));
+      edge.position.y = -0.62;
+      g.add(slab, edge);
+      scene.add(g);
+      b.mesh = g;
+      return;
+    }
     const w = new THREE.Mesh(new THREE.BoxGeometry(BOAT.waterW, 0.3, BOAT.river + 1), waterMat);
     w.position.set(b.mid.x, b.top - BOAT.water - 0.15, b.mid.z); w.rotation.y = b.mid.theta;
     scene.add(w);
@@ -1347,6 +1467,61 @@ placeSign(makeSign("정상", U.summit, "#f2c94c"), goal, 4.5);
     g.add(hull, keel, pole);
     scene.add(g);
     b.mesh = g;
+  });
+  // 기차 건널목·전차: 선로(발판 밖까지 이어짐), 기차는 경고등 기둥도 세움
+  const railMat = new THREE.MeshLambertMaterial({ color: "#5a5f67" }), sleeperMat = new THREE.MeshLambertMaterial({ color: "#6e5a44" });
+  const vehicleGroup = (v, parts) => {
+    const g = new THREE.Group();
+    parts.forEach(([w, h, d, color, x, y, z]) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color })); m.position.set(x, y, z); g.add(m); });
+    g.rotation.y = v.pad.theta;
+    scene.add(g);
+    return g;
+  };
+  [...trains, ...trams].forEach((v) => {
+    const isTrain = trains.includes(v), reach = isTrain ? TRAIN.size / 2 + TRAIN.len + 3 : TRAM.amp + TRAM.len / 2 + 0.6;
+    const g = new THREE.Group();
+    for (const z of [-0.55, 0.55]) { const r = new THREE.Mesh(new THREE.BoxGeometry(reach * 2, 0.12, 0.12), railMat); r.position.set(0, 0.06, z); g.add(r); }
+    for (let x = -reach + 0.5; x < reach; x += 1.1) { const sl = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.08, 1.6), sleeperMat); sl.position.set(x, 0.02, 0); g.add(sl); }
+    if (isTrain) {   // 선로 양쪽 끝에 경고등 기둥 (빨간 등 두 개가 번갈아 깜빡임)
+      v.lamps = [];
+      for (const sx of [-1, 1]) {
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.6, 0.2), new THREE.MeshLambertMaterial({ color: "#f4f1e8" }));
+        post.position.set(sx * (TRAIN.size / 2 - 0.4), 1.3, -1.6);
+        const cross = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.18, 0.06), new THREE.MeshLambertMaterial({ color: "#f2c94c" }));
+        cross.position.set(sx * (TRAIN.size / 2 - 0.4), 2.7, -1.5);
+        g.add(post, cross);
+        for (const lx of [-0.3, 0.3]) {
+          const mat = new THREE.MeshBasicMaterial({ color: "#3a1414" });
+          const lamp = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.1), mat);
+          lamp.position.set(sx * (TRAIN.size / 2 - 0.4) + lx, 2.2, -1.48);
+          g.add(lamp); v.lamps.push(mat);
+        }
+      }
+    }
+    g.position.set(v.pad.cx, v.pad.maxY, v.pad.cz); g.rotation.y = v.pad.theta;
+    scene.add(g);
+    // 차량: 기차는 검은 기관차 + 갈색 객차 두 칸, 전차는 빨강·크림색 한 칸 (로컬 x가 선로 방향)
+    v.mesh = isTrain
+      ? vehicleGroup(v, [[3, 2.2, 1.8, "#2b2b2b", 3, 1.25, 0], [0.5, 0.8, 0.5, "#2b2b2b", 3.8, 2.75, 0], [0.12, 0.5, 1.82, "#c0392b", 3, 1.6, 0],
+          [2.8, 2.0, 1.7, "#7a4a2a", 0, 1.15, 0], [2.8, 2.0, 1.7, "#7a4a2a", -3, 1.15, 0], [2.6, 0.5, 1.72, "#c9d6e0", 0, 1.6, 0], [2.6, 0.5, 1.72, "#c9d6e0", -3, 1.6, 0],
+          [9, 0.3, 1.2, "#1a1a1a", 0, 0.2, 0]])
+      : vehicleGroup(v, [[3.4, 1.0, 1.6, "#7a2f2a", 0, 0.7, 0], [3.4, 0.9, 1.6, "#efe2c2", 0, 1.65, 0], [3.0, 0.4, 1.0, "#5b7a8a", 0, 1.7, 0.01],
+          [3.6, 0.2, 1.8, "#4a4f57", 0, 2.2, 0], [0.1, 1.4, 0.1, "#2b2b2b", -0.4, 2.9, 0], [3.2, 0.3, 1.1, "#1a1a1a", 0, 0.15, 0]]);
+  });
+  // 무너지는 발판: 금이 간 돌판 (밟으면 흔들리다 떨어짐)
+  crumbles.forEach((c) => {
+    const g = new THREE.Group(), w = c.hx * 2;
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(w, 1, w), new THREE.MeshLambertMaterial({ color: "#d6c29a", map: tiledTexture(w, w) }));
+    slab.position.y = -0.5;
+    g.add(slab);
+    const crackMat = new THREE.MeshBasicMaterial({ color: "#4a3a2c" });
+    [[0, 0, 0.5], [0.2, 0.25, -0.7], [-0.25, -0.2, 1.1], [0.3, -0.3, 2.2]].forEach(([x, z, ry]) => {
+      const cr = new THREE.Mesh(new THREE.BoxGeometry(w * 0.75, 0.04, 0.12), crackMat);
+      cr.position.set(x, 0.02, z); cr.rotation.y = ry; g.add(cr);
+    });
+    g.position.set(c.cx, c.maxY, c.cz); g.rotation.y = c.theta;
+    scene.add(g);
+    c.mesh = g;
   });
   // 회오리: 위로 갈수록 넓어지는 반투명 고리를 겹쳐 쌓고 고리마다 다른 빠르기로 돌림
   const windMat = new THREE.MeshLambertMaterial({ color: "#e8eef5", transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false });
@@ -1708,7 +1883,7 @@ function setupExplore() {
   scene.add(trees.mesh());
   const clouds = new Model();
   for (let i = 0; i < 32; i++) {
-    const a = rand() * Math.PI * 2, r = 45 + rand() * 70, y = 12 + rand() * (goal.maxY + 20);
+    const a = rand() * Math.PI * 2, r = 45 + rand() * 70, y = 12 + rand() * (Math.min(goal.maxY, 200) + 20);
     const x = Math.cos(a) * r, z = Math.sin(a) * r, w = 6 + rand() * 8;
     clouds.b(w, 1.6, w * 0.6, "#ffffff", x, y, z);
     clouds.b(w * 0.6, 1.2, w * 0.4, "#f4f8ff", x + w * 0.15, y + 1.6, z);
@@ -1718,8 +1893,12 @@ function setupExplore() {
 
 // ================= 높이에 따라 바뀌는 하늘 =================
 // 아침 → 맑은 낮 → 노을 → 저녁 → 밤하늘 (정상 근처에서 별이 보임)
-const skyKeys = [[0, "#a8dcff"], [0.22, "#98cdfa"], [0.42, "#8ec0ee"], [0.6, "#f4c58f"], [0.76, "#ea9273"], [0.9, "#7a5fa6"], [1, "#2c2d5e"]]
+// 끝판왕은 더 높이: 낮 → 노을 → 밤 → 까만 우주 (별이 일찍부터 보임)
+const skyKeys = (U.space
+  ? [[0, "#a8dcff"], [0.15, "#98cdfa"], [0.3, "#8ec0ee"], [0.42, "#f4c58f"], [0.52, "#ea9273"], [0.62, "#7a5fa6"], [0.72, "#2c2d5e"], [0.85, "#0d0e26"], [1, "#020208"]]
+  : [[0, "#a8dcff"], [0.22, "#98cdfa"], [0.42, "#8ec0ee"], [0.6, "#f4c58f"], [0.76, "#ea9273"], [0.9, "#7a5fa6"], [1, "#2c2d5e"]])
   .map(([k, c]) => [k, new THREE.Color(c)]);
+const STAR_FROM = U.space ? 0.6 : 0.72;   // 이 높이(비율)부터 별이 보이기 시작
 const hemiLight = scene.children.find((o) => o.isHemisphereLight);
 const stars = (() => {
   const n = 600, arr = new Float32Array(n * 3);
@@ -1748,7 +1927,7 @@ function updateSky() {
   const dusk = Math.max(0, (h - 0.6) / 0.4);
   sun.intensity = 1.8 - 0.7 * dusk;
   if (hemiLight) hemiLight.intensity = 1.7 - 0.6 * dusk;
-  stars.material.opacity = Math.max(0, (h - 0.72) / 0.28);
+  stars.material.opacity = Math.min(1, Math.max(0, (h - STAR_FROM) / 0.28));
   stars.visible = stars.material.opacity > 0.01;
   stars.position.set(pos.x, pos.y, pos.z);
 }
@@ -1895,7 +2074,18 @@ const SKINS = [
   { id: "uinyeo",   name: "의녀",          skin: "#f1c79c", body: "#efe9dc", legs: "#2f4f7a", acc: "garima", skirt: "#2f4f7a", girl: true, unit: 2 },
   { id: "haengju",  name: "행주치마 아낙", skin: "#e8b88a", body: "#efe9dc", legs: "#8a5a4a", acc: "haengju", skirt: "#8a5a4a", girl: true, unit: 2 },
   { id: "daenggi",  name: "댕기머리 아이", skin: "#f1c79c", body: "#f6d26b", legs: "#d9433a", acc: "braid", skirt: "#d9433a", girl: true, unit: 2 },
-].filter((s) => s.unit === UNIT);
+  // 3단원 일제 강점기~6·25 전쟁
+  { id: "uibyeong", name: "의병",          skin: "#e8b88a", body: "#efe9dc", legs: "#efe9dc", acc: "sangtu", unit: 3 },
+  { id: "dokripgun", name: "독립군",       skin: "#e8b88a", body: "#7a7a52", legs: "#5e5e40", acc: "kepi", unit: 3 },
+  { id: "activist", name: "독립운동가",    skin: "#f1c79c", body: "#3d3f4a", legs: "#3d3f4a", acc: "fedora", unit: 3 },
+  { id: "student",  name: "교복 학생",     skin: "#f1c79c", body: "#1f2430", legs: "#1f2430", acc: "studentcap", unit: 3 },
+  { id: "soldier",  name: "국군",          skin: "#e8b88a", body: "#5f6f45", legs: "#5f6f45", acc: "steelhelmet", unit: 3 },
+  { id: "mansegirl", name: "만세 여학생",  skin: "#f1c79c", body: "#f4f1e8", legs: "#2a2a2a", acc: "braid", skirt: "#2a2a2a", girl: true, unit: 3 },
+  { id: "ansaram",  name: "안사람 의병",   skin: "#e8b88a", body: "#efe9dc", legs: "#9a9184", acc: "kerchief", skirt: "#9a9184", girl: true, unit: 3 },
+  { id: "sinyeoseong", name: "신여성",     skin: "#f1c79c", body: "#7fa7c9", legs: "#f1c79c", acc: "bob", skirt: "#7fa7c9", girl: true, unit: 3 },
+  { id: "gwangbok", name: "광복군 대원",   skin: "#e8b88a", body: "#7a7a52", legs: "#5e5e40", acc: "kepi", skirt: "#6b6b4a", girl: true, unit: 3 },
+  { id: "nurse",    name: "간호사",        skin: "#f1c79c", body: "#f8f8f6", legs: "#f8f8f6", acc: "nurse", skirt: "#f8f8f6", girl: true, unit: 3 },
+].filter((s) => UNIT === 4 || s.unit === UNIT);
 const SKIN_KEY = "historyTower.skin" + U.key;
 function loadSkinId() {
   try { const id = localStorage.getItem(SKIN_KEY); if (SKINS.some((s) => s.id === id)) return id; } catch { /* 저장이 막힌 환경 */ }
@@ -2012,6 +2202,41 @@ function makeCharacter(skin = SKINS[0]) {
     add(box(0.7, 0.14, 0.7, "#e9dcbc"), 0, 2.24, 0);
     add(box(0.8, 0.42, 0.06, "#e9dcbc"), 0, 0.68, 0.31);
     add(box(0.9, 0.06, 0.62, "#c9b88f"), 0, 0.88, 0);
+  } else if (skin.acc === "sangtu") {   // 의병: 상투와 흰 머리띠, 허리에 맨 새끼줄
+    add(box(0.66, 0.18, 0.66, "#1f1611"), 0, 2.2, 0);
+    add(box(0.22, 0.26, 0.22, "#1f1611"), 0, 2.4, 0);
+    add(box(0.7, 0.12, 0.7, "#f4f1e8"), 0, 2.12, 0);
+    add(box(0.84, 0.08, 0.5, "#a8875a"), 0, 0.95, 0);
+  } else if (skin.acc === "kepi") {   // 독립군·광복군: 챙 달린 군모, 어깨에서 허리로 맨 띠
+    add(box(0.64, 0.3, 0.64, "#6b6b4a"), 0, 2.26, 0);
+    add(box(0.62, 0.06, 0.3, "#3a3a2a"), 0, 2.13, 0.42);
+    add(box(0.14, 0.12, 0.04, "#e3b94a"), 0, 2.28, 0.33);
+    add(box(0.1, 1.0, 0.04, "#4a3a22"), 0, 1.15, 0.232, 0.6);
+    if (skin.girl) add(box(0.6, 0.3, 0.14, "#1f1611"), 0, 1.98, -0.3);   // 뒤로 묶은 머리
+  } else if (skin.acc === "fedora") {   // 독립운동가: 중절모, 흰 셔츠 깃과 넥타이
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 0.04, 16), new THREE.MeshLambertMaterial({ color: "#2b2b2b" })), 0, 2.18, 0);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.33, 0.32, 14), new THREE.MeshLambertMaterial({ color: "#2b2b2b" })), 0, 2.36, 0);
+    add(box(0.68, 0.06, 0.68, "#5e3b1f"), 0, 2.24, 0);
+    add(box(0.26, 0.5, 0.02, "#f4f1e8"), 0, 1.3, 0.232);
+    add(box(0.1, 0.4, 0.03, "#c0392b"), 0, 1.27, 0.24);
+  } else if (skin.acc === "studentcap") {   // 교복 학생: 챙 달린 학생모와 금단추
+    add(box(0.66, 0.24, 0.66, "#1a1a1a"), 0, 2.24, 0);
+    add(box(0.6, 0.05, 0.28, "#1a1a1a"), 0, 2.13, 0.42);
+    add(box(0.16, 0.14, 0.04, "#e3b94a"), 0, 2.26, 0.34);
+    for (let k = 0; k < 4; k++) add(box(0.07, 0.07, 0.03, "#e3b94a"), 0, 0.92 + k * 0.17, 0.235);
+  } else if (skin.acc === "steelhelmet") {   // 국군: 둥근 철모
+    add(new THREE.Mesh(new THREE.SphereGeometry(0.42, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: "#4f5e35" })), 0, 2.1, 0);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.46, 0.05, 16), new THREE.MeshLambertMaterial({ color: "#45522e" })), 0, 2.12, 0);
+  } else if (skin.acc === "bob") {   // 신여성: 턱 선까지 자른 단발머리와 머리핀
+    add(box(0.68, 0.2, 0.68, "#1f1611"), 0, 2.21, 0);
+    add(box(0.68, 0.42, 0.14, "#1f1611"), 0, 1.92, -0.28);
+    for (const x of [-0.33, 0.33]) add(box(0.1, 0.42, 0.56, "#1f1611"), x, 1.95, -0.03);
+    add(box(0.18, 0.06, 0.04, "#e3b94a"), 0.18, 2.16, 0.33);
+  } else if (skin.acc === "nurse") {   // 간호사: 빨간 십자가가 그려진 흰 모자
+    add(box(0.66, 0.2, 0.66, "#1f1611"), 0, 2.2, 0);
+    add(box(0.56, 0.2, 0.4, "#ffffff"), 0, 2.38, 0.05);
+    add(box(0.16, 0.05, 0.03, "#e5484d"), 0, 2.4, 0.26);
+    add(box(0.05, 0.16, 0.03, "#e5484d"), 0, 2.4, 0.26);
   } else if (skin.acc === "braid") {   // 댕기머리: 가운데 가르마, 등 뒤로 길게 땋은 머리 끝에 붉은 댕기, 저고리 고름
     add(box(0.66, 0.2, 0.66, "#1f1611"), 0, 2.2, 0);
     add(box(0.66, 0.34, 0.14, "#1f1611"), 0, 2.02, -0.27);
@@ -2188,15 +2413,58 @@ function animateConfetti(dt) {
   });
   confetti.instanceMatrix.needsUpdate = true;
 }
+// 태극기 (손에 드는 깃대와 깃발). arm: 캐릭터 팔(어깨가 원점, 손은 -y 쪽)
+function makeTaegukgi(arm) {
+  const c = document.createElement("canvas"); c.width = 300; c.height = 200;
+  const g = c.getContext("2d"), W = 300, H = 200, D = 100, r = D / 2;
+  g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
+  const ang = Math.atan2(H, W);   // 건·곤 괘를 잇는 대각선 방향
+  g.save(); g.translate(W / 2, H / 2); g.rotate(ang);
+  // 태극: 위쪽 빨강, 아래쪽 파랑, 왼쪽에 빨간 작은 원, 오른쪽에 파란 작은 원
+  g.fillStyle = "#cd2e3a"; g.beginPath(); g.arc(0, 0, r, Math.PI, 0); g.fill();
+  g.fillStyle = "#0047a0"; g.beginPath(); g.arc(0, 0, r, 0, Math.PI); g.fill();
+  g.fillStyle = "#cd2e3a"; g.beginPath(); g.arc(-r / 2, 0, r / 2, 0, Math.PI * 2); g.fill();
+  g.fillStyle = "#0047a0"; g.beginPath(); g.arc(r / 2, 0, r / 2, 0, Math.PI * 2); g.fill();
+  g.restore();
+  // 4괘: 건(왼쪽 위 ☰), 곤(오른쪽 아래 ☷), 감(오른쪽 위 ☵), 리(왼쪽 아래 ☲). 1 = 이어진 막대, 0 = 끊어진 막대
+  const bar = D / 12, gapB = D / 24, len = D / 2, dist = r + D / 4 + (3 * bar + 2 * gapB) / 2;
+  const trigram = (dx, dy, lines) => {
+    const a = Math.atan2(dy, dx);
+    g.save(); g.translate(W / 2 + Math.cos(a) * dist, H / 2 + Math.sin(a) * dist); g.rotate(a + Math.PI / 2);
+    g.fillStyle = "#000000";
+    lines.forEach((solid, i) => {
+      const y = (i - 1) * (bar + gapB) - bar / 2;
+      if (solid) g.fillRect(-len / 2, y, len, bar);
+      else { g.fillRect(-len / 2, y, len / 2 - gapB / 2, bar); g.fillRect(gapB / 2, y, len / 2 - gapB / 2, bar); }
+    });
+    g.restore();
+  };
+  trigram(-W, -H, [1, 1, 1]); trigram(W, H, [0, 0, 0]); trigram(W, -H, [0, 1, 0]); trigram(-W, H, [1, 0, 1]);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const grp = new THREE.Group();
+  const pole = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.6, 0.06), new THREE.MeshLambertMaterial({ color: "#7a5230" }));
+  pole.position.y = -1.3;
+  const cloth = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.6), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }));
+  cloth.position.set(0.48, -1.75, 0);
+  cloth.rotation.z = Math.PI;   // 팔을 들면 위아래가 뒤집히므로 미리 뒤집어 둠
+  grp.add(pole, cloth);
+  grp.visible = false;
+  arm.add(grp);
+  return grp;
+}
 // 세레모니 춤: 정상에서 버튼이나 1~4 키로 고름 (이 기기에 기억됨). 걷거나 뛰는 중에도 팔 자세는 유지
-const DANCES = [
-  { id: "L", name: "L을 가져가", float: "L", color: "#2fbf71" },
-  { id: "hooray", name: "만세", float: "만세!", color: "#e5484d" },
-  { id: "spin", name: "빙글빙글", float: "빙글빙글~", color: "#2e86de" },
-  { id: "wave", name: "손 흔들기", float: "안녕!", color: "#f08c2e" },
-];
-const DANCE_KEY = "historyTower.dance";
-let danceId = (() => { try { const d = localStorage.getItem(DANCE_KEY); return DANCES.some((x) => x.id === d) ? d : "L"; } catch { return "L"; } })();
+// 3단원(calm)은 장난스러운 동작(L, 빙글빙글) 대신 태극기 흔들기를 넣음
+const DANCES = (U.calm
+  ? [{ id: "flag", name: "태극기 흔들기", float: "대한 독립 만세!", color: "#2e5fa8" },
+     { id: "hooray", name: "만세", float: "만세!", color: "#e5484d" },
+     { id: "wave", name: "손 흔들기", float: "고마워요!", color: "#f08c2e" }]
+  : [{ id: "L", name: "L을 가져가", float: "L", color: "#2fbf71" },
+     { id: "hooray", name: "만세", float: "만세!", color: "#e5484d" },
+     { id: "spin", name: "빙글빙글", float: "빙글빙글~", color: "#2e86de" },
+     { id: "wave", name: "손 흔들기", float: "안녕!", color: "#f08c2e" }]);
+const DANCE_KEY = "historyTower.dance" + (U.calm ? U.key : "");
+let danceId = (() => { try { const d = localStorage.getItem(DANCE_KEY); return DANCES.some((x) => x.id === d) ? d : DANCES[0].id; } catch { return DANCES[0].id; } })();
 // 머리 위에 떠오르는 글자 (L은 기존 큰 L 그림)
 const danceSprites = {};
 function floatSprite(d) {
@@ -2246,11 +2514,16 @@ function ceremonyPose(pose, idle) {
     pose.armR.x = 0; pose.armR.z = 1.5;
     pose.armL.x = 0; pose.armL.z = -1.5;
     if (idle) { pose.legL.x = 0; pose.legR.x = 0; g.rotation.y += t * 9; g.position.y += Math.abs(Math.sin(t * 6)) * 0.08; }
+  } else if (d.id === "flag") {   // 오른손에 태극기를 높이 들고 좌우로 흔들기
+    pose.armR.x = -2.75; pose.armR.z = -0.2 + Math.sin(t * 5) * 0.35;
+    if (idle) { pose.armL.x = 0; pose.armL.z = -0.1; pose.legL.x = 0; pose.legR.x = 0; }
   } else if (d.id === "wave") {   // 오른팔을 들고 좌우로 흔들기, 멈추면 몸도 살랑살랑
     pose.armR.x = -0.2; pose.armR.z = 2.5 + Math.sin(t * 11) * 0.35;
     if (idle) { pose.armL.x = 0; pose.armL.z = -0.15; pose.legL.x = 0; pose.legR.x = 0; g.rotation.y += Math.sin(t * 3) * 0.25; }
   }
   hero.lSign.visible = d.id === "L";
+  if (d.id === "flag" && !hero.flag) hero.flag = makeTaegukgi(hero.armR);
+  if (hero.flag) hero.flag.visible = d.id === "flag";
   for (const x of DANCES) if (x.id !== d.id && (x.id === "L" || danceSprites[x.id])) floatSprite(x).visible = false;
   const sp = floatSprite(d);
   sp.visible = true;
@@ -2260,6 +2533,7 @@ function ceremonyPose(pose, idle) {
 }
 function stopCeremony() {
   hero.lSign.visible = false;
+  if (hero.flag) hero.flag.visible = false;
   bigL.visible = false;
   for (const d of DANCES) if (danceSprites[d.id]) danceSprites[d.id].visible = false;
   confetti.visible = false;
@@ -2305,8 +2579,9 @@ const $ = (id) => document.getElementById(id);
 const icon = (name) => `<svg class="ic" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 const progressEl = $("progress");
 for (let f = 1; f <= TOTAL_FLOORS; f++) progressEl.appendChild(document.createElement("span"));
+if (TOTAL_FLOORS > 18) progressEl.style.gap = "1px";
 // 시작 화면: 단원에 맞는 소개 글, 단원 버튼 (고르면 그 단원 주소로 다시 열림)
-document.title = UNIT === 1 ? "역사 타워 레이스" : `역사 타워 레이스 · ${UNIT}단원`;
+document.title = UNIT === 1 ? "역사 타워 레이스" : UNIT === 4 ? "역사 타워 레이스 · 끝판왕" : `역사 타워 레이스 · ${UNIT}단원`;
 document.querySelector(".logoKicker").textContent = U.kicker;
 document.querySelector(".tagline").textContent = U.tagline;
 document.querySelectorAll(".unitBtn").forEach((b) => b.classList.toggle("sel", Number(b.dataset.unit) === UNIT));
@@ -2321,8 +2596,10 @@ $("units").addEventListener("click", (e) => {
   document.querySelectorAll("#obstacleHelp [data-kind]").forEach((el) => { if (!used.has(el.dataset.kind)) el.remove(); });
 }
 // 시작 화면 탑 지도: 위에서부터 정상 → 6구역 … 1구역
-$("zoneChips").innerHTML = `<li class="top">정상</li>` + ZONES.map((z, i) =>
-  `<li style="background:${z.color}">${i + 1} ${z.name}<small>${i * FLOORS_PER_ZONE + 1}–${(i + 1) * FLOORS_PER_ZONE}층</small></li>`).reverse().join("");
+$("zoneChips").innerHTML = U.groups
+  ? `<li class="top">우주 정상</li>` + U.groups.map((g, i) => `<li style="background:${g.color}">${g.name}<small>${i * 18 + 1}–${(i + 1) * 18}층</small></li>`).reverse().join("")
+  : `<li class="top">정상</li>` + ZONES.map((z, i) =>
+    `<li style="background:${z.color}">${i + 1} ${z.name}<small>${i * FLOORS_PER_ZONE + 1}–${(i + 1) * FLOORS_PER_ZONE}층</small></li>`).reverse().join("");
 // 시작 화면 팁: 몇 초마다 바뀜
 const TIPS = [
   "틀린 발판은 무너져요. <b>한 층 아래</b>로 돌아가니 신중하게!",
@@ -2333,9 +2610,9 @@ const TIPS = [
   "정상에 오르면 이마에 <b>L</b>을 붙이고 마음껏 돌아다닐 수 있어요.",
   "구역 끝 <b>관문</b>은 직접 써서 답해요. 틀릴수록 초성, 글자 힌트가 늘어나요.",
   "정상에 한 번 오르면 <b>탐험 모드</b>가 열려요. 시대별 섬에 건너가 구경할 수 있어요.",
-  "정상에서는 <b>세레머니</b>를 골라요. L을 가져가, 만세, 빙글빙글, 손 흔들기!",
+  `정상에서는 <b>세레머니</b>를 골라요. ${DANCES.map((d) => d.name).join(", ")}!`,
   "정답 발판 순서는 매번 바뀌어요. 자리를 외우지 말고 <b>문제를 읽어요</b>!",
-];
+].filter((t) => !U.calm || !t.includes("<b>L</b>"));
 let tipIndex = Math.floor(Math.random() * TIPS.length);
 function showTip() { $("tip").innerHTML = `<b>TIP</b> ${TIPS[tipIndex++ % TIPS.length]}`; }
 showTip();
@@ -2784,6 +3061,15 @@ function bonkJar(j, nx, nz) {
   knockReady = now + JAR.stun + 0.3;
   sfx("bonk");
 }
+function bonkVehicle(v, side) {
+  const C = trains.includes(v) ? TRAIN : TRAM;
+  hop = null; launching = false;
+  vel.set(v.pad.sn * side * C.back, C.up, v.pad.c * side * C.back);
+  lastGrounded = -1; jumpQueued = -1;
+  stunUntil = now + C.stun; stunLen = C.stun;
+  knockReady = now + C.stun + 0.3;
+  sfx("bonk");
+}
 function whirl(w, nx, nz) {
   hop = null; launching = false;
   vel.set(-w.pad.sn * TORNADO.back + nx * 1.0, TORNADO.up, -w.pad.c * TORNADO.back + nz * 1.0);
@@ -3027,7 +3313,9 @@ function startRace() {
   canvas.focus();
 }
 let newlyUnlocked = false;
+let shotPending = false, ceremonyShot = null;   // 기록 카드에 넣을 정상 장면
 function finishRace() {
+  shotPending = !exploring; ceremonyShot = null;
   state = "ceremony";
   finishTime = now - startTime;
   ceremonyStart = now;
@@ -3039,13 +3327,13 @@ function finishRace() {
   toast(exploring ? "탐험 완료! 정상에 도착했어요" : "정상 도착! 세레머니를 골라 보세요");
   // 정상 보상: 처음 정상에 오르면 탐험 모드가 열림
   newlyUnlocked = false;
-  if (!exploring && !explorerUnlocked) {
+  if (!exploring && !explorerUnlocked && !U.noGallery) {
     explorerUnlocked = true; newlyUnlocked = true;
     try { localStorage.setItem(EXPLORE_KEY, "1"); } catch { /* 저장이 막힌 환경 */ }
     renderModeButtons();
     showFeedback(true, "정상 보상: 탐험 모드가 열렸어요!", "시작 화면에서 「탐험」을 고르면 문제 없이 탑과 시대별 섬을 둘러볼 수 있어요.", 5000);
   }
-  launchConfetti();
+  if (!U.calm) launchConfetti();   // 3단원은 차분하게: 꽃가루 없음
   sfx("fanfare");
   // 결과 화면은 바로 띄우지 않고, 세레머니를 고르며 마음껏 돌아다니다가 버튼(또는 Enter)으로 봄
   $("dances").innerHTML = DANCES.map((d, i) => `<button type="button" data-dance="${d.id}" class="${d.id === danceId ? "sel" : ""}"><kbd>${i + 1}</kbd>${d.name}</button>`).join("");
@@ -3055,6 +3343,7 @@ function showResults() {
   if (state !== "ceremony") return;
   state = "finish";
   $("partyBar").classList.remove("show");
+  $("shareBox").style.display = exploring ? "none" : "";
   if (exploring) {   // 탐험 모드: 기록 대신 둘러본 것
     $("resultText").innerHTML = `<span class="modeTag" style="background:#2e86de">탐험 완료</span>` +
       `<dl class="stats"><dt>둘러본 섬</dt><dd>${seenIslands.size} / ${gallery.isles.length}</dd>` +
@@ -3080,10 +3369,80 @@ function showResults() {
   $("runCards").innerHTML = runCards.map(({ art, shiny }) =>
     `<figure class="${shiny ? "shiny" : ""}"><img src="${cardImages[art.id]}" alt=""><figcaption>${esc(art.name)}</figcaption></figure>`).join("");
   $("review").innerHTML = reviewHTML();
+  if (!ceremonyShot) { renderer.render(scene, camera); ceremonyShot = renderer.domElement.toDataURL("image/jpeg", 0.85); }
+  $("cardOut").innerHTML = "";
   updateBookButtons();
   $("finishScreen").classList.remove("hidden");
   $("finishScreen").querySelector(".panel").scrollTop = 0;
 }
+
+// ================= 명예의 전당 기록 카드 (1080×1350 이미지) =================
+// 서버 없이 이미지로 저장해 패들렛·클래스룸에 올림. 별명은 이 기기에 기억함
+const NICK_KEY = "historyTower.nick";
+try { $("nickInput").value = localStorage.getItem(NICK_KEY) || ""; } catch { /* 저장이 막힌 환경 */ }
+const loadImg = (src) => new Promise((ok) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = src; });
+async function makeRecordCard(nick) {
+  const W = 1080, H = 1350, c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const g = c.getContext("2d"), font = getComputedStyle(document.body).fontFamily;
+  const text = (t, x, y, size, color, weight = 800, align = "left") => {
+    g.font = `${weight} ${size}px ${font}`; g.fillStyle = color; g.textAlign = align; g.textBaseline = "alphabetic"; g.fillText(t, x, y);
+  };
+  g.fillStyle = "#1d2433"; g.fillRect(0, 0, W, H);
+  // 위: 게임 이름과 단원
+  text("역사 타워 레이스", 60, 96, 56, "#ffffff", 900);
+  text(U.kicker, 60, 146, 30, "#f2c94c", 800);
+  // 정상 장면 (가운데를 잘라 1080×620에 채움)
+  const shot = ceremonyShot && await loadImg(ceremonyShot);
+  const sy = 180, sh = 620;
+  if (shot) {
+    const k = Math.max(W / shot.width, sh / shot.height), w = shot.width * k, h = shot.height * k;
+    g.save(); g.beginPath(); g.rect(0, sy, W, sh); g.clip();
+    g.drawImage(shot, (W - w) / 2, sy + (sh - h) / 2, w, h);
+    g.restore();
+  } else { g.fillStyle = "#2c3a5a"; g.fillRect(0, sy, W, sh); }
+  // 별명과 기록
+  const y0 = sy + sh + 90;
+  text(nick, 60, y0, 64, "#ffffff", 900);
+  text(mode === "challenge" ? "도전자 모드 완주" : "기본 모드 완주", W - 60, y0, 30, mode === "challenge" ? "#ff8a8a" : "#9fdcb4", 800, "right");
+  text("기록", 60, y0 + 70, 28, "#9aa6b8");
+  text(fmtTime(finishTime), 60, y0 + 170, 110, "#f2c94c", 900);
+  const shiny = runCards.filter((x) => x.shiny).length;
+  const rows = [
+    ["맞힌 문제", `${correctCount}개`], ["틀린 문제", `${wrongCount}개`],
+    ["관문", `${gates.filter((x) => x.cleared).length}/${gates.length} 통과`], ["떨어진 횟수", `${falls}번`],
+    ["모은 유물", `${runCards.length}개${shiny ? ` (반짝 ${shiny})` : ""}`],
+  ];
+  rows.forEach(([k, v], i) => {
+    const x = 500 + (i % 2) * 290, y = y0 + 50 + Math.floor(i / 2) * 88;
+    text(k, x, y, 26, "#9aa6b8", 700);
+    text(v, x, y + 40, 36, "#ffffff", 900);
+  });
+  // 이번 판에 모은 유물 그림 (최대 12개)
+  const thumbs = await Promise.all(runCards.slice(0, 12).map((x) => loadImg(cardImages[x.art.id])));
+  thumbs.forEach((im, i) => {
+    if (!im) return;
+    const x = 60 + i * 82, y = H - 190;
+    g.fillStyle = runCards[i].shiny ? "#f2c94c" : "#2c3a5a"; g.fillRect(x - 3, y - 3, 76, 76);
+    g.drawImage(im, x, y, 70, 70);
+  });
+  const d = new Date(), date = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  text(date, 60, H - 50, 26, "#9aa6b8", 700);
+  text("사회 5-2 역사 타워 레이스 명예의 전당", W - 60, H - 50, 26, "#9aa6b8", 700, "right");
+  return c.toDataURL("image/png");
+}
+$("cardBtn").addEventListener("click", async () => {
+  const nick = $("nickInput").value.trim();
+  if (!nick) { toast("번호와 별명을 써 주세요"); $("nickInput").focus(); return; }
+  try { localStorage.setItem(NICK_KEY, nick); } catch { /* 저장이 막힌 환경 */ }
+  $("cardBtn").disabled = true;
+  const url = await makeRecordCard(nick);
+  $("cardBtn").disabled = false;
+  const name = `역사타워_${UNIT === 4 ? "끝판왕" : UNIT + "단원"}_${nick.replace(/[^\w가-힣]/g, "")}.png`;
+  $("cardOut").innerHTML = `<img src="${url}" alt="기록 카드">` +
+    `<div class="cardActions"><a class="bigBtn" href="${url}" download="${esc(name)}">이미지 저장</a>` +
+    `<span>태블릿은 그림을 길게 눌러 저장할 수도 있어요</span></div>`;
+});
 
 // 틀린 문제 복습: 빈칸에 정답을 채운 문장, 내가 고른 답, 해설
 // 빈칸 뒤 "을/를", "(으)로" 같은 조사는 채운 낱말의 받침에 맞춰 하나로 고름 (예: 덮개돌을/를 → 덮개돌을)
@@ -3151,6 +3510,7 @@ function setMode(m) {
 }
 function renderModeButtons() {
   const ex = document.querySelector('.modeBtn[data-mode="explore"]');
+  ex.style.display = U.noGallery ? "none" : "";
   ex.classList.toggle("locked", !explorerUnlocked);
   ex.innerHTML = explorerUnlocked
     ? `<b>탐험</b><span>섬·유물 갤러리</span>`
@@ -3331,6 +3691,14 @@ function physicsStep(dt) {
       if (r < JAR.radius + PLAYER_R && pos.y > j.pad.maxY - 0.3 && pos.y < j.pad.maxY + JAR.height - 0.1) { bonkJar(j, dx / (r || 1), dz / (r || 1)); break; }
     }
   }
+  // 기차·전차에 부딪힘: 선로 바깥쪽(온 쪽)으로 밀려나 벌러덩
+  if (state === "play" && now >= knockReady && !gateFailPending) {
+    for (const v of [...trains, ...trams]) {
+      const dx = pos.x - v.pad.cx, dz = pos.z - v.pad.cz;
+      const lx = dx * v.pad.c - dz * v.pad.sn, lz = dx * v.pad.sn + dz * v.pad.c;
+      if (Math.abs(lx - v.x) < v.len / 2 + PLAYER_R && Math.abs(lz) < v.half + PLAYER_R && pos.y > v.pad.maxY - 0.3 && pos.y < v.pad.maxY + v.height) { bonkVehicle(v, Math.sign(lz) || -1); break; }
+    }
+  }
   // 나룻배 위에 서 있으면 배가 움직인 만큼 같이 움직임
   if (grounded && groundSolid && groundSolid.mover) { pos.x += groundSolid.dx; pos.z += groundSolid.dz; }
   if (hop) { stepHop(dt); return; }
@@ -3381,6 +3749,7 @@ function physicsStep(dt) {
   grounded = false;
   moveVertical(vel.y * dt);
   for (const b of boats) {
+    if (!b.water) continue;
     const wy = b.top - BOAT.water;
     if (prevY > wy && pos.y <= wy) {
       const dx = pos.x - b.mid.x, dz = pos.z - b.mid.z, c = Math.cos(b.mid.theta), sn = Math.sin(b.mid.theta);
@@ -3396,6 +3765,7 @@ function physicsStep(dt) {
       if (gateFailPending) { stunUntil = gateFailUntil; stunLen = Math.max(0.3, gateFailUntil - now); }
     }
     if (!wasGrounded || groundSolid.kind !== "pad") onLanded();
+    if (groundSolid.crumble && !groundSolid.crumbleAt) { groundSolid.crumbleAt = now; sfx("crack"); }
   }
   checkGallery();
   // 관문 오답으로 튕겨 나간 뒤 시간이 되면 체크포인트로
@@ -3553,6 +3923,23 @@ function frame() {
   if (exploring) for (const ped of gallery.pedestals) ped.mesh.rotation.y = now * 0.6 + ped.x;   // 전시된 유물이 천천히 돎
   for (const j of jars) { j.mesh.position.set(j.x, j.pad.maxY, j.z); j.roller.rotation.z = -j.roll; }
   for (const b of boats) { const sb = b.solid; b.mesh.position.set(sb.cx, sb.maxY, sb.cz); b.mesh.rotation.y = sb.theta; }
+  for (const v of [...trains, ...trams]) {
+    const p = v.pad, hide = Math.abs(v.x) > 50;
+    v.mesh.visible = !hide;
+    if (!hide) v.mesh.position.set(p.cx + v.x * p.c, p.maxY, p.cz - v.x * p.sn);
+    if (v.mesh && v.sgn) v.mesh.rotation.y = p.theta + (v.sgn < 0 ? Math.PI : 0);   // 기관차가 앞장서게
+    if (v.lamps) {   // 경고등 깜빡임 + 가까이 있으면 땡땡
+      const on = v.warn && Math.floor(now * 4) % 2;
+      v.lamps.forEach((m, i) => m.color.set(v.warn && (i % 2 ? on : !on) ? "#ff3b30" : "#3a1414"));
+      if (v.warn && now - v.lastBell > 0.5 && Math.abs(pos.y - p.maxY) < 8 && Math.hypot(pos.x - p.cx, pos.z - p.cz) < 22) { v.lastBell = now; sfx("bell"); }
+    }
+  }
+  for (const c of crumbles) {   // 흔들리다 아래로 떨어지고, 다시 생기면 제자리
+    const k = c.crumbleAt ? now - c.crumbleAt : -1;
+    c.mesh.visible = k < CRUMBLE.shake + 0.8;
+    const jit = k >= 0 && k < CRUMBLE.shake ? Math.sin(k * 60) * 0.06 : 0, drop = k >= CRUMBLE.shake ? (k - CRUMBLE.shake) ** 2 * 14 : 0;
+    c.mesh.position.set(c.cx + jit, c.maxY - drop, c.cz);
+  }
   for (const sw of seesaws) {   // 널이 쿵 하고 기울었다가 출렁이며 돌아옴
     const k = sw.kick ? now - sw.kick : 9;
     sw.mesh.rotation.x = k < 1.2 ? Math.sin(k * 9) * 0.25 * (1 - k / 1.2) : 0;
@@ -3568,6 +3955,8 @@ function frame() {
   updateCamera(dt);
   updateCulling();
   renderer.render(scene, camera);
+  // 기록 카드용: 세레머니 2초쯤 지난 장면을 그린 직후에 저장 (그린 직후라야 빈 그림이 아님)
+  if (shotPending && state === "ceremony" && now - ceremonyStart > 2.2) { ceremonyShot = renderer.domElement.toDataURL("image/jpeg", 0.85); shotPending = false; }
   requestAnimationFrame(frame);
 }
 setupQuestions();
@@ -3577,14 +3966,15 @@ updateBookButtons();
 requestAnimationFrame(frame);
 
 // 확인·디버그용 (개발 중 자동 점검에 사용)
-window.__tower = {
+// 순간이동·바로 정상 도착 같은 기능이 있어서, 내 컴퓨터에서 열었을 때(localhost·파일)만 켬. 배포한 주소에서는 꺼져 있음
+if (["localhost", "127.0.0.1", ""].includes(location.hostname)) window.__tower = {
   solids, plazas, strips, floors, goal, pos, vel, zoneStart, OPT_ALONG, landings, spinners, walls, bouncePads, renderer, scene, camera, updateCulling, cullBuckets,
   get bonus() { return { floor: bonusFloor, stars: bonusStars, done: { ...bonusDone } }; },
   gates, submitGate, setupQuestions,
   get gateOpen() { return gateOpen ? gateOpen.zi : null; },
   get plunging() { return plunging; },
   set fallMult(v) { fallMult = v; },
-  tornados, seesaws, ropes, jars, boats,
+  tornados, seesaws, ropes, jars, boats, trains, trams, crumbles,
   get whirling() { return now < whirlUntil; },
   setDance, get dance() { return danceId; },
   pauseGame, resumeGame, goTitle, startRace,
