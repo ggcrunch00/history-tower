@@ -3414,7 +3414,7 @@ async function makeRecordCard(nick) {
     ["모은 유물", `${runCards.length}개${shiny ? ` (반짝 ${shiny})` : ""}`],
   ];
   rows.forEach(([k, v], i) => {
-    const x = 500 + (i % 2) * 290, y = y0 + 50 + Math.floor(i / 2) * 88;
+    const x = 500 + (i % 2) * 290, y = y0 + 40 + Math.floor(i / 2) * 80;
     text(k, x, y, 26, "#9aa6b8", 700);
     text(v, x, y + 40, 36, "#ffffff", 900);
   });
@@ -3422,13 +3422,13 @@ async function makeRecordCard(nick) {
   const thumbs = await Promise.all(runCards.slice(0, 12).map((x) => loadImg(cardImages[x.art.id])));
   thumbs.forEach((im, i) => {
     if (!im) return;
-    const x = 60 + i * 82, y = H - 190;
+    const x = 60 + i * 82, y = H - 160;
     g.fillStyle = runCards[i].shiny ? "#f2c94c" : "#2c3a5a"; g.fillRect(x - 3, y - 3, 76, 76);
     g.drawImage(im, x, y, 70, 70);
   });
   const d = new Date(), date = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-  text(date, 60, H - 50, 26, "#9aa6b8", 700);
-  text("사회 5-2 역사 타워 레이스 명예의 전당", W - 60, H - 50, 26, "#9aa6b8", 700, "right");
+  text(date, 60, H - 36, 24, "#9aa6b8", 700);
+  text("사회 5-2 역사 타워 레이스 명예의 전당", W - 60, H - 36, 24, "#9aa6b8", 700, "right");
   return c.toDataURL("image/png");
 }
 $("cardBtn").addEventListener("click", async () => {
