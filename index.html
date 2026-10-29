@@ -193,6 +193,20 @@
   body.touch #partyBar .dances kbd { display: none; }
   #partyBar.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
   body.touch #partyBar { bottom: 140px; }
+  #shotBtn {
+    flex: none; border: 2px solid #1d2433; cursor: pointer; font: inherit; font-weight: 900; color: #fff; background: #1d2433;
+    border-radius: var(--r-m); padding: 7px 12px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  #shotBtn kbd { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.4); color: #fff; }
+  body.touch #shotBtn kbd { display: none; }
+  #shotThumb { display: none; height: 40px; border-radius: var(--r-s); box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(0, 0, 0, 0.3); }
+  #shotThumb.on { display: block; }
+  #shotFlash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 50; }
+  #shotFlash.on { animation: shotFlash .45s ease-out; }
+  @keyframes shotFlash { from { opacity: 0.85; } to { opacity: 0; } }
+  .shareBox #shotNeed { font-size: 14px; font-weight: 700; line-height: 1.6; word-break: keep-all; }
+  .shareBox #shotNeed .subBtn { margin-top: 8px; }
+  .shareBox #shotPreview { display: block; width: 100%; max-width: 360px; margin: 0 auto 10px; border-radius: var(--r-m); }
   #resultBtn {
     flex: none; border: 0; cursor: pointer; font: inherit; font-weight: 900; color: #fff; background: var(--go);
     border-radius: var(--r-m); padding: 9px 14px; box-shadow: 0 4px 0 var(--go-dark); display: inline-flex; align-items: center; gap: 6px;
@@ -624,11 +638,14 @@
     <div class="result" id="resultText"></div>
     <div class="runCards" id="runCards"></div>
     <section class="shareBox" id="shareBox">
-      <h3>명예의 전당 기록 카드</h3>
-      <p>정상 장면과 기록을 담은 이미지를 만들어 패들렛·클래스룸에 올려요. 이름 대신 <b>번호와 별명</b>을 써요.</p>
-      <div class="shareRow">
+      <h3>명예의 전당 인증 기록</h3>
+      <p>정상에서 직접 찍은 인증 사진과 기록을 한 장의 이미지로 만들어 패들렛·클래스룸에 올려요. 이름 대신 <b>번호와 별명</b>을 써요.</p>
+      <div id="shotNeed">아직 찍은 인증 사진이 없어요. 정상으로 돌아가 세레머니를 하며 「인증 사진」을 눌러 찍어 오세요.<br>
+        <button class="subBtn" id="backSummitBtn" type="button">정상으로 돌아가 사진 찍기</button></div>
+      <img id="shotPreview" alt="내가 찍은 인증 사진">
+      <div class="shareRow" id="shareRow">
         <input id="nickInput" maxlength="10" placeholder="예: 7번 번개" autocomplete="off">
-        <button class="bigBtn" id="cardBtn" type="button">기록 카드 만들기</button>
+        <button class="bigBtn" id="cardBtn" type="button">인증 기록 만들기</button>
       </div>
       <div id="cardOut"></div>
     </section>
@@ -669,9 +686,10 @@
 
 <div id="cardPop"></div>
 <div id="partyBar" class="card">
-  <div class="ptop"><b>정상 도착!</b> 세레머니를 고르고 마음껏 돌아다녀 보세요</div>
-  <div class="prow"><div class="dances" id="dances"></div><button id="resultBtn" type="button">기록 보기 <kbd>Enter</kbd></button></div>
+  <div class="ptop"><b>정상 도착!</b> 세레머니를 고르고, 마음에 드는 장면에서 <b>인증 사진</b>을 찍어요</div>
+  <div class="prow"><div class="dances" id="dances"></div><img id="shotThumb" alt="찍은 인증 사진"><button id="shotBtn" type="button">인증 사진 <kbd>C</kbd></button><button id="resultBtn" type="button">기록 보기 <kbd>Enter</kbd></button></div>
 </div>
+<div id="shotFlash"></div>
 
 <div id="stickBase"><div id="stickKnob"></div></div>
 <button id="jumpBtn" type="button">점프</button>
@@ -3139,6 +3157,7 @@ addEventListener("keydown", (e) => {
   // 정상 세레모니 중: 1~4로 춤 고르기
   const dn = { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3, Numpad1: 0, Numpad2: 1, Numpad3: 2, Numpad4: 3 }[e.code];
   if (state === "ceremony" && !e.repeat && dn !== undefined) { setDance(DANCES[dn].id); return; }
+  if (state === "ceremony" && !e.repeat && e.code === "KeyC") { takeShot(); return; }
   const num = { Digit1: 0, Digit2: 1, Digit3: 2, Numpad1: 0, Numpad2: 1, Numpad3: 2 }[e.code];
   if (!e.repeat && num !== undefined) { if (bonusFloor !== null) answerBonus(num); else chooseOption(num); }
   if (!e.repeat && (e.code === "KeyO" || e.code === "KeyX") && bonusFloor === null) {
@@ -3313,9 +3332,14 @@ function startRace() {
   canvas.focus();
 }
 let newlyUnlocked = false;
-let shotPending = false, ceremonyShot = null;   // 기록 카드에 넣을 정상 장면
+let shotPending = false, ceremonyShot = null;   // 학생이 정상에서 직접 찍은 인증 사진
+function takeShot() {
+  if (state !== "ceremony" || exploring) return;
+  shotPending = true;   // 다음 프레임을 그린 직후에 저장 (그린 직후라야 빈 그림이 아님)
+}
 function finishRace() {
-  shotPending = !exploring; ceremonyShot = null;
+  shotPending = false; ceremonyShot = null;
+  $("shotThumb").classList.remove("on");
   state = "ceremony";
   finishTime = now - startTime;
   ceremonyStart = now;
@@ -3369,15 +3393,18 @@ function showResults() {
   $("runCards").innerHTML = runCards.map(({ art, shiny }) =>
     `<figure class="${shiny ? "shiny" : ""}"><img src="${cardImages[art.id]}" alt=""><figcaption>${esc(art.name)}</figcaption></figure>`).join("");
   $("review").innerHTML = reviewHTML();
-  if (!ceremonyShot) { renderer.render(scene, camera); ceremonyShot = renderer.domElement.toDataURL("image/jpeg", 0.85); }
+  $("shotNeed").style.display = ceremonyShot ? "none" : "";
+  $("shareRow").style.display = ceremonyShot ? "" : "none";
+  $("shotPreview").style.display = ceremonyShot ? "" : "none";
+  if (ceremonyShot) $("shotPreview").src = ceremonyShot;
   $("cardOut").innerHTML = "";
   updateBookButtons();
   $("finishScreen").classList.remove("hidden");
   $("finishScreen").querySelector(".panel").scrollTop = 0;
 }
 
-// ================= 명예의 전당 기록 카드 (1080×1350 이미지) =================
-// 서버 없이 이미지로 저장해 패들렛·클래스룸에 올림. 별명은 이 기기에 기억함
+// ================= 명예의 전당 인증 기록 (1080×1350 이미지) =================
+// 학생이 정상에서 직접 찍은 인증 사진 + 기록. 서버 없이 이미지로 저장해 패들렛·클래스룸에 올림. 별명은 이 기기에 기억함
 const NICK_KEY = "historyTower.nick";
 try { $("nickInput").value = localStorage.getItem(NICK_KEY) || ""; } catch { /* 저장이 막힌 환경 */ }
 const loadImg = (src) => new Promise((ok) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = src; });
@@ -3438,8 +3465,8 @@ $("cardBtn").addEventListener("click", async () => {
   $("cardBtn").disabled = true;
   const url = await makeRecordCard(nick);
   $("cardBtn").disabled = false;
-  const name = `역사타워_${UNIT === 4 ? "끝판왕" : UNIT + "단원"}_${nick.replace(/[^\w가-힣]/g, "")}.png`;
-  $("cardOut").innerHTML = `<img src="${url}" alt="기록 카드">` +
+  const name = `역사타워_인증_${UNIT === 4 ? "끝판왕" : UNIT + "단원"}_${nick.replace(/[^\w가-힣]/g, "")}.png`;
+  $("cardOut").innerHTML = `<img src="${url}" alt="명예의 전당 인증 기록">` +
     `<div class="cardActions"><a class="bigBtn" href="${url}" download="${esc(name)}">이미지 저장</a>` +
     `<span>태블릿은 그림을 길게 눌러 저장할 수도 있어요</span></div>`;
 });
@@ -3498,6 +3525,15 @@ function reviewHTML() {
 }
 $("startBtn").addEventListener("click", startRace);
 $("resultBtn").addEventListener("click", showResults);
+$("shotBtn").addEventListener("click", () => { takeShot(); canvas.focus(); });
+// 결과 화면에서 정상으로 돌아가 세레머니를 이어 함 (인증 사진을 찍으려고)
+$("backSummitBtn").addEventListener("click", () => {
+  if (state !== "finish") return;
+  state = "ceremony";
+  $("finishScreen").classList.add("hidden");
+  $("partyBar").classList.add("show");
+  canvas.focus();
+});
 $("dances").addEventListener("click", (e) => { const b = e.target.closest("[data-dance]"); if (b) { setDance(b.dataset.dance); canvas.focus(); } });
 // 모드 고르기 (이 기기에 기억됨)
 function setMode(m) {
@@ -3956,7 +3992,14 @@ function frame() {
   updateCulling();
   renderer.render(scene, camera);
   // 기록 카드용: 세레머니 2초쯤 지난 장면을 그린 직후에 저장 (그린 직후라야 빈 그림이 아님)
-  if (shotPending && state === "ceremony" && now - ceremonyStart > 2.2) { ceremonyShot = renderer.domElement.toDataURL("image/jpeg", 0.85); shotPending = false; }
+  if (shotPending) {   // 인증 사진: 방금 그린 장면을 저장하고 찰칵
+    shotPending = false;
+    ceremonyShot = renderer.domElement.toDataURL("image/jpeg", 0.9);
+    $("shotThumb").src = ceremonyShot; $("shotThumb").classList.add("on");
+    const fl = $("shotFlash"); fl.classList.remove("on"); void fl.offsetWidth; fl.classList.add("on");
+    sfx("shutter");
+    toast("인증 사진을 찍었어요! 다시 누르면 새로 찍어요");
+  }
   requestAnimationFrame(frame);
 }
 setupQuestions();

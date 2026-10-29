@@ -148,6 +148,18 @@ const GameSound = (() => {
       o.connect(g); g.connect(sfxBus);
       o.start(t); o.stop(t + 0.45);
     },
+    shutter(t) {   // 인증 사진: 찰칵 (짧은 잡음 두 번)
+      [0, 0.07].forEach((dt, i) => {
+        const len = 0.05, buf = ctx.createBuffer(1, ctx.sampleRate * len, ctx.sampleRate), d = buf.getChannelData(0);
+        for (let k = 0; k < d.length; k++) d[k] = (Math.random() * 2 - 1) * (1 - k / d.length);
+        const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+        s.buffer = buf;
+        f.type = "highpass"; f.frequency.value = i ? 2500 : 1500;
+        g.gain.setValueAtTime(0.35, t + dt);
+        s.connect(f); f.connect(g); g.connect(sfxBus);
+        s.start(t + dt); s.stop(t + dt + len);
+      });
+    },
     bell(t) {   // 기차 건널목 경고: 땡 (높은 종소리 두 겹)
       [1320, 1760].forEach((f) => {
         const o = ctx.createOscillator(), g = ctx.createGain();
